@@ -16,11 +16,11 @@ else ifeq ($(os),macosx)
     this_ldlibs += -lGLEW -framework OpenGL -framework Cocoa -lfreetype
     this_ldflags += -rdynamic
 else ifeq ($(os),linux)
-    this_ldlibs += -pthread
+    this_ldlibs += -pthread -lGLESv2
     this_ldflags += -rdynamic
 endif
 
-this_ldlibs += -lruisapp-opengles-xorg -lpapki -lclargs -ltml -lruis -lutki -lm
+this_ldlibs += -lruisapp-opengles -lpapki -lclargs -ltml -lruis -lutki -lm
 
 $(eval $(prorab-build-app))
 

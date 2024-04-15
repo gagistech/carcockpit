@@ -129,6 +129,13 @@ utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<rui
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                                 }
                             }
+                            // ,
+                            // .params = {
+                            //             .diffuse = c.get().loader.load<ruis::res::image>("img_gauge_arrow"),
+                            //             .specular = c.get().loader.load<ruis::res::image>("img_gauge_arrow"),
+                            //             .roughness = c.get().loader.load<ruis::res::image>("img_gauge_arrow_shadow"),
+                            //             .normal = c.get().loader.load<ruis::res::image>("img_gauge_arrow_shadow")
+                            //         }
                         }
                     )
                 }
@@ -139,14 +146,17 @@ utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<rui
 	// clang-format on
 
 	auto& gauge = w.get().get_widget_as<ruis::gauge>("gauge");
+    auto& slider = w.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
+    auto& car_widget = w.get().get_widget_as<carcockpit::car_widget>("car_widget");
 
-	auto& slider = w.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
-
-	slider.fraction_change_handler = [&g = gauge](ruis::fraction_widget& s) {
+	slider.fraction_change_handler = [&cw = car_widget, &g = gauge](ruis::fraction_widget& s) 
+    {
 		g.set_fraction(s.fraction());
+        //cw.set_rotation(s.fraction());
+        cw.set_fraction(s.fraction());
 	};
 
-	auto car = w.get().try_get_widget_as<car_widget>("car_widget");
+	auto car = w.get().try_get_widget_as<carcockpit::car_widget>("car_widget");
 
 	c.get().updater.get().start(car, 0);
 

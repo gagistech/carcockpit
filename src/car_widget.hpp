@@ -24,19 +24,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/res/texture.hpp>
 #include <ruis/updateable.hpp>
 #include <ruis/widgets/widget.hpp>
+#include <ruis/widgets/base/fraction_widget.hpp>
+#include "car_view/model_obj.h"
 
 namespace carcockpit {
 
-class car_widget : public ruis::widget, public ruis::updateable
+class car_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
 {
 	std::shared_ptr<ruis::res::texture> tex;
+
+	std::shared_ptr<ruis::res::texture> tex_car_diffuse;
+	std::shared_ptr<ruis::res::texture> tex_car_roughness;
+	std::shared_ptr<ruis::res::texture> tex_car_opacity;
+	std::shared_ptr<ruis::res::texture> tex_car_normal;
+	std::shared_ptr<ruis::res::texture> tex_car_metallic;
+
+	std::shared_ptr<ModelOBJ> car_model_obj;
 
 	ruis::quaternion rot = ruis::quaternion().set_identity();
 
 	std::shared_ptr<ruis::vertex_array> cube_vao;
+	std::shared_ptr<ruis::vertex_array> car_vao;
 
 	unsigned fps = 0;
 	uint32_t fps_sec_counter = 0;
+	uint32_t time_sec = 0;
 
 public:
 	struct parameters {};

@@ -22,24 +22,44 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "car_widget.hpp"
 
 #include <ratio>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <GLES2/gl2platform.h>
 
 using namespace carcockpit;
 
+// something
+
 car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters params) :
-	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)})
+	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
+	ruis::fraction_widget(this->context)
 {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	std::array<ruis::vector3, 36> cube_pos = {
-		{ruis::vector3(-1, -1, 1), ruis::vector3(1, -1, 1),   ruis::vector3(-1, 1, 1),   ruis::vector3(1, -1, 1),
-		 ruis::vector3(1, 1, 1),   ruis::vector3(-1, 1, 1),   ruis::vector3(1, -1, 1),   ruis::vector3(1, -1, -1),
-		 ruis::vector3(1, 1, 1),   ruis::vector3(1, -1, -1),  ruis::vector3(1, 1, -1),   ruis::vector3(1, 1, 1),
-		 ruis::vector3(1, -1, -1), ruis::vector3(-1, -1, -1), ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1),
-		 ruis::vector3(-1, 1, -1), ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1), ruis::vector3(-1, -1, 1),
-		 ruis::vector3(-1, 1, -1), ruis::vector3(-1, -1, 1),  ruis::vector3(-1, 1, 1),   ruis::vector3(-1, 1, -1),
-		 ruis::vector3(-1, 1, -1), ruis::vector3(-1, 1, 1),   ruis::vector3(1, 1, -1),   ruis::vector3(-1, 1, 1),
-		 ruis::vector3(1, 1, 1),   ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1), ruis::vector3(1, -1, -1),
-		 ruis::vector3(-1, -1, 1), ruis::vector3(-1, -1, 1),  ruis::vector3(1, -1, -1),  ruis::vector3(1, -1, 1)}
+		{ruis::vector3(-0, -0, 0), ruis::vector3(0, -0, 0),   ruis::vector3(-0, 0, 0),   ruis::vector3(0, -0, 0),
+		 ruis::vector3(0, 0, 0),   ruis::vector3(-0, 0, 0),   ruis::vector3(0, -0, 0),   ruis::vector3(0, -0, -0),
+		 ruis::vector3(0, 0, 0),   ruis::vector3(0, -0, -0),  ruis::vector3(0, 0, -0),   ruis::vector3(0, 0, 0),
+		 ruis::vector3(0, -0, -0), ruis::vector3(-0, -0, -0), ruis::vector3(0, 0, -0),   ruis::vector3(-0, -0, -0),
+		 ruis::vector3(-0, 0, -0), ruis::vector3(0, 0, -0),   ruis::vector3(-0, -0, -0), ruis::vector3(-0, -0, 0),
+		 ruis::vector3(-0, 0, -0), ruis::vector3(-0, -0, 0),  ruis::vector3(-0, 0, 0),   ruis::vector3(-0, 0, -0),
+		 ruis::vector3(-0, 0, -0), ruis::vector3(-0, 0, 0),   ruis::vector3(0, 0, -0),   ruis::vector3(-0, 0, 0),
+		 ruis::vector3(0, 0, 0),   ruis::vector3(0, 0, -0),   ruis::vector3(-0, -0, -0), ruis::vector3(0, -0, -0),
+		 ruis::vector3(-0, -0, 0), ruis::vector3(-0, -0, 0),  ruis::vector3(0, -0, -0),  ruis::vector3(0, -0, 0)}
 	};
+	
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+	// std::array<ruis::vector3, 36> cube_pos = {
+	// 	{ruis::vector3(-1, -1, 1), ruis::vector3(1, -1, 1),   ruis::vector3(-1, 1, 1),   ruis::vector3(1, -1, 1),
+	// 	 ruis::vector3(1, 1, 1),   ruis::vector3(-1, 1, 1),   ruis::vector3(1, -1, 1),   ruis::vector3(1, -1, -1),
+	// 	 ruis::vector3(1, 1, 1),   ruis::vector3(1, -1, -1),  ruis::vector3(1, 1, -1),   ruis::vector3(1, 1, 1),
+	// 	 ruis::vector3(1, -1, -1), ruis::vector3(-1, -1, -1), ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1),
+	// 	 ruis::vector3(-1, 1, -1), ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1), ruis::vector3(-1, -1, 1),
+	// 	 ruis::vector3(-1, 1, -1), ruis::vector3(-1, -1, 1),  ruis::vector3(-1, 1, 1),   ruis::vector3(-1, 1, -1),
+	// 	 ruis::vector3(-1, 1, -1), ruis::vector3(-1, 1, 1),   ruis::vector3(1, 1, -1),   ruis::vector3(-1, 1, 1),
+	// 	 ruis::vector3(1, 1, 1),   ruis::vector3(1, 1, -1),   ruis::vector3(-1, -1, -1), ruis::vector3(1, -1, -1),
+	// 	 ruis::vector3(-1, -1, 1), ruis::vector3(-1, -1, 1),  ruis::vector3(1, -1, -1),  ruis::vector3(1, -1, 1)}
+	// };
+
 
 	auto pos_vbo = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(cube_pos));
 
@@ -77,15 +97,33 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 
 	this->tex = this->context.get().loader.load<ruis::res::texture>("tex_sample").to_shared_ptr();
 	this->rot.set_identity();
+
+
+	this->tex_car_diffuse   = this->context.get().loader.load<ruis::res::texture>("tex_car_diffuse").to_shared_ptr();
+	this->tex_car_normal    = this->context.get().loader.load<ruis::res::texture>("tex_car_normal").to_shared_ptr();
+	this->tex_car_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness").to_shared_ptr();
+
+	std::cout << "car_W" << std::endl;
+
+	this->car_model_obj = std::make_shared<ModelOBJ>();
+	car_model_obj->import("res/car/car3d.obj");
+	car_model_obj->createVBOs();
+	//this->car_model_obj
+	//this->tex_car_opacity   = this->context.get().loader.load<ruis::res::texture>("tex_car_opacity").to_shared_ptr();
+	//this->tex_car_metallic   = this->context.get().loader.load<ruis::res::texture>("tex_car_metallic").to_shared_ptr();
 }
 
 void car_widget::update(uint32_t dt)
 {
 	this->fps_sec_counter += dt;
+	this->time_sec += dt;
 	++this->fps;
-	this->rot *=
+	this->rot =
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		ruis::quaternion().set_rotation(r4::vector3<float>(1, 2, 1).normalize(), 1.5f * (float(dt) / std::milli::den));
+		(ruis::quaternion().set_rotation(r4::vector3<float>(0, 1, 0).normalize(), 2.0f * 3.1415926f * float(fraction()))) *
+		//ruis::quaternion().set_identity() *
+		(ruis::quaternion().set_rotation(r4::vector3<float>(0, 1, 0).normalize(), 0.1f * (float(this->time_sec) / std::milli::den)));
+		//(ruis::quaternion().set_rotation(r4::vector3<float>(0, 1, 0).normalize(), 0.1f * (float(this->time_sec) / std::milli::den)));
 	if (this->fps_sec_counter >= std::milli::den) {
 		std::cout << "fps = " << std::dec << fps << std::endl;
 		this->fps_sec_counter = 0;
@@ -103,13 +141,18 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	matr.translate(1, 1);
 	matr.scale(1, -1);
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-	matr.frustum(-2, 2, -1.5, 1.5, 2, 100);
-	matr.translate(0, 0, -4);
+	matr.frustum(-1, 1, -1, 1, 1, 100);
+	matr.translate(0, -1.6, -4);
 	matr.rotate(this->rot);
 
-	//		glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	this->context.get().renderer.get().shader->pos_tex->render(matr, *this->cube_vao, this->tex->tex());
 
-	//		glDisable(GL_CULL_FACE);
+	//glActiveTexture(GL_TEXTURE0 + 0);
+	//glBindTexture(GL_TEXTURE_2D, 1);
+
+	car_model_obj->render();
+
+	//glDisable(GL_CULL_FACE);
 }
