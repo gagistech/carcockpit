@@ -85,6 +85,7 @@ shader_car::shader_car() :
 
 						void main(void)
 						{
+							tc0 = vec2(a1.x, 1.0 - a1.y);
 							//mat3 normalMatrix = mat3( transpose(inverse( mat4_mv )) ); //TODO: remove from shader
 							norm = normalize( mat3_n * a2 );
 							//norm = normalize( matrix * vec4(a2, 0) ).xyz;
@@ -99,13 +100,14 @@ shader_car::shader_car() :
 
 
 
-
-						uniform sampler2D texture0;
+				
 						precision highp float;
 		
 						varying highp vec3 pos;
 						varying highp vec2 tc0;
                         varying highp vec3 norm;
+
+						uniform sampler2D texture0;
 						
 						uniform highp mat4 matrix;       // mvp matrix
 						uniform highp mat4 mat4_mv;      // modelview matrix  
@@ -116,7 +118,7 @@ shader_car::shader_car() :
 						uniform vec3 LightIntensity;
 
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
-						const vec3 Ka = vec3(0.08, 0.08, 0.08);  		   // Ambient reflectivity
+						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
 						const float Shininess = 20.0;                   // Specular shininess factor
 
@@ -126,7 +128,7 @@ shader_car::shader_car() :
 							vec3 s = normalize( vec3(LightPosition) - pos );
 							vec3 v = normalize( vec3(-pos) );
 							vec3 r = reflect( -s, n );
-							return LightIntensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) ) * 1.0;
+							return LightIntensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) ) * 2.0;
 						}
 						
 						void main() 
@@ -134,7 +136,8 @@ shader_car::shader_car() :
 							//float f = max( dot(norm, vec3(1.0, 0, 0)), 0.0);
 							//vec3 light = LightIntensity * (f + 0.03);
 							//gl_FragColor = vec4(light, 1.0);
-							gl_FragColor = vec4(ads(), 1.0);
+							gl_FragColor = vec4(ads(), 1.0) * texture2D(texture0, tc0);
+							//gl_FragColor = texture2D(texture0, tc0);
 							//gl_FragColor = vec4(LightIntensity, 1.0);
 							//gl_FragColor = vec4(LightIntensity, 1);
 						}
