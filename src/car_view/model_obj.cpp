@@ -15,7 +15,7 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "model_obj.h"
+#include "model_obj.hpp"
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
@@ -1291,6 +1291,30 @@ void ModelOBJ::buildShortIndexBuffer()
         m_shortIndexBuffer.push_back(static_cast<uint16_t>(index));
 }
 
+void ModelOBJ::buildVBOs()
+{
+    buildShortIndexBuffer();
+
+	GLuint vn = getNumberOfVertices();
+
+    positions.clear(); positions.reserve(vn);
+    textureCoords.clear(); textureCoords.reserve(vn);
+    normals.clear(); normals.reserve(vn);
+    tangents.clear(); tangents.reserve(vn);
+    bitangents.clear(); bitangents.reserve(vn);
+
+    for(uint32_t i = 0; i < vn; ++i)
+    {
+        const Vertex& v = m_vertexBuffer[i];
+
+        positions.push_back     (ruis::vec4 {v.position[0], v.position[1], v.position[2], 1.0f});
+        textureCoords.push_back (ruis::vec2 {v.texCoord[0], v.texCoord[1]});
+        normals.push_back       (ruis::vec3 {v.normal[0], v.normal[1], v.normal[2]});
+        tangents.push_back      (ruis::vec4 {v.tangent[0], v.tangent[1], v.tangent[2], v.tangent[3]});
+        bitangents.push_back    (ruis::vec4 {v.bitangent[0], v.bitangent[1], v.bitangent[2], 1.0f});
+    }
+}
+
 void ModelOBJ::createVBOs()
 {
     buildShortIndexBuffer(); // TODO: make it a non-kolkhoz fashion. OpenGLES 2 requires us to use 16-bit indices
@@ -1335,7 +1359,7 @@ void ModelOBJ::createVBOs()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboHandles[1]);
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, getNumberOfIndices()  * sizeof(GLuint), getIndexBuffer(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, getNumberOfIndices() * sizeof(GLushort), getShortIndexBuffer(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, getNumberOfIndices() * sizeof(GLushort), getShortIndexBufferPtr(), GL_STATIC_DRAW);
 
 
     //glBindVertexArray(0);

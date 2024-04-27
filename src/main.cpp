@@ -42,6 +42,7 @@ public:
 			[]() {
 				// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 				ruisapp::window_params wp(r4::vector2<unsigned>(1024, 600));
+				wp.buffers.set(ruisapp::window_params::buffer::depth);
 				return wp;
 			}()
 		)
@@ -60,8 +61,8 @@ const ruisapp::application_factory app_fac([](auto executable, auto args) {
 	bool window = false;
 
 	// TODO: look in /usr/local/share/carcockpit first?
-	//std::string res_path = utki::cat("/usr/share/"sv, app_name);
-	std::string res_path = "res/"s; 
+	std::string res_path = utki::cat("/usr/share/"sv, app_name);
+	//std::string res_path = "res/"s; 
 
 	clargs::parser p;
 

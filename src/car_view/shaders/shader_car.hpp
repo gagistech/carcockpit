@@ -1,5 +1,5 @@
 /*
-ruis-render-opengl - OpenGL GUI renderer
+ruis-render-opengles - OpenGL ES GUI renderer
 
 Copyright (C) 2012-2024  Ivan Gagis <igagis@gmail.com>
 
@@ -19,22 +19,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 /* ================ LICENSE END ================ */
 
-// #pragma once
+#pragma once
 
-// #include <ruis/render/texturing_shader.hpp>
+//#include <ruis/render/texturing_shader.hpp>
+#include <ruis/render/texture_2d.hpp>
+#include <ruis/render/opengles/shader_base.hpp>
 
-// //#include "shader_base.hpp"
+namespace carcockpit {
 
-// namespace carcockpit {
+class shader_car : public ruis::render_opengles::shader_base
+{
+	
+public:
+	GLint mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
 
-// class shader_car : public ruis::texturing_shader, public shader_base
-// {
-// 	GLint texture_uniform;
+	shader_car();
+	void render(const r4::matrix4<float>& m, const ruis::vertex_array& va, const ruis::texture_2d& tex) const;
+	virtual void set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const;
+	virtual void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
+	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
+	virtual void set_uniform4f(GLint id, float x, float y, float z, float w) const;
+	virtual GLint get_uniform(const char* name);
+};
 
-// public:
-// 	shader_car();
-
-// 	void render(const r4::matrix4<float>& m, const ruis::vertex_array& va, const ruis::texture_2d& tex) const override;
-// };
-
-} // namespace carcockpit
+} // namespace ruis::render_opengles

@@ -28,7 +28,7 @@ using namespace ruis;
 gauge::gauge(utki::shared_ref<ruis::context> c, all_parameters p) :
 	widget(std::move(c), {.widget_params = std::move(p.widget_params)}),
 	blending_widget(this->context, std::move(p.blending_params)),
-	fraction_widget(this->context),
+	fraction_widget(this->context, {}),
 	params(std::move(p.params))
 {}
 
@@ -69,7 +69,7 @@ void gauge::render(const matrix4& matrix) const
 	matrix4 mmm;
 	mmm.set_identity();
 	mmm.rotate(
-		-(this->params.start_angle_rad + (this->params.end_angle_rad - this->params.start_angle_rad) * this->fraction())
+		-(this->params.start_angle_rad + (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
 	);
 	{
 		auto div = this->arrow_tex->dims.x() * this->params.arm_fraction;

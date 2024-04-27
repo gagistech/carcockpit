@@ -127,7 +127,8 @@ utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<rui
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                                }
+                                },
+                                .clip=true
                             }
                             // ,
                             // .params = {
@@ -151,9 +152,9 @@ utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<rui
 
 	slider.fraction_change_handler = [&cw = car_widget, &g = gauge](ruis::fraction_widget& s) 
     {
-		g.set_fraction(s.fraction());
+		g.set_fraction(s.get_fraction());
         //cw.set_rotation(s.fraction());
-        cw.set_fraction(s.fraction());
+        cw.set_fraction(s.get_fraction());
 	};
 
 	auto car = w.get().try_get_widget_as<carcockpit::car_widget>("car_widget");
