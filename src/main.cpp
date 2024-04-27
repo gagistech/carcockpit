@@ -53,7 +53,17 @@ public:
 
 		this->gui.context.get().loader.mount_res_pack(*this->get_res_file(papki::as_dir(res_path)));
 
-		this->gui.set_root(make_root_layout(this->gui.context));
+		auto kp = make_root_widgets(this->gui.context);
+		kp.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
+			if (e.is_down) {
+				if (e.combo.key == ruis::key::escape) {
+					this->quit();
+				}
+			}
+			return false;
+		};
+
+		this->gui.set_root(std::move(kp));
 	}
 };
 

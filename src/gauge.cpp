@@ -69,7 +69,8 @@ void gauge::render(const matrix4& matrix) const
 	matrix4 mmm;
 	mmm.set_identity();
 	mmm.rotate(
-		-(this->params.start_angle_rad + (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
+		-(this->params.start_angle_rad +
+		  (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
 	);
 	{
 		auto div = this->arrow_tex->dims.x() * this->params.arm_fraction;

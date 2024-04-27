@@ -23,12 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <ruis/widgets/container.hpp>
 #include <ruis/widgets/label/image.hpp>
-#include <ruis/widgets/slider/scroll_bar.hpp>
+#include <ruis/widgets/slider/slider.hpp>
 
 #include "car_widget.hpp"
 #include "gauge.hpp"
 
 using namespace std::string_literals;
+
+using namespace ruis::length_literals;
 
 using namespace carcockpit;
 
@@ -37,28 +39,31 @@ using namespace ruis::make;
 using namespace carcockpit::make;
 } // namespace m
 
-utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<ruis::context> c)
+utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref<ruis::context> c)
 {
 	using ruis::lp;
 
 	// clang-format off
-	auto w = m::container(
-        c,
+	auto w = m::key_proxy(c,
         {
             .container_params = {
                 .layout = ruis::layout::column
             }
         },
         {
-            // TODO: should be slider, not scroll bar, band is not needed
-            utki::make_shared<ruis::horizontal_scroll_bar>(
-                c,
-                tml::read(R"(
-                    id{gauge_slider}
-                    lp{dx{fill}dy{30pp}}
-                )")
+            m::slider(c,
+                {
+                    .widget_params = {
+                        .id = "gauge_slider"s,
+                        .lp = {
+                            .dims = {lp::fill, 30_pp} // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                        }
+                    },
+                    .oriented_params = {
+                        .vertical = false
+                    }
+                }
             ),
-
             m::container(
                 c,
                 {
@@ -141,7 +146,6 @@ utki::shared_ref<ruis::widget> carcockpit::make_root_layout(utki::shared_ref<rui
                     )
                 }
             )
-
         }
     );
 	// clang-format on

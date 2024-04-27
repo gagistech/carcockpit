@@ -27,6 +27,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <GLES2/gl2platform.h>
 #include <ruis/render/opengles/texture_2d.hpp>
 
+#include <GLES2/gl2.h>
+
 using namespace carcockpit;
 
 // something

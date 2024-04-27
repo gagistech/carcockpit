@@ -21,10 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <ruis/widgets/widget.hpp>
+#include <ruis/widgets/proxy/key_proxy.hpp>
 
 namespace carcockpit {
 
-utki::shared_ref<ruis::widget> make_root_layout(utki::shared_ref<ruis::context> c);
+utki::shared_ref<ruis::key_proxy> make_root_widgets(utki::shared_ref<ruis::context> c);
 
 } // namespace carcockpit
