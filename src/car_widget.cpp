@@ -246,9 +246,8 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	//model.translate(0, -0.7, -3);
 	model.rotate(this->rot);
 	
-	modelview = view * model;
+	modelview = view * model;          //     v * m
 	mvp = projection * view * model;   // p * v * m
-	//mvp = projection;// * mvp;
 
 	// The normal matrix is typically the inverse transpose of the
 	// upper-left 3 x 3 portion of the model-view matrix. We use the
@@ -258,8 +257,13 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	normal.invert();
 	normal.transpose();
 
-	ruis::vec4 light_pos{3.0f, 4.0f, 5.0f, 1.0f};
-	ruis::vec3 light_int{0.5f, 0.7f, 0.9f};
+	float fms = static_cast<float>(this->time_sec) / std::milli::den;
+
+	float xx = 4 * cosf(fms / 3);
+	float yy = 4 * sinf(fms / 3);
+
+	ruis::vec4 light_pos{xx, yy, 0.0f, 1.0f};
+	ruis::vec3 light_int{0.95f, 0.98f, 1.0f};
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -274,6 +278,8 @@ void car_widget::render(const ruis::matrix4& matrix) const
 // mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
 
 	//(static_cast<ruis::render_opengles::shader_base>(shader))
+	shader->bind_me();
+
 	shader->set_uniform4f(shader->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
 	shader->set_uniform3f(shader->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
 	shader->set_uniform_matrix4f(shader->mat4_modelview, modelview);
@@ -281,7 +287,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	shader->set_uniform_matrix3f(shader->mat3_normal, normal);
 
 	GLenum err;
-	while((err = glGetError()) != GL_NO_ERROR) {} // skip all uniform-related errors
+	while((err = glGetError()) != GL_NO_ERROR) {} // skip all uniform-related errors (TODO: remove asap)
 
 	shader->render(mvp, *this->car_vao, this->tex_car_diffuse->tex());
 
@@ -293,3 +299,8 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 }
+
+// shader bind
+// uniform errors not so severe?
+// setup modifying of libs on local machine 
+// cubemaps textures, rendering shadow passes to depth_attachment fbo's

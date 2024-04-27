@@ -73,8 +73,11 @@ shader_car::shader_car() :
 
 						uniform highp mat4 matrix;       // mvp matrix
 						uniform highp mat4 mat4_mv;      // modelview matrix  
-						uniform highp mat4 mat4_p;       // projection matrix  
+						//uniform highp mat4 mat4_p;       // projection matrix  
 						uniform highp mat3 mat3_n;       // normal matrix (mat3)
+
+						uniform vec4 LightPosition;
+						uniform vec3 LightIntensity;
 
 						varying highp vec3 pos;
 						varying highp vec2 tc0;
@@ -83,8 +86,8 @@ shader_car::shader_car() :
 						void main(void)
 						{
 							//mat3 normalMatrix = mat3( transpose(inverse( mat4_mv )) ); //TODO: remove from shader
-							//norm = normalize( normalMatrix * a2 );
-							norm = normalize( matrix * vec4(a2, 0) ).xyz;
+							norm = normalize( mat3_n * a2 );
+							//norm = normalize( matrix * vec4(a2, 0) ).xyz;
 							pos = vec3( mat4_mv * a0 );        
 							gl_Position = matrix * a0;
 						}
@@ -104,17 +107,18 @@ shader_car::shader_car() :
 						varying highp vec2 tc0;
                         varying highp vec3 norm;
 						
+						uniform highp mat4 matrix;       // mvp matrix
+						uniform highp mat4 mat4_mv;      // modelview matrix  
+						//uniform highp mat4 mat4_p;       // projection matrix  
+						uniform highp mat3 mat3_n;       // normal matrix (mat3)
+
 						uniform vec4 LightPosition;
 						uniform vec3 LightIntensity;
-						// uniform vec3 Kd;  		   // Diffuse reflectivity
-						// uniform vec3 Ka;  		   // Ambient reflectivity
-						// uniform vec3 Ks;  		   // Specular reflectivity
-						// uniform float Shininess;    // Specular shininess factor
 
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
-						const vec3 Ka = vec3(0.5, 0.5, 0.5);  		   // Ambient reflectivity
-						const vec3 Ks = vec3(0.5, 0.5, 0.5);  		   // Specular reflectivity
-						const float Shininess = 8.0;                   // Specular shininess factor
+						const vec3 Ka = vec3(0.08, 0.08, 0.08);  		   // Ambient reflectivity
+						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
+						const float Shininess = 20.0;                   // Specular shininess factor
 
 						vec3 ads()
 						{
@@ -122,16 +126,17 @@ shader_car::shader_car() :
 							vec3 s = normalize( vec3(LightPosition) - pos );
 							vec3 v = normalize( vec3(-pos) );
 							vec3 r = reflect( -s, n );
-							return LightIntensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) ) * 4.0;
+							return LightIntensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) ) * 1.0;
 						}
 						
 						void main() 
 						{	
-							float f = max( dot(norm, vec3(1.0, 0, 0)), 0.0);
-							gl_FragColor = vec4(f+0.05, f+0.05, f+0.05, 1.0);
-							//gl_FragColor = vec4(ads(), 1.0);
+							//float f = max( dot(norm, vec3(1.0, 0, 0)), 0.0);
+							//vec3 light = LightIntensity * (f + 0.03);
+							//gl_FragColor = vec4(light, 1.0);
+							gl_FragColor = vec4(ads(), 1.0);
 							//gl_FragColor = vec4(LightIntensity, 1.0);
-							//gl_FragColor = vec4(1, 1, 1, 1);
+							//gl_FragColor = vec4(LightIntensity, 1);
 						}
 
 	)qwertyuiop"
@@ -146,6 +151,11 @@ shader_car::shader_car() :
 {
 }
 
+void shader_car::bind_me()
+{
+	this->bind();
+}
+
 void shader_car::render(const r4::matrix4<float>& m, const ruis::vertex_array& va, const ruis::texture_2d& tex) const
 {
 	ASSERT(dynamic_cast<const ruis::render_opengles::texture_2d*>(&tex))
@@ -158,6 +168,8 @@ void shader_car::render(const r4::matrix4<float>& m, const ruis::vertex_array& v
 
 void shader_car::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
 {
+	if(id < 0)
+		return;
 	auto mm = m.tposed();
 	glUniformMatrix3fv(
 		id,
@@ -173,6 +185,8 @@ void shader_car::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) con
 
 void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
 {
+	if(id < 0)
+		return;
 	auto mm = m.tposed();
 	glUniformMatrix4fv(
 		id,
@@ -188,12 +202,16 @@ void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) con
 
 void shader_car::set_uniform3f(GLint id, float x, float y, float z) const
 {
+	if(id < 0)
+		return;
 	glUniform3f(id, x, y, z);
 	//ruis::render_opengles::assert_opengl_no_error();
 }
 
 void shader_car::set_uniform4f(GLint id, float x, float y, float z, float w) const
 {
+	if(id < 0)
+		return;
 	glUniform4f(id, x, y, z, w);
 	//ruis::render_opengles::assert_opengl_no_error();
 }

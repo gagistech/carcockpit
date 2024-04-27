@@ -40,6 +40,8 @@ public:
 	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
 	virtual void set_uniform4f(GLint id, float x, float y, float z, float w) const;
 	virtual GLint get_uniform(const char* name);
+
+	void bind_me(); // protected -> public
 };
 
 } // namespace ruis::render_opengles
