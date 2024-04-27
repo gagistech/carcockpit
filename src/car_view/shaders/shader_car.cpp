@@ -159,11 +159,11 @@ void shader_car::bind_me()
 	this->bind();
 }
 
-void shader_car::render(const r4::matrix4<float>& m, const ruis::vertex_array& va, const ruis::texture_2d& tex) const
+void shader_car::render(const r4::matrix4<float>& m, const ruis::render::vertex_array& va, const ruis::render::texture_2d& tex) const
 {
-	ASSERT(dynamic_cast<const ruis::render_opengles::texture_2d*>(&tex))
+	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex))
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
-	static_cast<const ruis::render_opengles::texture_2d&>(tex).bind(0);
+	static_cast<const ruis::render::opengles::texture_2d&>(tex).bind(0);
 	this->bind();
 
 	this->shader_base::render(m, va);
@@ -183,7 +183,7 @@ void shader_car::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) con
 		GL_FALSE,
 		mm.front().data()
 	);
-	//ruis::render_opengles::assert_opengl_no_error();
+	//ruis::render::opengles::assert_opengl_no_error();
 }
 
 void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
@@ -200,7 +200,7 @@ void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) con
 		GL_FALSE,
 		mm.front().data()
 	);
-	//ruis::render_opengles::assert_opengl_no_error();
+	//ruis::render::opengles::assert_opengl_no_error();
 }
 
 void shader_car::set_uniform3f(GLint id, float x, float y, float z) const
@@ -208,7 +208,7 @@ void shader_car::set_uniform3f(GLint id, float x, float y, float z) const
 	if(id < 0)
 		return;
 	glUniform3f(id, x, y, z);
-	//ruis::render_opengles::assert_opengl_no_error();
+	//ruis::render::opengles::assert_opengl_no_error();
 }
 
 void shader_car::set_uniform4f(GLint id, float x, float y, float z, float w) const
@@ -216,13 +216,13 @@ void shader_car::set_uniform4f(GLint id, float x, float y, float z, float w) con
 	if(id < 0)
 		return;
 	glUniform4f(id, x, y, z, w);
-	//ruis::render_opengles::assert_opengl_no_error();
+	//ruis::render::opengles::assert_opengl_no_error();
 }
 
 class shader_base_fake
 {
 public:
-	ruis::render_opengles::program_wrapper program;
+	ruis::render::opengles::program_wrapper program;
 	const GLint matrix_uniform = 0;
 	virtual ~shader_base_fake(){}
 };
@@ -230,10 +230,10 @@ public:
 GLint shader_car::get_uniform(const char* name)
 {
 	int i = sizeof(shader_base_fake);
-	int j = sizeof(ruis::render_opengles::shader_base);
+	int j = sizeof(ruis::render::opengles::shader_base);
 
 	std::cout<< i << " " << j << std::endl;
-	ruis::render_opengles::shader_base* sbf = static_cast<ruis::render_opengles::shader_base*>(this);
+	ruis::render::opengles::shader_base* sbf = static_cast<ruis::render::opengles::shader_base*>(this);
 	shader_base_fake *rbf = reinterpret_cast<shader_base_fake*>( sbf );
 
 	GLint ret = glGetUniformLocation(rbf->program.id, name);

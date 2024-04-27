@@ -51,8 +51,8 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 
 	ruis::quaternion rot = ruis::quaternion().set_identity();
 
-	std::shared_ptr<ruis::vertex_array> cube_vao;
-	std::shared_ptr<ruis::vertex_array> car_vao;
+	std::shared_ptr<ruis::render::vertex_array> cube_vao;
+	std::shared_ptr<ruis::render::vertex_array> car_vao;
 
 	std::shared_ptr<shader_car> shader;
 

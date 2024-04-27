@@ -104,7 +104,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->cube_vao =
 		this->context.get()
 			.renderer.get()
-			.factory->create_vertex_array({pos_vbo, tex_vbo}, cube_indices, ruis::vertex_array::mode::triangles)
+			.factory->create_vertex_array({pos_vbo, tex_vbo}, cube_indices, ruis::render::vertex_array::mode::triangles)
 			.to_shared_ptr();
 
 	this->tex = this->context.get().loader.load<ruis::res::texture>("tex_sample").to_shared_ptr();
@@ -131,7 +131,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->car_vao =
 		this->context.get()
 			.renderer.get()
-			.factory->create_vertex_array({car_vbo_positions, car_vbo_texcoords, car_vbo_normals}, car_vbo_indices, ruis::vertex_array::mode::triangles)
+			.factory->create_vertex_array({car_vbo_positions, car_vbo_texcoords, car_vbo_normals}, car_vbo_indices, ruis::render::vertex_array::mode::triangles)
 			.to_shared_ptr();
 
 	LOG([&](auto& o) { o << "<< SHADER KOM PILE >>\n" << std::endl; })
@@ -165,38 +165,37 @@ ruis::mat4 look_at(const ruis::vec3& eye, const ruis::vec3& center, const ruis::
 
     ruis::mat4 lookat;
 	lookat.set_identity();
-	//lookat.transpose();
-	//lookat.set(1.f);
     lookat[0][0] = s[0];
-    lookat[1][0] = s[1];
-    lookat[2][0] = s[2];
-    lookat[0][1] = u[0];
+    lookat[0][1] = s[1];
+    lookat[0][2] = s[2];
+    lookat[1][0] = u[0];
     lookat[1][1] = u[1];
-    lookat[2][1] = u[2];
-    lookat[0][2] = -f[0];
-    lookat[1][2] = -f[1];
+    lookat[1][2] = u[2];
+    lookat[2][0] = -f[0];
+    lookat[2][1] = -f[1];
     lookat[2][2] = -f[2];
-    lookat[3][0] = -s * eye;   // * = dot product
-    lookat[3][1] = -u * eye;
-    lookat[3][2] =  f * eye;
+    lookat[0][3] = -s * eye;   // * is dot product
+    lookat[1][3] = -u * eye;
+    lookat[2][3] =  f * eye;
 
-    return lookat.tposed();
+    return lookat;
 }
 
 ruis::mat4 perspective(float fovy, float aspect, float zNear, float zFar)
 {
- //   assert(aspect != 0);
- //   assert(zFar != zNear);
+    ASSERT(aspect != 0)
+    ASSERT(zFar != zNear)
+
     float tan_half_fov_y = tan(fovy / 2.0f);
     ruis::mat4 persp;
-	persp.set(0.f);
+	persp.set(0.0f);
     persp[0][0] = 1.0f / (aspect * tan_half_fov_y);
     persp[1][1] = 1.0f / (tan_half_fov_y);
     persp[2][2] = -(zFar + zNear) / (zFar - zNear);
-    persp[2][3] = -1.0f;
-    persp[3][2] = -(2.0f * zFar * zNear) / (zFar - zNear);
+    persp[3][2] = -1.0f;
+    persp[2][3] = -(2.0f * zFar * zNear) / (zFar - zNear);
 
-    return persp.tposed();
+    return persp;
 }
 
 void car_widget::render(const ruis::matrix4& matrix) const
@@ -245,11 +244,11 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	ruis::vec4 light_pos{xx, yy, 0.0f, 1.0f};
 	ruis::vec3 light_int{0.95f, 0.98f, 1.0f};
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	
 	//this->context.get().renderer.get().shader->pos_tex->render(matr, *this->cube_vao, this->tex->tex());
-    //static_cast<const ruis::render_opengles::texture_2d&>(tex_car_diffuse->tex()).bind(0); // rewritten by official draw call
+    //static_cast<const ruis::render::opengles::texture_2d&>(tex_car_diffuse->tex()).bind(0); // rewritten by official draw call
 	
 	// void set_uniform_sampler(GLint id, GLint texture_unit_num) const;
 	// void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
@@ -257,7 +256,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 // mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
 
-	//(static_cast<ruis::render_opengles::shader_base>(shader))
+	//(static_cast<ruis::render::opengles::shader_base>(shader))
 	shader->bind_me();
 
 	shader->set_uniform4f(shader->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
@@ -272,11 +271,11 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	shader->render(mvp, *this->car_vao, this->tex_car_diffuse->tex());
 
 	//glActiveTexture(GL_TEXTURE0 + 0);
-	//glBindTexture(GL_TEXTURE_2D, static_cast<ruis::render_opengles::texture_2d&>(tex_car_diffuse->tex()));
+	//glBindTexture(GL_TEXTURE_2D, static_cast<ruis::render::opengles::texture_2d&>(tex_car_diffuse->tex()));
 
 	//car_model_obj->render();
 
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 }
 

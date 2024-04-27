@@ -27,14 +27,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace carcockpit {
 
-class shader_car : public ruis::render_opengles::shader_base
+class shader_car : public ruis::render::opengles::shader_base
 {
 	
 public:
 	GLint mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
 
 	shader_car();
-	void render(const r4::matrix4<float>& m, const ruis::vertex_array& va, const ruis::texture_2d& tex) const;
+	void render(const r4::matrix4<float>& m, const ruis::render::vertex_array& va, const ruis::render::texture_2d& tex) const;
 	virtual void set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const;
 	virtual void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
 	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
@@ -44,4 +44,4 @@ public:
 	void bind_me(); // protected -> public
 };
 
-} // namespace ruis::render_opengles
+} // namespace ruis::render::opengles
