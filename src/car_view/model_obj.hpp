@@ -114,8 +114,8 @@ public:
     const std::vector<ruis::vec4>& getPositionsBuffer() const {return positions;}
     const std::vector<ruis::vec2>& getTextureCoordsBuffer() const {return textureCoords;}
     const std::vector<ruis::vec3>& getNormalsBuffer() const {return normals;}
-    const std::vector<ruis::vec4>& getTangentsBuffer() const {return tangents;}
-    const std::vector<ruis::vec4>& getBitangentsBuffer() const {return bitangents;}
+    const std::vector<ruis::vec3>& getTangentsBuffer() const {return tangents;}
+    const std::vector<ruis::vec3>& getBitangentsBuffer() const {return bitangents;}
 
     const std::vector<uint16_t>& getShortIndexBuffer() const {return m_shortIndexBuffer;}
 private:
@@ -179,8 +179,8 @@ private:
     std::vector<ruis::vec4> positions;
     std::vector<ruis::vec2> textureCoords;
     std::vector<ruis::vec3> normals;
-    std::vector<ruis::vec4> tangents;
-    std::vector<ruis::vec4> bitangents;
+    std::vector<ruis::vec3> tangents;
+    std::vector<ruis::vec3> bitangents;
 
     std::map<std::string, int> m_materialCache;
     std::map<int, std::vector<int> > m_vertexCache;

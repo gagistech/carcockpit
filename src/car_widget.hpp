@@ -26,15 +26,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/widgets/widget.hpp>
 #include <ruis/widgets/base/fraction_widget.hpp>
 #include "car_view/model_obj.hpp"
-#include "car_view/shaders/shader_car.hpp"
+#include "car_view/shaders/shader_phong.hpp"
+#include "car_view/shaders/shader_adv.hpp"
 
 
-namespace ruis    // TODO: move to ruis config.hpp
-{
-	using mat3 = r4::matrix3<real>;
-	using matrix3 = mat3;
-	static_assert(sizeof(mat3) == sizeof(real) * 3 * 3, "size mismatch");
-}
 namespace carcockpit {
 
 class car_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
@@ -54,7 +49,8 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	std::shared_ptr<ruis::render::vertex_array> cube_vao;
 	std::shared_ptr<ruis::render::vertex_array> car_vao;
 
-	std::shared_ptr<shader_car> shader;
+	std::shared_ptr<shader_phong> phong_s;
+	std::shared_ptr<shader_adv>   advanced_s;
 
 	unsigned fps = 0;
 	uint32_t fps_sec_counter = 0;

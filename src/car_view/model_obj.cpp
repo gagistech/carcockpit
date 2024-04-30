@@ -1310,8 +1310,8 @@ void ModelOBJ::buildVBOs()
         positions.push_back     (ruis::vec4 {v.position[0], v.position[1], v.position[2], 1.0f});
         textureCoords.push_back (ruis::vec2 {v.texCoord[0], v.texCoord[1]});
         normals.push_back       (ruis::vec3 {v.normal[0], v.normal[1], v.normal[2]});
-        tangents.push_back      (ruis::vec4 {v.tangent[0], v.tangent[1], v.tangent[2], v.tangent[3]});
-        bitangents.push_back    (ruis::vec4 {v.bitangent[0], v.bitangent[1], v.bitangent[2], 1.0f});
+        tangents.push_back      (ruis::vec3 {v.tangent[0], v.tangent[1], v.tangent[2]});
+        bitangents.push_back    (ruis::vec3 {v.bitangent[0], v.bitangent[1], v.bitangent[2]});
     }
 }
 

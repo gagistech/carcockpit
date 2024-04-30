@@ -32,14 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace carcockpit;
 
 // something
-ruis::mat3 from_mat4(const ruis::mat4& mat)
-{
-	ruis::mat3 m;
-	for(int i = 0; i < 3; ++i)
-		for(int j = 0; j < 3; ++j)
-			m[i][j] = mat[i][j];
-	return m;
-}
 
 car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters params) :
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
@@ -126,16 +118,18 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	auto car_vbo_positions = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getPositionsBuffer()));
 	auto car_vbo_texcoords = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getTextureCoordsBuffer()));
 	auto car_vbo_normals   = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getNormalsBuffer()));
-	auto car_vbo_indices   = this->context.get().renderer.get().factory->create_index_buffer(utki::make_span(car_model_obj->getShortIndexBuffer()));
+	auto car_vbo_tangents  = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getTangentsBuffer()));
+	auto car_vbo_bitangents= this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getBitangentsBuffer()));
+	auto car_vbo_indices   = this->context.get().renderer.get().factory-> create_index_buffer(utki::make_span(car_model_obj->getShortIndexBuffer()));
 
-	this->car_vao =
-		this->context.get()
-			.renderer.get()
-			.factory->create_vertex_array({car_vbo_positions, car_vbo_texcoords, car_vbo_normals}, car_vbo_indices, ruis::render::vertex_array::mode::triangles)
-			.to_shared_ptr();
+	this->car_vao = this->context.get().renderer.get().factory->
+		create_vertex_array({car_vbo_positions, car_vbo_texcoords, car_vbo_normals, car_vbo_tangents, car_vbo_bitangents}, car_vbo_indices, 
+		ruis::render::vertex_array::mode::triangles).to_shared_ptr();
 
 	LOG([&](auto& o) { o << "<< SHADER KOM PILE >>\n" << std::endl; })
-	this->shader = std::make_shared<shader_car>();
+	
+	this->phong_s = std::make_shared<shader_phong>();
+	this->advanced_s = std::make_shared<shader_adv>();
 }
 
 void car_widget::update(uint32_t dt)
@@ -212,29 +206,16 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	//mvp.rotate(this->rot);
 	//mvp.scale(2, 2, 2);
 
-	// old ^^
-	// new below
-
-	//std::cout << "sin(30) = " << sin(30 * 3.1415926535 / 180) << std::endl;
 	ruis::mat4 modelview, model, view, projection, mvp;
 	ruis::vec3 pos{3, 1, 3};
 	projection = perspective(3.1415926535f / 2.8f, this->rect().d[0] / this->rect().d[1], 0.1f, 10.0f);  
 	view.set_identity();
 	view = look_at(pos, ruis::vec3(0, 1, 0), ruis::vec3(0, 2, 0));
 	model.set_identity();
-	//model.translate(0, -0.7, -3);
 	model.rotate(this->rot);
 	
 	modelview = view * model;          //     v * m
 	mvp = projection * view * model;   // p * v * m
-
-	// The normal matrix is typically the inverse transpose of the
-	// upper-left 3 x 3 portion of the model-view matrix. We use the
-	// inverse transpose because normal vectors transform differently
-	// than the vertex position.
-	ruis::mat3 normal = from_mat4(modelview); 
-	normal.invert();
-	normal.transpose();
 
 	float fms = static_cast<float>(this->time_sec) / std::milli::den;
 
@@ -242,44 +223,19 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	float yy = 4 * sinf(fms / 3);
 
 	ruis::vec4 light_pos{xx, yy, 0.0f, 1.0f};
-	ruis::vec3 light_int{0.95f, 0.98f, 1.0f};
+	//ruis::vec3 light_int{1.95f, 1.98f, 2.0f};
+	ruis::vec3 light_int{1,1,1};
 
 	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	
-	//this->context.get().renderer.get().shader->pos_tex->render(matr, *this->cube_vao, this->tex->tex());
-    //static_cast<const ruis::render::opengles::texture_2d&>(tex_car_diffuse->tex()).bind(0); // rewritten by official draw call
-	
-	// void set_uniform_sampler(GLint id, GLint texture_unit_num) const;
-	// void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
-	// void set_uniform4f(GLint id, float x, float y, float z, float a) const;
-
-// mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
-
-	//(static_cast<ruis::render::opengles::shader_base>(shader))
-	shader->bind_me();
-
-	shader->set_uniform4f(shader->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
-	shader->set_uniform3f(shader->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
-	shader->set_uniform_matrix4f(shader->mat4_modelview, modelview);
-	shader->set_uniform_matrix4f(shader->mat4_projection, projection);
-	shader->set_uniform_matrix3f(shader->mat3_normal, normal);
-
 	//GLenum err;
 	//while((err = glGetError()) != GL_NO_ERROR) {} // skip all uniform-related errors (TODO: remove asap)
 
-	shader->render(mvp, *this->car_vao, this->tex_car_diffuse->tex());
+	//phong_s->render(*this->car_vao, mvp, modelview, this->tex_car_diffuse->tex(), light_pos, light_int);
+	advanced_s->render(*this->car_vao, mvp, modelview, projection, this->tex_car_diffuse->tex(), 
+					    this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos, light_int);
 
-	//glActiveTexture(GL_TEXTURE0 + 0);
-	//glBindTexture(GL_TEXTURE_2D, static_cast<ruis::render::opengles::texture_2d&>(tex_car_diffuse->tex()));
 
-	//car_model_obj->render();
-
-	//glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 }
-
-// shader bind
-// uniform errors not so severe?
-// setup modifying of libs on local machine 
-// cubemaps textures, rendering shadow passes to depth_attachment fbo's

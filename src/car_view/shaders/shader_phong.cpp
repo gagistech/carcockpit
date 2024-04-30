@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 /* ================ LICENSE END ================ */
 
-#include "shader_car.hpp"
+#include "shader_phong.hpp"
 
 #include <ruis/render/opengles/index_buffer.hpp>
 #include <ruis/render/opengles/texture_2d.hpp>
@@ -28,43 +28,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <ruis/render/opengles/vertex_buffer.hpp>
 
 using namespace carcockpit;
-/*
-shader_car::shader_car() :
-	shader_base(
-	R"qwertyuiop(
-						attribute highp vec4 a0; // position
-						attribute highp vec2 a1; // texture coordinate
-                     attribute highp vec3 a2; // normal
 
-						uniform highp mat4 matrix;
-
-						varying highp vec2 tc0;
-                        varying highp vec3 norm;
-
-						void main(void)
-						{
-							gl_Position = matrix * a0;
-							tc0 = a1;
-                            norm = a2;
-						}
-	)qwertyuiop",
-	R"qwertyuiop(
-						uniform sampler2D texture0;	
-						varying highp vec2 tc0;
-                        varying highp vec3 norm;
-						precision highp float;	
-						void main(void)
-						{
-							float f = dot(norm, vec3(1.0, 0, 0));
-							//gl_FragColor = vec4(f, f, f, 1);
-							gl_FragColor = (0.4 + f) * texture2D(texture0, tc0);
-						}
-	)qwertyuiop"
-	)
+static ruis::mat3 from_mat4(const ruis::mat4& mat)
 {
+	ruis::mat3 m;
+	for(int i = 0; i < 3; ++i)
+		for(int j = 0; j < 3; ++j)
+			m[i][j] = mat[i][j];
+	return m;
 }
-*/
-shader_car::shader_car() :
+
+static const ruis::vec4 default_light_position {5.0f, 5.0f, 5.0f, 1.0f};
+static const ruis::vec3 default_light_intensity {2.0f, 2.0f, 2.0f};
+
+shader_phong::shader_phong() :
 	shader_base(
 	R"qwertyuiop(
 						attribute highp vec4 a0; // position
@@ -72,12 +49,8 @@ shader_car::shader_car() :
                         attribute highp vec3 a2; // normal
 
 						uniform highp mat4 matrix;       // mvp matrix
-						uniform highp mat4 mat4_mv;      // modelview matrix  
-						//uniform highp mat4 mat4_p;       // projection matrix  
+						uniform highp mat4 mat4_mv;      // modelview matrix 
 						uniform highp mat3 mat3_n;       // normal matrix (mat3)
-
-						uniform vec4 LightPosition;
-						uniform vec3 LightIntensity;
 
 						varying highp vec3 pos;
 						varying highp vec2 tc0;
@@ -86,21 +59,12 @@ shader_car::shader_car() :
 						void main(void)
 						{
 							tc0 = vec2(a1.x, 1.0 - a1.y);
-							//mat3 normalMatrix = mat3( transpose(inverse( mat4_mv )) ); //TODO: remove from shader
-							norm = normalize( mat3_n * a2 );
-							//norm = normalize( matrix * vec4(a2, 0) ).xyz;
+							norm = normalize( mat3_n * a2 );	
 							pos = vec3( mat4_mv * a0 );        
 							gl_Position = matrix * a0;
 						}
-
 	)qwertyuiop",
-	R"qwertyuiop(
-		
-
-
-
-
-				
+	R"qwertyuiop(			
 						precision highp float;
 		
 						varying highp vec3 pos;
@@ -108,68 +72,73 @@ shader_car::shader_car() :
                         varying highp vec3 norm;
 
 						uniform sampler2D texture0;
-						
-						uniform highp mat4 matrix;       // mvp matrix
-						uniform highp mat4 mat4_mv;      // modelview matrix  
-						//uniform highp mat4 mat4_p;       // projection matrix  
-						uniform highp mat3 mat3_n;       // normal matrix (mat3)
 
-						uniform vec4 LightPosition;
-						uniform vec3 LightIntensity;
+						uniform vec4 light_position;
+						uniform vec3 light_intensity;
 
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
-						const float Shininess = 20.0;                   // Specular shininess factor
+						const float Shininess = 20.0;                  // Specular shininess factor
 
 						vec3 ads()
 						{
 							vec3 n = normalize( norm );
-							vec3 s = normalize( vec3(LightPosition) - pos );
+							vec3 s = normalize( vec3(light_position) - pos );
 							vec3 v = normalize( vec3(-pos) );
 							vec3 r = reflect( -s, n );
-							return LightIntensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) ) * 2.0;
+							return light_intensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );
+						}
+
+						vec3 ads_halfway_vector()         // a bit more efficient approach
+						{
+							vec3 n = normalize( norm );
+							vec3 s = normalize( vec3(light_position) - pos );
+							vec3 v = normalize( vec3(-pos) );
+							vec3 h = normalize( v + s );
+							return	light_intensity * (Ka + Kd * max( dot(s, norm), 0.0 ) + Ks * pow(max(dot(h,n), 0.0), Shininess ) );
 						}
 						
 						void main() 
-						{	
-							//float f = max( dot(norm, vec3(1.0, 0, 0)), 0.0);
-							//vec3 light = LightIntensity * (f + 0.03);
-							//gl_FragColor = vec4(light, 1.0);
-							gl_FragColor = vec4(ads(), 1.0) * texture2D(texture0, tc0);
-							//gl_FragColor = texture2D(texture0, tc0);
-							//gl_FragColor = vec4(LightIntensity, 1.0);
-							//gl_FragColor = vec4(LightIntensity, 1);
+						{					
+							gl_FragColor = vec4( ads(), 1.0 ) * texture2D(texture0, tc0);
 						}
-
 	)qwertyuiop"
 	),
-	//texture_diffuse_uniform(this->get_uniform("texture0")),
-	//texture_normal_uniform(this->get_uniform("texture1"))
 	mat4_modelview(this->get_uniform("mat4_mv")),
-	mat4_projection(this->get_uniform("mat4_p")),
 	mat3_normal(this->get_uniform("mat3_n")),
-	vec4_light_position(this->get_uniform("LightPosition")),
-	vec3_light_intensity(this->get_uniform("LightIntensity"))
+	vec4_light_position(this->get_uniform("light_position")),
+	vec3_light_intensity(this->get_uniform("light_intensity"))
 {
 }
 
-void shader_car::bind_me()
-{
-	this->bind();
-}
-
-void shader_car::render(const r4::matrix4<float>& m, const ruis::render::vertex_array& va, const ruis::render::texture_2d& tex) const
+void shader_phong::render(const ruis::render::vertex_array& va,
+			const r4::matrix4<float>& mvp,
+			const r4::matrix4<float>& modelview,   
+			const ruis::render::texture_2d& tex,
+			const ruis::vec4& light_pos = default_light_position,
+			const ruis::vec3& light_int = default_light_intensity
+			) const
 {
 	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex))
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_2d&>(tex).bind(0);
-	this->bind();
+	
+	this->bind(); // bind the program
 
-	this->shader_base::render(m, va);
+	ruis::mat3 normal = from_mat4(modelview); 
+	normal.invert();
+	normal.transpose();
+
+	this->set_uniform4f(this->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
+	this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
+	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
+	this->set_uniform_matrix3f(mat3_normal, normal);
+
+	this->shader_base::render(mvp, va);
 }
 
-void shader_car::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
+void shader_phong::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
 {
 	if(id < 0)
 		return;
@@ -186,7 +155,7 @@ void shader_car::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) con
 	//ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
+void shader_phong::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
 {
 	if(id < 0)
 		return;
@@ -203,7 +172,7 @@ void shader_car::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) con
 	//ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_car::set_uniform3f(GLint id, float x, float y, float z) const
+void shader_phong::set_uniform3f(GLint id, float x, float y, float z) const
 {
 	if(id < 0)
 		return;
@@ -211,7 +180,7 @@ void shader_car::set_uniform3f(GLint id, float x, float y, float z) const
 	//ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_car::set_uniform4f(GLint id, float x, float y, float z, float w) const
+void shader_phong::set_uniform4f(GLint id, float x, float y, float z, float w) const
 {
 	if(id < 0)
 		return;
@@ -227,7 +196,7 @@ public:
 	virtual ~shader_base_fake(){}
 };
 
-GLint shader_car::get_uniform(const char* name)
+GLint shader_phong::get_uniform(const char* name)
 {
 	int i = sizeof(shader_base_fake);
 	int j = sizeof(ruis::render::opengles::shader_base);
