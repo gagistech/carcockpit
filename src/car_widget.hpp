@@ -35,26 +35,41 @@ namespace carcockpit {
 class car_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
 {
 	std::shared_ptr<ruis::res::texture> tex;
+	std::shared_ptr<ruis::res::texture> tex_test;
 
 	std::shared_ptr<ruis::res::texture> tex_car_diffuse;
-	std::shared_ptr<ruis::res::texture> tex_car_roughness;
-	std::shared_ptr<ruis::res::texture> tex_car_opacity;
 	std::shared_ptr<ruis::res::texture> tex_car_normal;
-	std::shared_ptr<ruis::res::texture> tex_car_metallic;
+	std::shared_ptr<ruis::res::texture> tex_car_roughness;
+	//std::shared_ptr<ruis::res::texture> tex_car_opacity;
+	//std::shared_ptr<ruis::res::texture> tex_car_metallic;
 
-	std::shared_ptr<ModelOBJ> car_model_obj;
+	std::shared_ptr<ruis::res::texture> tex_rust_diffuse;
+	std::shared_ptr<ruis::res::texture> tex_rust_normal;
+	std::shared_ptr<ruis::res::texture> tex_rust_roughness;
 
 	ruis::quaternion rot = ruis::quaternion().set_identity();
 
 	std::shared_ptr<ruis::render::vertex_array> cube_vao;
 	std::shared_ptr<ruis::render::vertex_array> car_vao;
+	std::shared_ptr<ruis::render::vertex_array> vao_lamba_l;
+	std::shared_ptr<ruis::render::vertex_array> vao_lamba_r;
+
 
 	std::shared_ptr<shader_phong> phong_s;
 	std::shared_ptr<shader_adv>   advanced_s;
 
+	ruis::vec3 camera_position_front {3.2, 1.4, 3.2};
+	ruis::vec3 camera_position_top {0.1, 6, 0.1};
+
+	ruis::vec3 camera_position {camera_position_top};
+    ruis::vec3 camera_attractor {camera_position_front};
+
+	ruis::real camera_transition_duration = 0.4; // not seconds ;)
+	bool camera_transition_ongoing = true;
+
 	unsigned fps = 0;
 	uint32_t fps_sec_counter = 0;
-	uint32_t time_sec = 0;
+	uint32_t time = 0;
 
 public:
 	struct parameters {};
@@ -74,6 +89,7 @@ public:
 
 	void render(const ruis::matrix4& matrix) const override;
 	void update(uint32_t dt) override;
+	void toggleCamera(bool toggle);
 };
 
 namespace make {

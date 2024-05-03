@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruisapp/application.hpp>
 
 #include "gui.hpp"
+#include "car_widget.hpp"
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -59,12 +60,28 @@ public:
 				if (e.combo.key == ruis::key::escape) {
 					this->quit();
 				}
+				else if (e.combo.key == ruis::key::space) {
+					this->toggleCamera();
+				}
 			}
 			return false;
 		};
 
 		this->gui.set_root(std::move(kp));
 	}
+
+	void toggleCamera()
+	{
+		cam_toggle = !cam_toggle;
+		auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
+		if(car_w)
+		{
+			car_w->toggleCamera(cam_toggle);			
+		}
+	}
+
+private:
+	bool cam_toggle = false;
 };
 
 const ruisapp::application_factory app_fac([](auto executable, auto args) {

@@ -78,7 +78,7 @@ shader_adv::shader_adv() :
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
 							// Pass along the texture coordinate
-							tc = vec2(a1.x, 1.0 - a1.y);
+							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
 							gl_Position = matrix * a0;
 						}
 						
@@ -97,31 +97,63 @@ shader_adv::shader_adv() :
 						uniform vec4 light_position;
 						uniform vec3 light_intensity;
 						
-						struct MaterialInfo {   vec3 Ka; vec3 Ks; float Shininess; };
+						struct MaterialInfo {   vec3 Ka; vec3 Kd; vec3 Ks; float Shininess; };
 						//uniform MaterialInfo Material;
-						MaterialInfo Material = MaterialInfo( vec3(0.1, 0.1, 0.1), vec3(0.7, 0.7, 0.7), 40.0 );
+						const MaterialInfo Material = MaterialInfo( vec3(0.1, 0.1, 0.1), vec3(0.5, 0.5, 0.5), vec3(0.7, 0.7, 0.7), 40.0 );
+
+						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
+						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
+						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
+						const float Shininess = 40.0;                  // Specular shininess factor
 					
-						vec3 phongModel( vec3 norm, vec3 diffR, float gloss ) 
+						// vec3 phongModelCB( vec3 norm, vec3 diffR, float glossFactor ) 
+						// {
+						// 	vec3 r = reflect( -light_dir, norm );
+						// 	vec3 ambient = light_intensity * Material.Ka;
+						// 	float sDotN = max( dot(light_dir, norm) , 0.0 );
+						// 	vec3 diffuse = light_intensity * diffR * sDotN;
+						// 	vec3 spec = vec3(0.0);
+						// 	if( sDotN > 0.0 )
+						// 		spec = light_intensity * Material.Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor );
+						// 	return ambient + diffuse + spec;
+						// }
+
+						vec3 phongModel( vec3 norm, vec3 diffR, float glossFactor ) 
 						{
 							vec3 r = reflect( -light_dir, norm );
-							vec3 ambient = light_intensity * Material.Ka;
 							float sDotN = max( dot(light_dir, norm) , 0.0 );
-							vec3 diffuse = light_intensity * diffR * sDotN;
-							vec3 spec = vec3(0.0);
-							if( sDotN > 0.0 )
-								spec = light_intensity * Material.Ks * pow( max( dot(r, view_dir), 0.0 ), gloss );
-							return ambient + diffuse + spec;
+
+							vec3 ambient = Ka                                                    * light_intensity;
+							vec3 diffuse = diffR       * sDotN                                            * light_intensity;
+							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor ) * light_intensity;
+
+							//vec3 spec = vec3(0.0);
+							//if( sDotN > 0.0 )
+								//spec = light_intensity * Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor );
+							
+							return   ambient + diffuse + spec;
 						}
+
+						// vec3 ads()
+						// {
+						// 	vec3 n = normalize( norm );
+						// 	vec3 s = normalize( vec3(light_position) - pos );
+						// 	vec3 v = normalize( vec3(-pos) );
+						// 	vec3 r = reflect( -s, n );
+						// 	return light_intensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );
+						// }
 
 						void main() 
 						{
-							float rough = texture2D( texture0, tc )[0];
-							float gloss = ((1.0 - rough) * 100.0 );
-							vec4 normal = vec4(0, 0, 1.0, 1.0); // 2.0 *  texture2D( texture1, tc ) - 1.0;							
-							vec4 texColor     = texture2D( texture1, tc );   							
+							//float rough = texture2D( texture2, tc ).x;
+							//float gloss = ((1.0 - rough) * 1.0 );
+							vec4 normal = vec4(0, 0, 1.0, 1.0); 
+							//vec4 normal = 2.0 * texture2D( texture1, tc ) - 1.0;							
+							vec4 texColor     = texture2D( texture0, tc );   							
 							//vec4 texColor   = vec4(1.0, 1.0, 1.0, 1.0); 
 							// The color texture is used as the diff. reflectivity
-							gl_FragColor = vec4( phongModel(normal.xyz, texColor.rgb, 40.0), 1.0 );
+							//gl_FragColor = texColor;
+							gl_FragColor = vec4( phongModel(normal.xyz, texColor.rgb, Shininess), 1.0 );
 						}
 
 	)qwertyuiop"
@@ -147,6 +179,11 @@ void shader_adv::render(const ruis::render::vertex_array& va,
 			const ruis::vec3& light_int = default_light_intensity
 			) const
 {
+	this->bind(); // bind shader program
+
+	this->set_uniform_sampler(sampler_normal_map, 1);
+	this->set_uniform_sampler(sampler_roughness_map, 2);
+
 	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_color));
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_2d&>(tex_color).bind(0);
@@ -157,8 +194,6 @@ void shader_adv::render(const ruis::render::vertex_array& va,
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_2d&>(tex_roughness).bind(2);
 	
-	this->bind(); // bind the program
-
 	ruis::mat3 normal = from_mat4(modelview); 
 	normal.invert();
 	normal.transpose();

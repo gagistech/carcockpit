@@ -79,7 +79,7 @@ shader_phong::shader_phong() :
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
-						const float Shininess = 20.0;                  // Specular shininess factor
+						const float Shininess = 40.0;                  // Specular shininess factor
 
 						vec3 ads()
 						{
