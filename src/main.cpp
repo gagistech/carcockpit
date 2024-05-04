@@ -63,6 +63,9 @@ public:
 				else if (e.combo.key == ruis::key::space) {
 					this->toggleCamera();
 				}
+				else if (e.combo.key == ruis::key::n) {
+					this->toggleNormalMapping();
+				}
 			}
 			return false;
 		};
@@ -80,8 +83,19 @@ public:
 		}
 	}
 
+	void toggleNormalMapping()
+	{
+		nm_toggle = !nm_toggle;
+		auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
+		if(car_w)
+		{
+			car_w->setNormalMapping(nm_toggle);			
+		}
+	}
+
 private:
 	bool cam_toggle = false;
+	bool nm_toggle = true;
 };
 
 const ruisapp::application_factory app_fac([](auto executable, auto args) {

@@ -77,7 +77,7 @@ shader_adv::shader_adv() :
 							// Transform light dir. and view dir. to tangent space
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
-							// Pass along the texture coordinate
+							// Pass along the texture coordinate	
 							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
 							gl_Position = matrix * a0;
 						}
@@ -96,6 +96,8 @@ shader_adv::shader_adv() :
 
 						uniform vec4 light_position;
 						uniform vec3 light_intensity;
+
+						uniform vec3 set_normal_mapping; // put (0, 0, 1) to disable, (1, 1, 1) to enable
 						
 						struct MaterialInfo {   vec3 Ka; vec3 Kd; vec3 Ks; float Shininess; };
 						//uniform MaterialInfo Material;
@@ -124,14 +126,14 @@ shader_adv::shader_adv() :
 							float sDotN = max( dot(light_dir, norm) , 0.0 );
 
 							vec3 ambient = Ka                                                    * light_intensity;
-							vec3 diffuse = diffR       * sDotN                                            * light_intensity;
+							vec3 diffuse = Kd       * sDotN                                      * light_intensity;
 							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor ) * light_intensity;
 
 							//vec3 spec = vec3(0.0);
 							//if( sDotN > 0.0 )
 								//spec = light_intensity * Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor );
 							
-							return   ambient + diffuse + spec;
+							return   ( ambient + diffuse + spec ) * diffR;
 						}
 
 						// vec3 ads()
@@ -145,15 +147,15 @@ shader_adv::shader_adv() :
 
 						void main() 
 						{
-							//float rough = texture2D( texture2, tc ).x;
-							//float gloss = ((1.0 - rough) * 1.0 );
-							vec4 normal = vec4(0, 0, 1.0, 1.0); 
-							//vec4 normal = 2.0 * texture2D( texture1, tc ) - 1.0;							
+							float rough = texture2D( texture2, tc ).x;
+							float gloss = ((1.0 - rough) * 80.0 + 1.0 );
+
+							//vec3 normal = vec4(0, 0, 1.0); 
+							vec4 normal4 = 2.0 * texture2D( texture1, tc ) - 1.0;
+							vec3 normal = normalize(normal4.xyz * set_normal_mapping);	
+							normal = vec3(normal.x, -normal.y, normal.z);						
 							vec4 texColor     = texture2D( texture0, tc );   							
-							//vec4 texColor   = vec4(1.0, 1.0, 1.0, 1.0); 
-							// The color texture is used as the diff. reflectivity
-							//gl_FragColor = texColor;
-							gl_FragColor = vec4( phongModel(normal.xyz, texColor.rgb, Shininess), 1.0 );
+							gl_FragColor = vec4( phongModel( normal.xyz, texColor.rgb, 40.0), 1.0 );
 						}
 
 	)qwertyuiop"
@@ -164,8 +166,19 @@ shader_adv::shader_adv() :
 	mat4_projection(this->get_uniform("mat4_p")),
 	mat3_normal(this->get_uniform("mat3_n")),
 	vec4_light_position(this->get_uniform("light_position")),
-	vec3_light_intensity(this->get_uniform("light_intensity"))
+	vec3_light_intensity(this->get_uniform("light_intensity")),
+	vec3_set_normal_mapping(this->get_uniform("set_normal_mapping"))
 {
+}
+
+void shader_adv::setNormalMapping(bool on)
+{
+	if(on)
+		set_normal_mapping_vector = ruis::vec3{1, 1, 1};
+	else
+		set_normal_mapping_vector = ruis::vec3{0, 0, 1};
+
+	LOG([&](auto& o) { o << "normals " << (on ? "on" : "off") << std::endl; })
 }
 
 void shader_adv::render(const ruis::render::vertex_array& va,
@@ -203,6 +216,8 @@ void shader_adv::render(const ruis::render::vertex_array& va,
 	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
 	this->set_uniform_matrix4f(this->mat4_projection, projection);
 	this->set_uniform_matrix3f(mat3_normal, normal);
+
+	this->set_uniform3f(this->vec3_set_normal_mapping, set_normal_mapping_vector[0], set_normal_mapping_vector[1], set_normal_mapping_vector[2]);
 
 	this->shader_base::render(mvp, va);
 }

@@ -38,7 +38,11 @@ class shader_adv : public ruis::render::opengles::shader_base
 {
 	
 public:
-	GLint sampler_normal_map, sampler_roughness_map, mat4_modelview, mat4_projection, mat3_normal, vec4_light_position, vec3_light_intensity;
+	GLint sampler_normal_map, sampler_roughness_map;
+	GLint mat4_modelview, mat4_projection, mat3_normal;
+	GLint vec4_light_position, vec3_light_intensity, vec3_set_normal_mapping;
+
+	ruis::vec3 set_normal_mapping_vector {1, 1, 1};
 
 	shader_adv();
 	void render(const ruis::render::vertex_array& va,
@@ -56,6 +60,8 @@ public:
 	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
 	virtual void set_uniform4f(GLint id, float x, float y, float z, float w) const;
 	virtual GLint get_uniform(const char* name);
+
+	void setNormalMapping(bool on);
 };
 
 } // namespace ruis::render::opengles

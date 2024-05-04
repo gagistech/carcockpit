@@ -90,16 +90,17 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->tex_car_normal    = this->context.get().loader.load<ruis::res::texture>("tex_car_normal1").to_shared_ptr();
 	this->tex_car_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness1").to_shared_ptr();
 
-	this->tex_rust_diffuse   = this->context.get().loader.load<ruis::res::texture>("tex_rust_diffuse").to_shared_ptr();
-	this->tex_rust_normal    = this->context.get().loader.load<ruis::res::texture>("tex_rust_normal").to_shared_ptr();
-	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture>("tex_rust_roughness").to_shared_ptr();
+	this->tex_rust_diffuse   = this->context.get().loader.load<ruis::res::texture>("tex_car_diffuse").to_shared_ptr();
+	this->tex_rust_normal    = this->context.get().loader.load<ruis::res::texture>("tex_car_normal").to_shared_ptr();
+	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness").to_shared_ptr();
 
+	std::shared_ptr<ModelOBJ> light_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> car_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> lamba_left_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> lamba_right_model_obj = std::make_shared<ModelOBJ>();
 	//this->car_model_obj = std::make_shared<ModelOBJ>();
-	car_model_obj->import("res/car/monkey.obj");
-	//car_model_obj->import("res/car/car3d.obj");
+	light_model_obj->import("res/car/monkey.obj");
+	car_model_obj->import("res/car/car3d.obj");
 	//car_model_obj->import("res/test/bake.obj");
 	//car_model_obj->import("res/lamba/lamba.obj");
 	
@@ -107,6 +108,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	lamba_right_model_obj->import("res/lamba/lamba_r.obj");
 	lamba_left_model_obj->buildVBOs();
 	lamba_right_model_obj->buildVBOs();
+	light_model_obj->buildVBOs();
 	car_model_obj->buildVBOs();
 
 	auto lcar_vbo_positions = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(lamba_left_model_obj->getPositionsBuffer()));
@@ -123,12 +125,23 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	auto rcar_vbo_bitangents= this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(lamba_right_model_obj->getBitangentsBuffer()));
 	auto rcar_vbo_indices   = this->context.get().renderer.get().factory-> create_index_buffer(utki::make_span(lamba_right_model_obj->getShortIndexBuffer()));
 
+	auto light_vbo_positions = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(light_model_obj->getPositionsBuffer()));
+	auto light_vbo_texcoords = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(light_model_obj->getTextureCoordsBuffer()));
+	auto light_vbo_normals   = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(light_model_obj->getNormalsBuffer()));
+	auto light_vbo_tangents  = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(light_model_obj->getTangentsBuffer()));
+	auto light_vbo_bitangents= this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(light_model_obj->getBitangentsBuffer()));
+	auto light_vbo_indices   = this->context.get().renderer.get().factory-> create_index_buffer(utki::make_span(light_model_obj->getShortIndexBuffer()));
+
 	auto car_vbo_positions = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getPositionsBuffer()));
 	auto car_vbo_texcoords = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getTextureCoordsBuffer()));
 	auto car_vbo_normals   = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getNormalsBuffer()));
 	auto car_vbo_tangents  = this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getTangentsBuffer()));
 	auto car_vbo_bitangents= this->context.get().renderer.get().factory->create_vertex_buffer(utki::make_span(car_model_obj->getBitangentsBuffer()));
 	auto car_vbo_indices   = this->context.get().renderer.get().factory-> create_index_buffer(utki::make_span(car_model_obj->getShortIndexBuffer()));
+
+	this->light_vao = this->context.get().renderer.get().factory->
+		create_vertex_array({light_vbo_positions, light_vbo_texcoords, light_vbo_normals, light_vbo_tangents, light_vbo_bitangents}, light_vbo_indices, 
+		ruis::render::vertex_array::mode::triangles).to_shared_ptr();
 
 	this->car_vao = this->context.get().renderer.get().factory->
 		create_vertex_array({car_vbo_positions, car_vbo_texcoords, car_vbo_normals, car_vbo_tangents, car_vbo_bitangents}, car_vbo_indices, 
@@ -196,6 +209,12 @@ void car_widget::toggleCamera(bool toggle)
 		camera_attractor = camera_position_front;
 }
 
+void car_widget::setNormalMapping(bool toggle)
+{
+	if(advanced_s)
+		advanced_s->setNormalMapping(toggle);
+}
+
 void car_widget::render(const ruis::matrix4& matrix) const
 {
 	this->widget::render(matrix);
@@ -226,13 +245,13 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	float fms = static_cast<float>(this->time) / std::milli::den;
 
-	float xx = 3 * cosf(fms / 4);
-	float zz = 3 * sinf(fms / 4);
+	float xx = 3 * cosf(fms / 1);
+	float zz = 3 * sinf(fms / 1);
 
 	//xx = 1;
 	//zz = -1;
 
-	ruis::vec4 light_pos{xx, 1.6, zz, 1.0f};
+	ruis::vec4 light_pos{xx, zz, 0.0f, 1.0f};
 	//ruis::vec3 light_int{1.95f, 1.98f, 2.0f};
 	ruis::vec3 light_int{1.6, 1.6, 1.6};
 
@@ -249,30 +268,24 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+
+	// advanced_s->render(*this->car_vao, mvp, modelview, projection, this->tex_rust_diffuse->tex(), 
+	//  					this->tex_rust_normal->tex(), this->tex_rust_roughness->tex(), light_pos_view, light_int);
 	
 	//GLenum err;
 	//while((err = glGetError()) != GL_NO_ERROR) {} // skip all uniform-related errors (TODO: remove asap)
 
-	phong_s->render(*this->vao_lamba_l, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
+	// //phong_s->render(*this->vao_lamba_l, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
 	phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
-	phong_s->render(*this->car_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
+	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
-	// advanced_s->render(*this->vao_lamba_l, mvp, modelview, projection, this->tex_car_diffuse->tex(), 
-	//  					this->tex_rust_normal->tex(), this->tex_rust_roughness->tex(), light_pos_view, light_int);
-	// advanced_s->render(*this->vao_lamba_r, mvp, modelview, projection, this->tex_car_diffuse->tex(), 
-	//  					this->tex_rust_normal->tex(), this->tex_rust_roughness->tex(), light_pos_view, light_int);
 
-	//advanced_s->render(*this->vao_lamba_l, mvp, modelview, projection, this->tex_car_roughness->tex(), 
-	// 					this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos_view, light_int);
-	//advanced_s->render(*this->vao_lamba_r, mvp, modelview, projection, this->tex_car_roughness->tex(), 
-	// 					this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos_view, light_int);
 
-	//phong_s->render(*this->car_vao, mvp, modelview, this->tex_test->tex(), light_pos_view, light_int);
-	//advanced_s->render(*this->car_vao, mvp, modelview, projection, this->tex_test->tex(), 
-	//				    this->tex_test->tex(), this->tex_test->tex(), light_pos_view, light_int);
+	advanced_s->render(*this->vao_lamba_l, mvp, modelview, projection, this->tex_car_diffuse->tex(), 
+	  					this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos_view, light_int);
+	// //advanced_s->render(*this->vao_lamba_r, mvp, modelview, projection, this->tex_car_diffuse->tex(), 
+	// // 					this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos_view, light_int);
 
-	//advanced_s->render(*this->car_vao, mvp_monkey, modelview_monkey, projection, this->tex_car_diffuse->tex(), 
-	//					this->tex_car_normal->tex(), this->tex_car_roughness->tex(), light_pos_view, light_int);
 
 
 	glDisable(GL_DEPTH_TEST);

@@ -51,6 +51,7 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 
 	std::shared_ptr<ruis::render::vertex_array> cube_vao;
 	std::shared_ptr<ruis::render::vertex_array> car_vao;
+	std::shared_ptr<ruis::render::vertex_array> light_vao;
 	std::shared_ptr<ruis::render::vertex_array> vao_lamba_l;
 	std::shared_ptr<ruis::render::vertex_array> vao_lamba_r;
 
@@ -90,6 +91,7 @@ public:
 	void render(const ruis::matrix4& matrix) const override;
 	void update(uint32_t dt) override;
 	void toggleCamera(bool toggle);
+	void setNormalMapping(bool toggle);
 };
 
 namespace make {
