@@ -29,20 +29,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 using namespace carcockpit;
 
-static ruis::mat3 from_mat4(const ruis::mat4 &mat) {
-  ruis::mat3 m;
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-      m[i][j] = mat[i][j];
-  return m;
+static ruis::mat3 from_mat4(const ruis::mat4& mat)
+{
+	ruis::mat3 m;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j)
+			m[i][j] = mat[i][j];
+	return m;
 }
 
 static const ruis::vec4 default_light_position{5.0f, 5.0f, 5.0f, 1.0f};
 static const ruis::vec3 default_light_intensity{2.0f, 2.0f, 2.0f};
 
-shader_adv::shader_adv()
-    : shader_base(
-          R"qwertyuiop(
+shader_adv::shader_adv() :
+	shader_base(
+		R"qwertyuiop(
 						attribute highp vec4 a0; // position
 						attribute highp vec2 a1; // texture coordinate
                         attribute highp vec3 a2; // normal
@@ -82,7 +83,7 @@ shader_adv::shader_adv()
 						}
 						
 	)qwertyuiop",
-          R"qwertyuiop(
+		R"qwertyuiop(
 						precision highp float;
 
 						varying highp vec3 light_dir;
@@ -157,133 +158,150 @@ shader_adv::shader_adv()
 							gl_FragColor = vec4( phongModel( normal.xyz, texColor.rgb, 40.0), 1.0 );
 						}
 
-	)qwertyuiop"),
-      sampler_normal_map(this->get_uniform("texture1")),
-      sampler_roughness_map(this->get_uniform("texture2")),
-      mat4_modelview(this->get_uniform("mat4_mv")),
-      mat4_projection(this->get_uniform("mat4_p")),
-      mat3_normal(this->get_uniform("mat3_n")),
-      vec4_light_position(this->get_uniform("light_position")),
-      vec3_light_intensity(this->get_uniform("light_intensity")),
-      vec3_set_normal_mapping(this->get_uniform("set_normal_mapping")) {}
+	)qwertyuiop"
+	),
+	sampler_normal_map(this->get_uniform("texture1")),
+	sampler_roughness_map(this->get_uniform("texture2")),
+	mat4_modelview(this->get_uniform("mat4_mv")),
+	mat4_projection(this->get_uniform("mat4_p")),
+	mat3_normal(this->get_uniform("mat3_n")),
+	vec4_light_position(this->get_uniform("light_position")),
+	vec3_light_intensity(this->get_uniform("light_intensity")),
+	vec3_set_normal_mapping(this->get_uniform("set_normal_mapping"))
+{}
 
-void shader_adv::setNormalMapping(bool on) {
-  if (on)
-    set_normal_mapping_vector = ruis::vec3{1, 1, 1};
-  else
-    set_normal_mapping_vector = ruis::vec3{0, 0, 1};
+void shader_adv::setNormalMapping(bool on)
+{
+	if (on)
+		set_normal_mapping_vector = ruis::vec3{1, 1, 1};
+	else
+		set_normal_mapping_vector = ruis::vec3{0, 0, 1};
 
-  LOG([&](auto &o) { o << "normals " << (on ? "on" : "off") << std::endl; })
+	LOG([&](auto& o) {
+		o << "normals " << (on ? "on" : "off") << std::endl;
+	})
 }
 
 void shader_adv::render(
-    const ruis::render::vertex_array &va, const r4::matrix4<float> &mvp,
-    const r4::matrix4<float> &modelview, const r4::matrix4<float> &projection,
-    const ruis::render::texture_2d &tex_color,
-    const ruis::render::texture_2d &tex_normal,
-    const ruis::render::texture_2d &tex_roughness,
-    const ruis::vec4 &light_pos = default_light_position,
-    const ruis::vec3 &light_int = default_light_intensity) const {
-  this->bind(); // bind shader program
+	const ruis::render::vertex_array& va,
+	const r4::matrix4<float>& mvp,
+	const r4::matrix4<float>& modelview,
+	const r4::matrix4<float>& projection,
+	const ruis::render::texture_2d& tex_color,
+	const ruis::render::texture_2d& tex_normal,
+	const ruis::render::texture_2d& tex_roughness,
+	const ruis::vec4& light_pos = default_light_position,
+	const ruis::vec3& light_int = default_light_intensity
+) const
+{
+	this->bind(); // bind shader program
 
-  this->set_uniform_sampler(sampler_normal_map, 1);
-  this->set_uniform_sampler(sampler_roughness_map, 2);
+	this->set_uniform_sampler(sampler_normal_map, 1);
+	this->set_uniform_sampler(sampler_roughness_map, 2);
 
-  ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d *>(&tex_color));
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
-  static_cast<const ruis::render::opengles::texture_2d &>(tex_color).bind(0);
-  ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d *>(&tex_normal));
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
-  static_cast<const ruis::render::opengles::texture_2d &>(tex_normal).bind(1);
-  ASSERT(
-      dynamic_cast<const ruis::render::opengles::texture_2d *>(&tex_roughness));
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
-  static_cast<const ruis::render::opengles::texture_2d &>(tex_roughness)
-      .bind(2);
+	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_color));
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+	static_cast<const ruis::render::opengles::texture_2d&>(tex_color).bind(0);
+	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_normal));
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+	static_cast<const ruis::render::opengles::texture_2d&>(tex_normal).bind(1);
+	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_roughness));
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+	static_cast<const ruis::render::opengles::texture_2d&>(tex_roughness).bind(2);
 
-  ruis::mat3 normal = from_mat4(modelview);
-  normal.invert();
-  normal.transpose();
+	ruis::mat3 normal = from_mat4(modelview);
+	normal.invert();
+	normal.transpose();
 
-  this->set_uniform4f(this->vec4_light_position, light_pos[0], light_pos[1],
-                      light_pos[2], light_pos[3]);
-  this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1],
-                      light_int[2]);
-  this->set_uniform_matrix4f(this->mat4_modelview, modelview);
-  this->set_uniform_matrix4f(this->mat4_projection, projection);
-  this->set_uniform_matrix3f(mat3_normal, normal);
+	this->set_uniform4f(this->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
+	this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
+	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
+	this->set_uniform_matrix4f(this->mat4_projection, projection);
+	this->set_uniform_matrix3f(mat3_normal, normal);
 
-  this->set_uniform3f(
-      this->vec3_set_normal_mapping, set_normal_mapping_vector[0],
-      set_normal_mapping_vector[1], set_normal_mapping_vector[2]);
+	this->set_uniform3f(
+		this->vec3_set_normal_mapping,
+		set_normal_mapping_vector[0],
+		set_normal_mapping_vector[1],
+		set_normal_mapping_vector[2]
+	);
 
-  this->shader_base::render(mvp, va);
+	this->shader_base::render(mvp, va);
 }
 
-void shader_adv::set_uniform_matrix3f(GLint id,
-                                      const r4::matrix3<float> &m) const {
-  if (id < 0)
-    return;
-  auto mm = m.tposed();
-  glUniformMatrix3fv(
-      id, 1,
-      // OpenGL ES 2 does not support transposing, see description of
-      // 'transpose' parameter of glUniformMatrix4fv():
-      // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-      GL_FALSE, mm.front().data());
-  // ruis::render::opengles::assert_opengl_no_error();
+void shader_adv::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
+{
+	if (id < 0)
+		return;
+	auto mm = m.tposed();
+	glUniformMatrix3fv(
+		id,
+		1,
+		// OpenGL ES 2 does not support transposing, see description of
+		// 'transpose' parameter of glUniformMatrix4fv():
+		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
+		GL_FALSE,
+		mm.front().data()
+	);
+	// ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_adv::set_uniform_matrix4f(GLint id,
-                                      const r4::matrix4<float> &m) const {
-  if (id < 0)
-    return;
-  auto mm = m.tposed();
-  glUniformMatrix4fv(
-      id, 1,
-      // OpenGL ES 2 does not support transposing, see description of
-      // 'transpose' parameter of glUniformMatrix4fv():
-      // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-      GL_FALSE, mm.front().data());
-  // ruis::render::opengles::assert_opengl_no_error();
+void shader_adv::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
+{
+	if (id < 0)
+		return;
+	auto mm = m.tposed();
+	glUniformMatrix4fv(
+		id,
+		1,
+		// OpenGL ES 2 does not support transposing, see description of
+		// 'transpose' parameter of glUniformMatrix4fv():
+		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
+		GL_FALSE,
+		mm.front().data()
+	);
+	// ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_adv::set_uniform3f(GLint id, float x, float y, float z) const {
-  if (id < 0)
-    return;
-  glUniform3f(id, x, y, z);
-  // ruis::render::opengles::assert_opengl_no_error();
+void shader_adv::set_uniform3f(GLint id, float x, float y, float z) const
+{
+	if (id < 0)
+		return;
+	glUniform3f(id, x, y, z);
+	// ruis::render::opengles::assert_opengl_no_error();
 }
 
-void shader_adv::set_uniform4f(GLint id, float x, float y, float z,
-                               float w) const {
-  if (id < 0)
-    return;
-  glUniform4f(id, x, y, z, w);
-  // ruis::render::opengles::assert_opengl_no_error();
+void shader_adv::set_uniform4f(GLint id, float x, float y, float z, float w) const
+{
+	if (id < 0)
+		return;
+	glUniform4f(id, x, y, z, w);
+	// ruis::render::opengles::assert_opengl_no_error();
 }
 
-class shader_base_fake {
+class shader_base_fake
+{
 public:
-  ruis::render::opengles::program_wrapper program;
-  const GLint matrix_uniform = 0;
-  virtual ~shader_base_fake() {}
+	ruis::render::opengles::program_wrapper program;
+	const GLint matrix_uniform = 0;
+
+	virtual ~shader_base_fake() {}
 };
 
-GLint shader_adv::get_uniform(const char *name) {
-  int i = sizeof(shader_base_fake);
-  int j = sizeof(ruis::render::opengles::shader_base);
+GLint shader_adv::get_uniform(const char* name)
+{
+	int i = sizeof(shader_base_fake);
+	int j = sizeof(ruis::render::opengles::shader_base);
 
-  std::cout << i << " " << j << std::endl;
-  ruis::render::opengles::shader_base *sbf =
-      static_cast<ruis::render::opengles::shader_base *>(this);
-  shader_base_fake *rbf = reinterpret_cast<shader_base_fake *>(sbf);
+	std::cout << i << " " << j << std::endl;
+	ruis::render::opengles::shader_base* sbf = static_cast<ruis::render::opengles::shader_base*>(this);
+	shader_base_fake* rbf = reinterpret_cast<shader_base_fake*>(sbf);
 
-  GLint ret = glGetUniformLocation(rbf->program.id, name);
-  // assert_opengl_no_error();
-  //  if (ret < 0) {
-  //  	throw std::logic_error(utki::cat("No uniform found in the shader
-  //  program: ", name));
-  //  }
-  return ret;
+	GLint ret = glGetUniformLocation(rbf->program.id, name);
+	// assert_opengl_no_error();
+	//  if (ret < 0) {
+	//  	throw std::logic_error(utki::cat("No uniform found in the shader
+	//  program: ", name));
+	//  }
+	return ret;
 }
