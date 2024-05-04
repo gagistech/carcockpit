@@ -22,8 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <clargs/parser.hpp>
 #include <ruisapp/application.hpp>
 
-#include "gui.hpp"
 #include "car_widget.hpp"
+#include "gui.hpp"
 
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -34,90 +34,81 @@ constexpr std::string_view app_name = "carcockpit"sv;
 
 namespace carcockpit {
 
-class application : public ruisapp::application
-{
+class application : public ruisapp::application {
 public:
-	application(bool window, std::string_view res_path) :
-		ruisapp::application( //
-			std::string(app_name),
-			[]() {
-				// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-				ruisapp::window_params wp(r4::vector2<unsigned>(1024, 600));
-				wp.buffers.set(ruisapp::window_params::buffer::depth);
-				return wp;
-			}()
-		)
-	{
-		this->set_fullscreen(!window);
+  application(bool window, std::string_view res_path)
+      : ruisapp::application( //
+            std::string(app_name), []() {
+              // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+              ruisapp::window_params wp(r4::vector2<unsigned>(1024, 600));
+              wp.buffers.set(ruisapp::window_params::buffer::depth);
+              return wp;
+            }()) {
+    this->set_fullscreen(!window);
 
-		this->gui.init_standard_widgets(*this->get_res_file());
+    this->gui.init_standard_widgets(*this->get_res_file());
 
-		this->gui.context.get().loader.mount_res_pack(*this->get_res_file(papki::as_dir(res_path)));
+    this->gui.context.get().loader.mount_res_pack(
+        *this->get_res_file(papki::as_dir(res_path)));
 
-		auto kp = make_root_widgets(this->gui.context);
-		kp.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
-			if (e.is_down) {
-				if (e.combo.key == ruis::key::escape) {
-					this->quit();
-				}
-				else if (e.combo.key == ruis::key::space) {
-					this->toggleCamera();
-				}
-				else if (e.combo.key == ruis::key::n) {
-					this->toggleNormalMapping();
-				}
-			}
-			return false;
-		};
+    auto kp = make_root_widgets(this->gui.context);
+    kp.get().key_handler = [this](ruis::key_proxy &, const ruis::key_event &e) {
+      if (e.is_down) {
+        if (e.combo.key == ruis::key::escape) {
+          this->quit();
+        } else if (e.combo.key == ruis::key::space) {
+          this->toggleCamera();
+        } else if (e.combo.key == ruis::key::n) {
+          this->toggleNormalMapping();
+        }
+      }
+      return false;
+    };
 
-		this->gui.set_root(std::move(kp));
-	}
+    this->gui.set_root(std::move(kp));
+  }
 
-	void toggleCamera()
-	{
-		cam_toggle = !cam_toggle;
-		auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
-		if(car_w)
-		{
-			car_w->toggleCamera(cam_toggle);			
-		}
-	}
+  void toggleCamera() {
+    cam_toggle = !cam_toggle;
+    auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>(
+        "car_widget");
+    if (car_w) {
+      car_w->toggleCamera(cam_toggle);
+    }
+  }
 
-	void toggleNormalMapping()
-	{
-		nm_toggle = !nm_toggle;
-		auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
-		if(car_w)
-		{
-			car_w->setNormalMapping(nm_toggle);			
-		}
-	}
+  void toggleNormalMapping() {
+    nm_toggle = !nm_toggle;
+    auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>(
+        "car_widget");
+    if (car_w) {
+      car_w->setNormalMapping(nm_toggle);
+    }
+  }
 
 private:
-	bool cam_toggle = false;
-	bool nm_toggle = true;
+  bool cam_toggle = false;
+  bool nm_toggle = true;
 };
 
 const ruisapp::application_factory app_fac([](auto executable, auto args) {
-	bool window = false;
+  bool window = false;
 
-	// TODO: look in /usr/local/share/carcockpit first?
-	std::string res_path = utki::cat("/usr/share/"sv, app_name);
-	//std::string res_path = "res/"s; 
+  // TODO: look in /usr/local/share/carcockpit first?
+  std::string res_path = utki::cat("/usr/share/"sv, app_name);
+  // std::string res_path = "res/"s;
 
-	clargs::parser p;
+  clargs::parser p;
 
-	p.add("window", "run in window mode", [&]() {
-		window = true;
-	});
+  p.add("window", "run in window mode", [&]() { window = true; });
 
-	p.add("res-path", utki::cat("resources path, default = /usr/share/"sv, app_name), [&](std::string_view v) {
-		res_path = v;
-	});
+  p.add("res-path",
+        utki::cat("resources path, default = /usr/share/"sv, app_name),
+        [&](std::string_view v) { res_path = v; });
 
-	p.parse(args);
+  p.parse(args);
 
-	return std::make_unique<application>(window, res_path);
+  return std::make_unique<application>(window, res_path);
 });
 
 } // namespace carcockpit
