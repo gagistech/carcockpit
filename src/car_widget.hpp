@@ -58,8 +58,8 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	std::shared_ptr<shader_phong> phong_s;
 	std::shared_ptr<shader_adv> advanced_s;
 
-	ruis::vec3 camera_position_front{3.2, 1.4, 3.2};
-	ruis::vec3 camera_position_top{0.1, 6, 0.1};
+	ruis::vec3 camera_position_front{0, 1.5, 7};
+	ruis::vec3 camera_position_top{0, 9, 0};
 
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};

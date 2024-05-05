@@ -92,9 +92,9 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->tex_car_normal = this->context.get().loader.load<ruis::res::texture>("tex_car_normal1").to_shared_ptr();
 	this->tex_car_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness1").to_shared_ptr();
 
-	this->tex_rust_diffuse = this->context.get().loader.load<ruis::res::texture>("tex_car_diffuse").to_shared_ptr();
-	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture>("tex_car_normal").to_shared_ptr();
-	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness").to_shared_ptr();
+	this->tex_rust_diffuse = this->context.get().loader.load<ruis::res::texture>("tex_spray_diffuse").to_shared_ptr();
+	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture>("tex_spray_normal").to_shared_ptr();
+	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture>("tex_spray_arm").to_shared_ptr();
 
 	std::shared_ptr<ModelOBJ> light_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> car_model_obj = std::make_shared<ModelOBJ>();
@@ -102,7 +102,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	std::shared_ptr<ModelOBJ> lamba_right_model_obj = std::make_shared<ModelOBJ>();
 	// this->car_model_obj = std::make_shared<ModelOBJ>();
 	light_model_obj->import("res/car/monkey.obj");
-	car_model_obj->import("res/car/car3d.obj");
+	car_model_obj->import("res/spray/spray.obj");
 	// car_model_obj->import("res/test/bake.obj");
 	// car_model_obj->import("res/lamba/lamba.obj");
 
@@ -310,30 +310,40 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	// mvp.rotate(this->rot);
 	// mvp.scale(2, 2, 2);
 
+	ruis::mat4 viewport;
+	viewport.set_identity();
+//	viewport = matrix;
+//	viewport.scale(1.0f / this->rect().d[0], 1.0f / this->rect().d[1], 1.0f);
+
 	ruis::mat4 modelview, model, view, projection, mvp;
 	ruis::mat4 model_monkey, modelview_monkey, mvp_monkey;
 	ruis::vec3 pos = this->camera_position; //{3, 1.5, 3};
-	projection.set_perspective(3.1415926535f / 3.f, this->rect().d[0] / this->rect().d[1], 0.1f, 20.0f);
+	projection.set_perspective(3.1415926535f / 4.f, this->rect().d[0] / this->rect().d[1], 0.1f, 20.0f);
+	projection *= viewport;
 	view.set_identity();
 	view.set_look_at(pos, ruis::vec3(0, 1, 0), ruis::vec3(0, 2, 0));
 	model.set_identity();
 	model.rotate(this->rot);
-	model.scale(0.25f, 0.25f, 0.25f);
+	model.scale(0.4f, 0.4f, 0.4f);
+	model.translate(0.f, -1.6f, 0.f);
+	//model.scale(0.25f, 0.25f, 0.25f);
+	//model.scale(10.0f, 10.0f, 10.0f);
 
 	modelview = view * model; //     v * m
 	mvp = projection * view * model; // p * v * m
 
 	float fms = static_cast<float>(this->time) / std::milli::den;
 
-	float xx = 3 * cosf(fms / 4);
-	float zz = 3 * sinf(fms / 4);
+	float xx = 3 * cosf(fms / 2);
+	float zz = 3 * sinf(fms / 2);
 
 	// xx = 1;
 	// zz = -1;
 
-	ruis::vec4 light_pos{xx, 3.5, zz, 1.0f};
+	ruis::vec4 light_pos{xx, zz+1, 3, 1.0f};
 	// ruis::vec3 light_int{1.95f, 1.98f, 2.0f};
-	ruis::vec3 light_int{1.6, 1.6, 1.6};
+	ruis::vec3 light_int{1, 1, 1};
+	light_int *= 2.4;
 
 	model_monkey.set_identity();
 
@@ -360,17 +370,17 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	// //phong_s->render(*this->vao_lamba_l, mvp, modelview,
 	// this->tex_car_diffuse->tex(), light_pos_view, light_int);
-	phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
+	//phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
 	advanced_s->render(
-		*this->vao_lamba_l,
+		*this->car_vao,
 		mvp,
 		modelview,
 		projection,
-		this->tex_car_diffuse->tex(),
-		this->tex_car_normal->tex(),
-		this->tex_car_roughness->tex(),
+		this->tex_rust_diffuse->tex(),
+		this->tex_rust_normal->tex(),
+		this->tex_rust_roughness->tex(),
 		light_pos_view,
 		light_int
 	);

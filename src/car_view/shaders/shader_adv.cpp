@@ -147,15 +147,18 @@ shader_adv::shader_adv() :
 
 						void main() 
 						{
-							float rough = texture2D( texture2, tc ).x;
-							float gloss = ((1.0 - rough) * 80.0 + 1.0 );
+							float rough = texture2D( texture2, tc ).y;
+							float gloss = 1.0 / rough; //((1.0 - pow(rough, 0.2) ) * 100.0 + 1.0 );
 
-							//vec3 normal = vec4(0, 0, 1.0); 
+							//vec3 normal = vec3(0, 0, 1.0); 
 							vec4 normal4 = 2.0 * texture2D( texture1, tc ) - 1.0;
 							vec3 normal = normalize(normal4.xyz * set_normal_mapping);	
-							normal = vec3(normal.x, -normal.y, normal.z);						
-							vec4 texColor     = texture2D( texture0, tc );   							
-							gl_FragColor = vec4( phongModel( normal.xyz, texColor.rgb, 40.0), 1.0 );
+							normal = vec3(normal.x, -normal.y, normal.z);			
+
+							vec4 texColor  = //vec4(0.5, 0.5, 0.5, 1.0); 
+								texture2D( texture0, tc );   					
+
+							gl_FragColor = vec4( phongModel( normal, texColor.rgb, gloss), 1.0 );
 						}
 
 	)qwertyuiop"

@@ -54,3 +54,23 @@ tex_rust_normal{
 	file {plate/normal.jpg}  mipmap{linear}
 }
 
+tex_cam_diffuse{
+	file {camera/diffuse.jpg}  mipmap{linear}
+}
+tex_cam_roughness{
+	file {camera/arm.jpg}  mipmap{linear}
+}
+tex_cam_normal{
+	file {camera/normal.jpg}  mipmap{linear}
+}
+
+tex_spray_diffuse{
+	file {spray/diffuse.jpg}  mipmap{linear}
+}
+tex_spray_normal{
+	file {spray/normal.jpg}  mipmap{linear}
+}
+tex_spray_arm{
+	file {spray/arm.jpg}  mipmap{linear}
+}
+
