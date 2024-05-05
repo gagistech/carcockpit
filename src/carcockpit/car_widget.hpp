@@ -21,12 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <model_obj.hpp>
 #include <ruis/res/texture.hpp>
 #include <ruis/updateable.hpp>
 #include <ruis/widgets/base/fraction_widget.hpp>
 #include <ruis/widgets/widget.hpp>
 
-#include "car_view/model_obj.hpp"
 #include "car_view/shaders/shader_adv.hpp"
 #include "car_view/shaders/shader_phong.hpp"
 

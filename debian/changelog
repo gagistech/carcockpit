@@ -1,3 +1,15 @@
+carcockpit (0.0.3) unstable; urgency=medium
+
+  * update
+
+ -- Ivan Gagis <igagis@gmail.com>  Sun, 05 May 2024 01:06:18 +0300
+
+carcockpit (0.0.2) unstable; urgency=medium
+
+  * test release
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 04 May 2024 15:50:10 +0300
+
 carcockpit (0.0.1) stable; urgency=low
 
   * Initial release

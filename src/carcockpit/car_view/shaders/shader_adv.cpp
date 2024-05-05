@@ -78,7 +78,7 @@ shader_adv::shader_adv() :
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
 							// Pass along the texture coordinate	
-							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
+							tc = vec2(a1.x, a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
 							gl_Position = matrix * a0;
 						}
 						
