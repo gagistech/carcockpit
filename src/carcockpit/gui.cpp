@@ -44,7 +44,7 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 	using ruis::lp;
 
 	// clang-format off
-	auto w = m::key_proxy(c,
+	auto kp = m::key_proxy(c,
         {
             .container_params = {
                 .layout = ruis::layout::column
@@ -148,11 +148,19 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
             )
         }
     );
+
+    // auto mp = m::mouse_proxy(c,
+    //     {
+    //         .widget_params = {
+    //             .id = "mouse_proxy"s
+    //         }
+    //     }
+    // );
 	// clang-format on
 
-	auto& gauge = w.get().get_widget_as<ruis::gauge>("gauge");
-	auto& slider = w.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
-	auto& car_widget = w.get().get_widget_as<carcockpit::car_widget>("car_widget");
+	auto& gauge = kp.get().get_widget_as<ruis::gauge>("gauge");
+	auto& slider = kp.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
+	auto& car_widget = kp.get().get_widget_as<carcockpit::car_widget>("car_widget");
 
 	slider.fraction_change_handler = [&cw = car_widget, &g = gauge](ruis::fraction_widget& s) {
 		g.set_fraction(s.get_fraction());
@@ -160,9 +168,9 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 		cw.set_fraction(s.get_fraction());
 	};
 
-	auto car = w.get().try_get_widget_as<carcockpit::car_widget>("car_widget");
+	auto car = kp.get().try_get_widget_as<carcockpit::car_widget>("car_widget");
 
 	c.get().updater.get().start(car, 0);
 
-	return w;
+	return kp;
 }

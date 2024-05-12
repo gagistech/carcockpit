@@ -296,6 +296,67 @@ void car_widget::setNormalMapping(bool toggle)
 		advanced_s->setNormalMapping(toggle);
 }
 
+bool car_widget::on_mouse_button(const ruis::mouse_button_event& e) 
+{
+	if(e.button == ruis::mouse_button::wheel_up)
+	{
+		camera_attractor /= 1.07;
+	}
+	else if(e.button == ruis::mouse_button::wheel_down)
+	{
+		camera_attractor *= 1.07;
+	}
+	else if(e.button == ruis::mouse_button::left)
+	{
+		mouse_rotate = e.is_down;
+		if(e.is_down)
+		{
+			mouse_changeview_start = e.pos;
+			camera_changeview_start = camera_position;
+		}
+	}
+	return false;
+}
+
+bool car_widget::on_mouse_move(const ruis::mouse_move_event& e)
+{
+	if(mouse_rotate)
+	{
+		ruis::vec2 diff = e.pos - mouse_changeview_start;
+		ruis::vec4 diff4 = diff;
+
+		//ruis::mat4 inv_view = get_view_matrix().inv();
+		//diff4 = inv_view * diff4;
+
+		ruis::quat q1, q2;
+		q1.set_rotation(0, 1, 0, -diff4.x() / 100.0f);
+		//camera_attractor.rotate(q);
+		q2.set_rotation(1, 0, 0, -diff4.y() / 100.0f);
+		//camera_attractor.rotate(q);
+
+		ruis::vec3 cam2go = camera_changeview_start;
+		cam2go.rotate(q1);
+		cam2go.rotate(q2);
+
+		camera_attractor = cam2go;
+	}
+
+	return false;
+}
+
+bool car_widget::on_key(const ruis::key_event& e)
+{
+	return false;
+}
+
+ruis::mat4 car_widget::get_view_matrix() const
+{
+	ruis::mat4 view;
+	view.set_identity();
+	view.set_look_at(camera_position, camera_target, ruis::vec3(0, 2, 0));
+	return view;
+}
+
 void car_widget::render(const ruis::matrix4& matrix) const
 {
 	this->widget::render(matrix);
@@ -317,13 +378,14 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	ruis::mat4 modelview, model, view, projection, mvp;
 	ruis::mat4 model_monkey, modelview_monkey, mvp_monkey;
-	ruis::vec3 pos = this->camera_position; //{3, 1.5, 3};
+
 	projection.set_perspective(3.1415926535f / 4.f, this->rect().d[0] / this->rect().d[1], 0.1f, 20.0f);
 	projection *= viewport;
-	view.set_identity();
-	view.set_look_at(pos, ruis::vec3(0, 1, 0), ruis::vec3(0, 2, 0));
+	
+	view = get_view_matrix();
+
 	model.set_identity();
-	model.rotate(this->rot);
+	//model.rotate(this->rot);
 	model.scale(0.4f, 0.4f, 0.4f);
 	model.translate(0.f, -1.6f, 0.f);
 	//model.scale(0.25f, 0.25f, 0.25f);
@@ -393,3 +455,6 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	glDisable(GL_DEPTH_TEST);
 }
+
+
+/// How to register mouse events outside app window ?

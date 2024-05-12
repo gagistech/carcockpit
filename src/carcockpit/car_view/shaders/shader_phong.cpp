@@ -58,7 +58,7 @@ shader_phong::shader_phong() :
 
 						void main(void)
 						{
-							tc0 = vec2(a1.x, a1.y);
+							tc0 = vec2(a1.x, 1.0 - a1.y);
 							norm = normalize( mat3_n * a2 );	
 							pos = vec3( mat4_mv * a0 );        
 							gl_Position = matrix * a0;

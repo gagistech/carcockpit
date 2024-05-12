@@ -64,10 +64,17 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
 
+	ruis::vec3 camera_target{0, 1, 0};
+
 	ruis::real camera_transition_duration = 0.4; // not seconds ;)
-	bool camera_transition_ongoing = true;
+	//bool camera_transition_ongoing = true;
+	bool mouse_rotate = false;
+	bool mouse_pan = false;
+	ruis::vec2 mouse_changeview_start;
+	ruis::vec3 camera_changeview_start;
 
 	unsigned fps = 0;
+	
 	uint32_t fps_sec_counter = 0;
 	uint32_t time = 0;
 
@@ -91,6 +98,12 @@ public:
 	void update(uint32_t dt) override;
 	void toggleCamera(bool toggle);
 	void setNormalMapping(bool toggle);
+
+	bool on_mouse_button(const ruis::mouse_button_event& e) override;
+	bool on_mouse_move(const ruis::mouse_move_event& e) override;
+	bool on_key(const ruis::key_event& e) override;
+
+	ruis::mat4 get_view_matrix() const;
 };
 
 namespace make {
