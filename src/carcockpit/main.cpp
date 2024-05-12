@@ -69,7 +69,6 @@ public:
 			return false;
 		};
 
-
 		this->gui.set_root(std::move(kp));
 	}
 
@@ -87,7 +86,7 @@ public:
 		nm_toggle = !nm_toggle;
 		auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
 		if (car_w) {
-			car_w->setNormalMapping(nm_toggle);
+			car_w->set_normal_mapping(nm_toggle);
 		}
 	}
 

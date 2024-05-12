@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
 #include <ruis/render/opengles/texture_2d.hpp>
+#include <ruis/res/texture_cube.hpp>
 
 using namespace carcockpit;
 
@@ -76,25 +77,27 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 			.factory->create_vertex_array({pos_vbo, tex_vbo}, cube_indices, ruis::render::vertex_array::mode::triangles)
 			.to_shared_ptr();
 
-	this->tex = this->context.get().loader.load<ruis::res::texture>("tex_sample").to_shared_ptr();
+	this->tex = this->context.get().loader.load<ruis::res::texture_2d>("tex_sample").to_shared_ptr();
 	this->rot.set_identity();
 
 	// this->tex_car_diffuse   =
-	// this->context.get().loader.load<ruis::res::texture>("tex_car_diffuse").to_shared_ptr();
+	// this->context.get().loader.load<ruis::res::texture_2d>("tex_car_diffuse").to_shared_ptr();
 	// this->tex_car_normal    =
-	// this->context.get().loader.load<ruis::res::texture>("tex_car_normal").to_shared_ptr();
+	// this->context.get().loader.load<ruis::res::texture_2d>("tex_car_normal").to_shared_ptr();
 	// this->tex_car_roughness =
-	// this->context.get().loader.load<ruis::res::texture>("tex_car_roughness").to_shared_ptr();
+	// this->context.get().loader.load<ruis::res::texture_2d>("tex_car_roughness").to_shared_ptr();
 
-	this->tex_test = this->context.get().loader.load<ruis::res::texture>("tex_test").to_shared_ptr();
+	this->tex_test = this->context.get().loader.load<ruis::res::texture_2d>("tex_test").to_shared_ptr();
 
-	this->tex_car_diffuse = this->context.get().loader.load<ruis::res::texture>("tex_car_diffuse1").to_shared_ptr();
-	this->tex_car_normal = this->context.get().loader.load<ruis::res::texture>("tex_car_normal1").to_shared_ptr();
-	this->tex_car_roughness = this->context.get().loader.load<ruis::res::texture>("tex_car_roughness1").to_shared_ptr();
+	this->tex_car_diffuse = this->context.get().loader.load<ruis::res::texture_2d>("tex_car_diffuse1").to_shared_ptr();
+	this->tex_car_normal = this->context.get().loader.load<ruis::res::texture_2d>("tex_car_normal1").to_shared_ptr();
+	this->tex_car_roughness =
+		this->context.get().loader.load<ruis::res::texture_2d>("tex_car_roughness1").to_shared_ptr();
 
-	this->tex_rust_diffuse = this->context.get().loader.load<ruis::res::texture>("tex_spray_diffuse").to_shared_ptr();
-	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture>("tex_spray_normal").to_shared_ptr();
-	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture>("tex_spray_arm").to_shared_ptr();
+	this->tex_rust_diffuse =
+		this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_diffuse").to_shared_ptr();
+	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_normal").to_shared_ptr();
+	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_arm").to_shared_ptr();
 
 	std::shared_ptr<ModelOBJ> light_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> car_model_obj = std::make_shared<ModelOBJ>();
@@ -290,27 +293,21 @@ void car_widget::toggleCamera(bool toggle)
 		camera_attractor = camera_position_front;
 }
 
-void car_widget::setNormalMapping(bool toggle)
+void car_widget::set_normal_mapping(bool toggle)
 {
 	if (advanced_s)
-		advanced_s->setNormalMapping(toggle);
+		advanced_s->set_normal_mapping(toggle);
 }
 
-bool car_widget::on_mouse_button(const ruis::mouse_button_event& e) 
+bool car_widget::on_mouse_button(const ruis::mouse_button_event& e)
 {
-	if(e.button == ruis::mouse_button::wheel_up)
-	{
+	if (e.button == ruis::mouse_button::wheel_up) {
 		camera_attractor /= 1.07;
-	}
-	else if(e.button == ruis::mouse_button::wheel_down)
-	{
+	} else if (e.button == ruis::mouse_button::wheel_down) {
 		camera_attractor *= 1.07;
-	}
-	else if(e.button == ruis::mouse_button::left)
-	{
+	} else if (e.button == ruis::mouse_button::left) {
 		mouse_rotate = e.is_down;
-		if(e.is_down)
-		{
+		if (e.is_down) {
 			mouse_changeview_start = e.pos;
 			camera_changeview_start = camera_position;
 		}
@@ -320,19 +317,18 @@ bool car_widget::on_mouse_button(const ruis::mouse_button_event& e)
 
 bool car_widget::on_mouse_move(const ruis::mouse_move_event& e)
 {
-	if(mouse_rotate)
-	{
+	if (mouse_rotate) {
 		ruis::vec2 diff = e.pos - mouse_changeview_start;
 		ruis::vec4 diff4 = diff;
 
-		//ruis::mat4 inv_view = get_view_matrix().inv();
-		//diff4 = inv_view * diff4;
+		// ruis::mat4 inv_view = get_view_matrix().inv();
+		// diff4 = inv_view * diff4;
 
 		ruis::quat q1, q2;
 		q1.set_rotation(0, 1, 0, -diff4.x() / 100.0f);
-		//camera_attractor.rotate(q);
+		// camera_attractor.rotate(q);
 		q2.set_rotation(1, 0, 0, -diff4.y() / 100.0f);
-		//camera_attractor.rotate(q);
+		// camera_attractor.rotate(q);
 
 		ruis::vec3 cam2go = camera_changeview_start;
 		cam2go.rotate(q1);
@@ -373,23 +369,23 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	ruis::mat4 viewport;
 	viewport.set_identity();
-//	viewport = matrix;
-//	viewport.scale(1.0f / this->rect().d[0], 1.0f / this->rect().d[1], 1.0f);
+	//	viewport = matrix;
+	//	viewport.scale(1.0f / this->rect().d[0], 1.0f / this->rect().d[1], 1.0f);
 
 	ruis::mat4 modelview, model, view, projection, mvp;
 	ruis::mat4 model_monkey, modelview_monkey, mvp_monkey;
 
 	projection.set_perspective(3.1415926535f / 4.f, this->rect().d[0] / this->rect().d[1], 0.1f, 20.0f);
 	projection *= viewport;
-	
+
 	view = get_view_matrix();
 
 	model.set_identity();
-	//model.rotate(this->rot);
+	// model.rotate(this->rot);
 	model.scale(0.4f, 0.4f, 0.4f);
 	model.translate(0.f, -1.6f, 0.f);
-	//model.scale(0.25f, 0.25f, 0.25f);
-	//model.scale(10.0f, 10.0f, 10.0f);
+	// model.scale(0.25f, 0.25f, 0.25f);
+	// model.scale(10.0f, 10.0f, 10.0f);
 
 	modelview = view * model; //     v * m
 	mvp = projection * view * model; // p * v * m
@@ -402,7 +398,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	// xx = 1;
 	// zz = -1;
 
-	ruis::vec4 light_pos{xx, zz+1, 3, 1.0f};
+	ruis::vec4 light_pos{xx, zz + 1, 3, 1.0f};
 	// ruis::vec3 light_int{1.95f, 1.98f, 2.0f};
 	ruis::vec3 light_int{1, 1, 1};
 	light_int *= 2.4;
@@ -434,7 +430,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	// //phong_s->render(*this->vao_lamba_l, mvp, modelview,
 	// this->tex_car_diffuse->tex(), light_pos_view, light_int);
-	//phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
+	// phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
 	advanced_s->render(
@@ -455,6 +451,5 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	glDisable(GL_DEPTH_TEST);
 }
-
 
 /// How to register mouse events outside app window ?

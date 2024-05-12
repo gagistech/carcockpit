@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <model_obj.hpp>
-#include <ruis/res/texture.hpp>
+#include <ruis/res/texture_2d.hpp>
 #include <ruis/updateable.hpp>
 #include <ruis/widgets/base/fraction_widget.hpp>
 #include <ruis/widgets/widget.hpp>
@@ -34,18 +34,18 @@ namespace carcockpit {
 
 class car_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
 {
-	std::shared_ptr<ruis::res::texture> tex;
-	std::shared_ptr<ruis::res::texture> tex_test;
+	std::shared_ptr<ruis::res::texture_2d> tex;
+	std::shared_ptr<ruis::res::texture_2d> tex_test;
 
-	std::shared_ptr<ruis::res::texture> tex_car_diffuse;
-	std::shared_ptr<ruis::res::texture> tex_car_normal;
-	std::shared_ptr<ruis::res::texture> tex_car_roughness;
-	// std::shared_ptr<ruis::res::texture> tex_car_opacity;
-	// std::shared_ptr<ruis::res::texture> tex_car_metallic;
+	std::shared_ptr<ruis::res::texture_2d> tex_car_diffuse;
+	std::shared_ptr<ruis::res::texture_2d> tex_car_normal;
+	std::shared_ptr<ruis::res::texture_2d> tex_car_roughness;
+	// std::shared_ptr<ruis::res::texture_2d> tex_car_opacity;
+	// std::shared_ptr<ruis::res::texture_2d> tex_car_metallic;
 
-	std::shared_ptr<ruis::res::texture> tex_rust_diffuse;
-	std::shared_ptr<ruis::res::texture> tex_rust_normal;
-	std::shared_ptr<ruis::res::texture> tex_rust_roughness;
+	std::shared_ptr<ruis::res::texture_2d> tex_rust_diffuse;
+	std::shared_ptr<ruis::res::texture_2d> tex_rust_normal;
+	std::shared_ptr<ruis::res::texture_2d> tex_rust_roughness;
 
 	ruis::quaternion rot = ruis::quaternion().set_identity();
 
@@ -67,14 +67,14 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	ruis::vec3 camera_target{0, 1, 0};
 
 	ruis::real camera_transition_duration = 0.4; // not seconds ;)
-	//bool camera_transition_ongoing = true;
+	// bool camera_transition_ongoing = true;
 	bool mouse_rotate = false;
 	bool mouse_pan = false;
 	ruis::vec2 mouse_changeview_start;
 	ruis::vec3 camera_changeview_start;
 
 	unsigned fps = 0;
-	
+
 	uint32_t fps_sec_counter = 0;
 	uint32_t time = 0;
 
@@ -97,7 +97,7 @@ public:
 	void render(const ruis::matrix4& matrix) const override;
 	void update(uint32_t dt) override;
 	void toggleCamera(bool toggle);
-	void setNormalMapping(bool toggle);
+	void set_normal_mapping(bool toggle);
 
 	bool on_mouse_button(const ruis::mouse_button_event& e) override;
 	bool on_mouse_move(const ruis::mouse_move_event& e) override;

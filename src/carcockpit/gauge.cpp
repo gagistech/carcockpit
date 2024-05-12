@@ -34,7 +34,7 @@ gauge::gauge(utki::shared_ref<ruis::context> c, all_parameters p) :
 
 void gauge::on_lay_out()
 {
-	auto arrow_dim = this->params.arrow.get().dims();
+	auto arrow_dim = this->params.arrow.get().dims().to<ruis::real>();
 	real arm_length = arrow_dim.x() * this->params.arm_fraction;
 
 	if (arm_length <= 0) {
@@ -48,7 +48,8 @@ void gauge::on_lay_out()
 	if (this->params.shadow) {
 		// TRACE(<< "this->shadow->dims() * scale = " << this->shadow->dims() *
 		// scale << std::endl)
-		this->shadow_tex = this->params.shadow->get(this->params.shadow->dims() * scale).to_shared_ptr();
+		this->shadow_tex =
+			this->params.shadow->get(this->params.shadow->dims().to<ruis::real>() * scale).to_shared_ptr();
 		// TRACE(<< "this->shadow_tex->dims() = " << this->shadow_tex->dims() <<
 		// std::endl)
 	}
@@ -58,7 +59,7 @@ void gauge::render(const matrix4& matrix) const
 {
 	ASSERT(this->arrow_tex)
 
-	if (!this->arrow_tex->dims.is_positive() || this->params.arm_fraction <= 0) {
+	if (!this->arrow_tex->dims().is_positive() || this->params.arm_fraction <= 0) {
 		return;
 	}
 
@@ -75,21 +76,21 @@ void gauge::render(const matrix4& matrix) const
 		  (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
 	);
 	{
-		auto div = this->arrow_tex->dims.x() * this->params.arm_fraction;
+		auto div = ruis::real(this->arrow_tex->dims().x()) * this->params.arm_fraction;
 		ASSERT(div >= 0)
 		mmm.scale(1 / div);
 	}
 
 	constexpr auto half = 0.5;
 
-	if (this->shadow_tex && this->shadow_tex->dims.is_positive()) {
-		auto arrow_fraction = this->arrow_tex->dims.x() / this->shadow_tex->dims.x();
+	if (this->shadow_tex && this->shadow_tex->dims().is_positive()) {
+		auto arrow_fraction = ruis::real(this->arrow_tex->dims().x()) / ruis::real(this->shadow_tex->dims().x());
 
 		constexpr auto shadow_offset = real(0.025f);
 
 		matrix4 m(matr);
 		m *= matrix4().set_identity().translate(shadow_offset, shadow_offset) * mmm;
-		m.scale(this->shadow_tex->dims);
+		m.scale(this->shadow_tex->dims().to<ruis::real>());
 		m.translate(-(1 - this->params.arm_fraction) * arrow_fraction - (1 - arrow_fraction) / 2, -half);
 		this->shadow_tex->render(m);
 	}
@@ -97,7 +98,7 @@ void gauge::render(const matrix4& matrix) const
 	{
 		matrix4 m(matr);
 		m *= mmm;
-		m.scale(this->arrow_tex->dims);
+		m.scale(this->arrow_tex->dims().to<ruis::real>());
 		m.translate(-(1 - this->params.arm_fraction), -half);
 		this->arrow_tex->render(m);
 	}

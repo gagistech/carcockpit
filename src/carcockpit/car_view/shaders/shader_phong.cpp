@@ -58,7 +58,7 @@ shader_phong::shader_phong() :
 
 						void main(void)
 						{
-							tc0 = vec2(a1.x, 1.0 - a1.y);
+							tc0 = vec2(a1.x, a1.y);
 							norm = normalize( mat3_n * a2 );	
 							pos = vec3( mat4_mv * a0 );        
 							gl_Position = matrix * a0;
@@ -136,81 +136,4 @@ void shader_phong::render(
 	this->set_uniform_matrix3f(mat3_normal, normal);
 
 	this->shader_base::render(mvp, va);
-}
-
-void shader_phong::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
-{
-	if (id < 0)
-		return;
-	auto mm = m.tposed();
-	glUniformMatrix3fv(
-		id,
-		1,
-		// OpenGL ES 2 does not support transposing, see description of
-		// 'transpose' parameter of glUniformMatrix4fv():
-		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-		GL_FALSE,
-		mm.front().data()
-	);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_phong::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
-{
-	if (id < 0)
-		return;
-	auto mm = m.tposed();
-	glUniformMatrix4fv(
-		id,
-		1,
-		// OpenGL ES 2 does not support transposing, see description of
-		// 'transpose' parameter of glUniformMatrix4fv():
-		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-		GL_FALSE,
-		mm.front().data()
-	);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_phong::set_uniform3f(GLint id, float x, float y, float z) const
-{
-	if (id < 0)
-		return;
-	glUniform3f(id, x, y, z);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_phong::set_uniform4f(GLint id, float x, float y, float z, float w) const
-{
-	if (id < 0)
-		return;
-	glUniform4f(id, x, y, z, w);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-class shader_base_fake
-{
-public:
-	ruis::render::opengles::program_wrapper program;
-	const GLint matrix_uniform = 0;
-
-	virtual ~shader_base_fake() {}
-};
-
-GLint shader_phong::get_uniform(const char* name)
-{
-	int i = sizeof(shader_base_fake);
-	int j = sizeof(ruis::render::opengles::shader_base);
-
-	std::cout << i << " " << j << std::endl;
-	ruis::render::opengles::shader_base* sbf = static_cast<ruis::render::opengles::shader_base*>(this);
-	shader_base_fake* rbf = reinterpret_cast<shader_base_fake*>(sbf);
-
-	GLint ret = glGetUniformLocation(rbf->program.id, name);
-	// assert_opengl_no_error();
-	//  if (ret < 0) {
-	//  	throw std::logic_error(utki::cat("No uniform found in the shader
-	//  program: ", name));
-	//  }
-	return ret;
 }

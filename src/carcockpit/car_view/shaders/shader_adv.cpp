@@ -78,9 +78,9 @@ shader_adv::shader_adv() :
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
 							// Pass along the texture coordinate	
-							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
+							tc = vec2(a1.x, a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
 							gl_Position = matrix * a0;
-						}
+						}	
 						
 	)qwertyuiop",
 		R"qwertyuiop(
@@ -166,14 +166,14 @@ shader_adv::shader_adv() :
 	sampler_normal_map(this->get_uniform("texture1")),
 	sampler_roughness_map(this->get_uniform("texture2")),
 	mat4_modelview(this->get_uniform("mat4_mv")),
-	mat4_projection(this->get_uniform("mat4_p")),
+	//mat4_projection(this->get_uniform("mat4_p")),
 	mat3_normal(this->get_uniform("mat3_n")),
 	vec4_light_position(this->get_uniform("light_position")),
 	vec3_light_intensity(this->get_uniform("light_intensity")),
 	vec3_set_normal_mapping(this->get_uniform("set_normal_mapping"))
 {}
 
-void shader_adv::setNormalMapping(bool on)
+void shader_adv::set_normal_mapping(bool on)
 {
 	if (on)
 		set_normal_mapping_vector = ruis::vec3{1, 1, 1};
@@ -219,7 +219,7 @@ void shader_adv::render(
 	this->set_uniform4f(this->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
 	this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
 	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
-	this->set_uniform_matrix4f(this->mat4_projection, projection);
+	//this->set_uniform_matrix4f(this->mat4_projection, projection);
 	this->set_uniform_matrix3f(mat3_normal, normal);
 
 	this->set_uniform3f(
@@ -230,81 +230,4 @@ void shader_adv::render(
 	);
 
 	this->shader_base::render(mvp, va);
-}
-
-void shader_adv::set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const
-{
-	if (id < 0)
-		return;
-	auto mm = m.tposed();
-	glUniformMatrix3fv(
-		id,
-		1,
-		// OpenGL ES 2 does not support transposing, see description of
-		// 'transpose' parameter of glUniformMatrix4fv():
-		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-		GL_FALSE,
-		mm.front().data()
-	);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_adv::set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const
-{
-	if (id < 0)
-		return;
-	auto mm = m.tposed();
-	glUniformMatrix4fv(
-		id,
-		1,
-		// OpenGL ES 2 does not support transposing, see description of
-		// 'transpose' parameter of glUniformMatrix4fv():
-		// https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glUniform.xml
-		GL_FALSE,
-		mm.front().data()
-	);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_adv::set_uniform3f(GLint id, float x, float y, float z) const
-{
-	if (id < 0)
-		return;
-	glUniform3f(id, x, y, z);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-void shader_adv::set_uniform4f(GLint id, float x, float y, float z, float w) const
-{
-	if (id < 0)
-		return;
-	glUniform4f(id, x, y, z, w);
-	// ruis::render::opengles::assert_opengl_no_error();
-}
-
-class shader_base_fake
-{
-public:
-	ruis::render::opengles::program_wrapper program;
-	const GLint matrix_uniform = 0;
-
-	virtual ~shader_base_fake() {}
-};
-
-GLint shader_adv::get_uniform(const char* name)
-{
-	int i = sizeof(shader_base_fake);
-	int j = sizeof(ruis::render::opengles::shader_base);
-
-	std::cout << i << " " << j << std::endl;
-	ruis::render::opengles::shader_base* sbf = static_cast<ruis::render::opengles::shader_base*>(this);
-	shader_base_fake* rbf = reinterpret_cast<shader_base_fake*>(sbf);
-
-	GLint ret = glGetUniformLocation(rbf->program.id, name);
-	// assert_opengl_no_error();
-	//  if (ret < 0) {
-	//  	throw std::logic_error(utki::cat("No uniform found in the shader
-	//  program: ", name));
-	//  }
-	return ret;
 }

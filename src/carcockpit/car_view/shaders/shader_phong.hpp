@@ -47,12 +47,6 @@ public:
 		const ruis::vec4& light_pos,
 		const ruis::vec3& light_int
 	) const;
-
-	virtual void set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const;
-	virtual void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
-	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
-	virtual void set_uniform4f(GLint id, float x, float y, float z, float w) const;
-	virtual GLint get_uniform(const char* name);
 };
 
 } // namespace carcockpit

@@ -37,7 +37,11 @@ class shader_adv : public ruis::render::opengles::shader_base
 {
 public:
 	GLint sampler_normal_map, sampler_roughness_map;
-	GLint mat4_modelview, mat4_projection, mat3_normal;
+	
+	GLint mat4_modelview;
+	//GLint mat4_projection;
+	GLint mat3_normal;
+
 	GLint vec4_light_position, vec3_light_intensity, vec3_set_normal_mapping;
 
 	ruis::vec3 set_normal_mapping_vector{1, 1, 1};
@@ -55,13 +59,7 @@ public:
 		const ruis::vec3& light_int
 	) const;
 
-	virtual void set_uniform_matrix3f(GLint id, const r4::matrix3<float>& m) const;
-	virtual void set_uniform_matrix4f(GLint id, const r4::matrix4<float>& m) const;
-	virtual void set_uniform3f(GLint id, float x, float y, float z) const;
-	virtual void set_uniform4f(GLint id, float x, float y, float z, float w) const;
-	virtual GLint get_uniform(const char* name);
-
-	void setNormalMapping(bool on);
+	void set_normal_mapping(bool on);
 };
 
 } // namespace carcockpit
