@@ -22,6 +22,25 @@ this_lint_cmd :=
 $(eval $(prorab-build-lib))
 
 
+# ==========================
+# ========= ruis ===========
+$(eval $(prorab-clear-this-vars))
+
+this_name := ruis_render
+
+$(eval $(call prorab-config, ../config))
+
+this_srcs += $(call prorab-src-dir, ruis)
+
+this_static_lib_only := true
+this_no_install := true
+
+$(eval $(prorab-build-lib))
+
+this_src_dir := ruis
+$(eval $(prorab-clang-format))
+
+
 # ===============================
 # ========= carcockpit ==========
 $(eval $(prorab-clear-this-vars))
@@ -44,16 +63,18 @@ else ifeq ($(os),linux)
 endif
 
 this__libmodel_obj := $(this_out_dir)libmodel_obj.a
+this__libruis_render := $(this_out_dir)libruis_render.a
 
 this_cxxflags += -isystem model_obj
-this_ldlibs += $(this__libmodel_obj)
+this_ldlibs += $(this__libmodel_obj) $(this__libruis_render)
 
 this_ldlibs += -lruisapp-opengles-xorg -lpapki -lclargs -ltml -lruis -lutki -lm -l ruis-render-opengles
+this_ldlibs += -l jsondom
 this_ldlibs += `pkg-config --libs glesv2`
 
 $(eval $(prorab-build-app))
 
-$(eval $(call prorab-depend, $(prorab_this_name), $(this__libmodel_obj)))
+$(eval $(call prorab-depend, $(prorab_this_name), $(this__libmodel_obj) $(this__libruis_render)))
 
 this_run_name := app
 this_test_cmd := $(prorab_this_name) --window --res-path=../res
