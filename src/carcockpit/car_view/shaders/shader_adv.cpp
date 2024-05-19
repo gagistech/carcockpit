@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <ruis/render/opengles/index_buffer.hpp>
 #include <ruis/render/opengles/texture_2d.hpp>
+#include <ruis/render/opengles/texture_cube.hpp>
 #include <ruis/render/opengles/util.hpp>
 #include <ruis/render/opengles/vertex_array.hpp>
 #include <ruis/render/opengles/vertex_buffer.hpp>
@@ -93,6 +94,7 @@ shader_adv::shader_adv() :
 						uniform sampler2D texture0;   // color map tex
 						uniform sampler2D texture1;   // normal map tex
 						uniform sampler2D texture2;   // roughness map tex
+						uniform samplerCube texture3;   // cube map
 
 						uniform vec4 light_position;
 						uniform vec3 light_intensity;
@@ -107,48 +109,28 @@ shader_adv::shader_adv() :
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
 						const float Shininess = 40.0;                  // Specular shininess factor
-					
-						// vec3 phongModelCB( vec3 norm, vec3 diffR, float glossFactor ) 
-						// {
-						// 	vec3 r = reflect( -light_dir, norm );
-						// 	vec3 ambient = light_intensity * Material.Ka;
-						// 	float sDotN = max( dot(light_dir, norm) , 0.0 );
-						// 	vec3 diffuse = light_intensity * diffR * sDotN;
-						// 	vec3 spec = vec3(0.0);
-						// 	if( sDotN > 0.0 )
-						// 		spec = light_intensity * Material.Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor );
-						// 	return ambient + diffuse + spec;
-						// }
 
-						vec3 phongModel( vec3 norm, vec3 diffR, float glossFactor ) 
+						vec3 phongModel( vec3 norm, vec3 diffR, float ambient_occ, float glossiness, float metalness ) // arm = ambient/roughness/metalness
 						{
+							vec3 r_env = reflect( view_dir, norm );
+							vec3 env_refl = textureCube( texture3, r_env).xyz;
+
 							vec3 r = reflect( -light_dir, norm );
 							float sDotN = max( dot(light_dir, norm) , 0.0 );
 
 							vec3 ambient = Ka                                                    * light_intensity;
-							vec3 diffuse = Kd       * sDotN                                      * light_intensity;
-							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor ) * light_intensity;
+							vec3 diffuse = max( Kd - metalness, 0.0 ) * sDotN                    * light_intensity;
+							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness )  * light_intensity;
 
-							//vec3 spec = vec3(0.0);
-							//if( sDotN > 0.0 )
-								//spec = light_intensity * Ks * pow( max( dot(r, view_dir), 0.0 ), glossFactor );
-							
-							return   ( ambient + diffuse + spec ) * diffR;
-						}
-
-						// vec3 ads()
-						// {
-						// 	vec3 n = normalize( norm );
-						// 	vec3 s = normalize( vec3(light_position) - pos );
-						// 	vec3 v = normalize( vec3(-pos) );
-						// 	vec3 r = reflect( -s, n );
-						// 	return light_intensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );
-						// }
+							return (( ambient + diffuse + spec ) * diffR) + (env_refl * metalness);
+						}			
 
 						void main() 
 						{
-							float rough = texture2D( texture2, tc ).y;
-							float gloss = 1.0 / rough; //((1.0 - pow(rough, 0.2) ) * 100.0 + 1.0 );
+							vec3 arm = texture2D( texture2, tc ).xyz;
+							//float gloss = 1.0 / arm.y;            
+							float gloss = ((1.0 - pow(arm.y, 0.2) ) * 100.0 + 1.0 );
+
 
 							//vec3 normal = vec3(0, 0, 1.0); 
 							vec4 normal4 = 2.0 * texture2D( texture1, tc ) - 1.0;
@@ -158,13 +140,19 @@ shader_adv::shader_adv() :
 							vec4 texColor  = //vec4(0.5, 0.5, 0.5, 1.0); 
 								texture2D( texture0, tc );   					
 
-							gl_FragColor = vec4( phongModel( normal, texColor.rgb, gloss), 1.0 );
+							gl_FragColor = vec4( phongModel( normal, texColor.rgb, arm.x, gloss, arm.z), 1.0 );
 						}
+
+
+						//vec3 spec = vec3(0.0);
+							//if( sDotN > 0.0 )
+								//spec = light_intensity * Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness );
 
 	)qwertyuiop"
 	),
 	sampler_normal_map(this->get_uniform("texture1")),
 	sampler_roughness_map(this->get_uniform("texture2")),
+	sampler_cube(this->get_uniform("texture3")),
 	mat4_modelview(this->get_uniform("mat4_mv")),
 	//mat4_projection(this->get_uniform("mat4_p")),
 	mat3_normal(this->get_uniform("mat3_n")),
@@ -193,6 +181,7 @@ void shader_adv::render(
 	const ruis::render::texture_2d& tex_color,
 	const ruis::render::texture_2d& tex_normal,
 	const ruis::render::texture_2d& tex_roughness,
+	const ruis::render::texture_cube& tex_cube_env,
 	const ruis::vec4& light_pos = default_light_position,
 	const ruis::vec3& light_int = default_light_intensity
 ) const
@@ -201,6 +190,7 @@ void shader_adv::render(
 
 	this->set_uniform_sampler(sampler_normal_map, 1);
 	this->set_uniform_sampler(sampler_roughness_map, 2);
+	this->set_uniform_sampler(sampler_cube, 3);
 
 	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_color));
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
@@ -211,6 +201,9 @@ void shader_adv::render(
 	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_roughness));
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_2d&>(tex_roughness).bind(2);
+	ASSERT(dynamic_cast<const ruis::render::opengles::texture_2d*>(&tex_roughness));
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+	static_cast<const ruis::render::opengles::texture_cube&>(tex_cube_env).bind(3);
 
 	ruis::mat3 normal = from_mat4(modelview);
 	normal.invert();

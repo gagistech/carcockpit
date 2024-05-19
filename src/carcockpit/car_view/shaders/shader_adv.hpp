@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // #include <ruis/render/texturing_shader.hpp>
 #include <ruis/render/opengles/shader_base.hpp>
 #include <ruis/render/texture_2d.hpp>
+#include <ruis/render/texture_cube.hpp>
 
 namespace ruis {
 using mat3 = r4::matrix3<real>;
@@ -36,15 +37,19 @@ namespace carcockpit {
 class shader_adv : public ruis::render::opengles::shader_base
 {
 public:
-	GLint sampler_normal_map, sampler_roughness_map;
+	GLint sampler_normal_map;
+	GLint sampler_roughness_map;
+	GLint sampler_cube;
 	
 	GLint mat4_modelview;
 	//GLint mat4_projection;
 	GLint mat3_normal;
 
-	GLint vec4_light_position, vec3_light_intensity, vec3_set_normal_mapping;
+	GLint vec4_light_position;
+	GLint vec3_light_intensity;
+	GLint vec3_set_normal_mapping;
 
-	ruis::vec3 set_normal_mapping_vector{1, 1, 1};
+	ruis::vec3 set_normal_mapping_vector{1, 1, 1}; // experimental
 
 	shader_adv();
 	void render(
@@ -55,6 +60,7 @@ public:
 		const ruis::render::texture_2d& tex_color,
 		const ruis::render::texture_2d& tex_normal,
 		const ruis::render::texture_2d& tex_roughness,
+		const ruis::render::texture_cube& tex_cube_env,
 		const ruis::vec4& light_pos,
 		const ruis::vec3& light_int
 	) const;

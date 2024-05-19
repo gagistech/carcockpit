@@ -74,3 +74,15 @@ tex_spray_arm{
 	file {spray/arm.jpg}  mipmap{linear}
 }
 
+tex_cube_env_hata{
+	file_px{envs/hata/px.png}
+	file_nx{envs/hata/nx.png}
+	file_py{envs/hata/py.png}
+	file_ny{envs/hata/ny.png}
+	file_pz{envs/hata/pz.png}
+	file_nz{envs/hata/nz.png}
+
+	min_filter{linear}
+	mag_filter{linear}
+	mipmap{nearest}
+}

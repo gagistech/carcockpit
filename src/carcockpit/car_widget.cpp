@@ -99,6 +99,8 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_normal").to_shared_ptr();
 	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_arm").to_shared_ptr();
 
+	this->tex_cube_env_hata = this->context.get().loader.load<ruis::res::texture_cube>("tex_cube_env_hata").to_shared_ptr();
+
 	std::shared_ptr<ModelOBJ> light_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> car_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> lamba_left_model_obj = std::make_shared<ModelOBJ>();
@@ -240,6 +242,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 		o << "<< SHADER KOM PILE >>" << std::endl;
 	})
 
+	this->skybox_s = std::make_shared<shader_skybox>();
 	this->phong_s = std::make_shared<shader_phong>();
 	this->advanced_s = std::make_shared<shader_adv>();
 
@@ -301,6 +304,8 @@ void car_widget::set_normal_mapping(bool toggle)
 
 bool car_widget::on_mouse_button(const ruis::mouse_button_event& e)
 {
+	std::cout << "Is Down = " << e.is_down << std::endl;
+	
 	if (e.button == ruis::mouse_button::wheel_up) {
 		camera_attractor /= 1.07;
 	} else if (e.button == ruis::mouse_button::wheel_down) {
@@ -312,7 +317,7 @@ bool car_widget::on_mouse_button(const ruis::mouse_button_event& e)
 			camera_changeview_start = camera_position;
 		}
 	}
-	return false;
+	return true;
 }
 
 bool car_widget::on_mouse_move(const ruis::mouse_move_event& e)
@@ -325,9 +330,9 @@ bool car_widget::on_mouse_move(const ruis::mouse_move_event& e)
 		// diff4 = inv_view * diff4;
 
 		ruis::quat q1, q2;
-		q1.set_rotation(0, 1, 0, -diff4.x() / 100.0f);
+		q1.set_rotation(0, 1, 0, -diff4.x() / 200.0f);
 		// camera_attractor.rotate(q);
-		q2.set_rotation(1, 0, 0, -diff4.y() / 100.0f);
+		q2.set_rotation(1, 0, 0, -diff4.y() / 200.0f);
 		// camera_attractor.rotate(q);
 
 		ruis::vec3 cam2go = camera_changeview_start;
@@ -431,6 +436,11 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	// //phong_s->render(*this->vao_lamba_l, mvp, modelview,
 	// this->tex_car_diffuse->tex(), light_pos_view, light_int);
 	// phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
+	// skybox_s->render(*this->car_vao,
+	// 	mvp,
+	// 	modelview, 
+	// 	this->tex_cube_env_hata->tex());
+
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
 	advanced_s->render(
@@ -441,6 +451,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 		this->tex_rust_diffuse->tex(),
 		this->tex_rust_normal->tex(),
 		this->tex_rust_roughness->tex(),
+		this->tex_cube_env_hata->tex(),
 		light_pos_view,
 		light_int
 	);

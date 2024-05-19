@@ -23,12 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <model_obj.hpp>
 #include <ruis/res/texture_2d.hpp>
+#include <ruis/res/texture_cube.hpp>
 #include <ruis/updateable.hpp>
 #include <ruis/widgets/base/fraction_widget.hpp>
 #include <ruis/widgets/widget.hpp>
 
 #include "car_view/shaders/shader_adv.hpp"
 #include "car_view/shaders/shader_phong.hpp"
+#include "car_view/shaders/shader_skybox.hpp"
 
 namespace carcockpit {
 
@@ -47,6 +49,8 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	std::shared_ptr<ruis::res::texture_2d> tex_rust_normal;
 	std::shared_ptr<ruis::res::texture_2d> tex_rust_roughness;
 
+	std::shared_ptr<ruis::res::texture_cube> tex_cube_env_hata;
+
 	ruis::quaternion rot = ruis::quaternion().set_identity();
 
 	std::shared_ptr<ruis::render::vertex_array> cube_vao;
@@ -55,6 +59,7 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 	std::shared_ptr<ruis::render::vertex_array> vao_lamba_l;
 	std::shared_ptr<ruis::render::vertex_array> vao_lamba_r;
 
+	std::shared_ptr<shader_skybox> skybox_s;
 	std::shared_ptr<shader_phong> phong_s;
 	std::shared_ptr<shader_adv> advanced_s;
 
@@ -66,7 +71,7 @@ class car_widget : public ruis::fraction_widget, public ruis::updateable, virtua
 
 	ruis::vec3 camera_target{0, 1, 0};
 
-	ruis::real camera_transition_duration = 0.4; // not seconds ;)
+	ruis::real camera_transition_duration = 0.2; // not seconds ;)
 	// bool camera_transition_ongoing = true;
 	bool mouse_rotate = false;
 	bool mouse_pan = false;
