@@ -26,13 +26,132 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <utki/util.hpp>
 
 using namespace std::string_view_literals;
-
 using namespace ruis::render;
+
+scene::scene() //utki::shared_ref<ruis::context> c)
+: //context_(c)
+{
+}
+
+int read_int(const jsondom::value& json, const std::string& name)
+{
+	int value;
+	auto it = json.object().find(name);
+	if (it != json.object().end() && it->second.is_number()) {
+		value = it->second.number().to_int32();
+	} else {
+		throw std::invalid_argument("read_gltf(): glTF expected number, found different type");
+	}
+	return value;
+}
+
+float read_float(const jsondom::value& json, const std::string& name)
+{
+	float value;
+	auto it = json.object().find(name);
+	if (it != json.object().end() && it->second.is_number()) {
+		value = it->second.number().to_float();
+	} else {
+		throw std::invalid_argument("read_gltf(): glTF expected number, found different type");
+	}
+	return value;
+}
+
+ruis::vec3 read_vec3(const jsondom::value& json, const std::string& name)
+{
+	ruis::vec3 value;
+	auto it = json.object().find(name);
+	if (it == json.object().end() || !it->second.is_array()) {
+		throw std::invalid_argument("read_gltf(): glTF read error, expected array");
+	} else {
+		int = 0;
+		for (const auto& vec_json : it->second.array()) 
+		{
+			//value[i++] = read_float(vec_json);
+		}
+	}
+	return value;
+}
+
+utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json)
+{
+	// buffer_view_json.object().
+	auto new_buffer_view = utki::make_shared<buffer_view>(0, 0, 0);
+	return new_buffer_view;
+}
+
+utki::shared_ref<accessor> read_accessor(
+	const jsondom::value& accessor_json,
+	const std::vector<utki::shared_ref<buffer_view>>& buffer_views
+)
+{
+	auto new_accessor = utki::make_shared<accessor>();
+	return new_accessor;
+}
+
+utki::shared_ref<mesh> read_mesh(
+	const scene& s, 
+	const jsondom::value& mesh_json,
+	const utki::span<uint8_t>& glb_binary_buffer,
+	const std::vector<utki::shared_ref<accessor>>& accessors,
+	ruis::render::render_factory& rf
+)
+{
+	// ruis::render::vertex_array::buffers_type buffers;
+	// buffers.push_back(utki::make_shared<vertex_buffer>(glb_binary_buffer));
+
+	//auto buf_short = reinterpret_cast<utki::span<uint16_t>
+	//const utki::span<uint16_t> short_buf(glb_binary_buffer)
+	const utki::span<uint16_t> short_buf = 
+		utki::make_span<uint16_t>( reinterpret_cast<uint16_t*>(glb_binary_buffer.data()), glb_binary_buffer.size_bytes() / 2 );
+
+	auto indices = rf.create_index_buffer(short_buf);
+
+	// auto vao = utki::make_shared<ruis::render::vertex_array>(
+	// 	std::move(buffers),
+	// 	indices,
+	// 	ruis::render::vertex_array::mode::triangles
+	// );
+
+	std::vector<ruis::vec4> positions;
+	std::vector<ruis::vec2> texture_coordinates_0;
+	std::vector<ruis::vec3> normals;
+	std::vector<ruis::vec3> tangents;
+	std::vector<ruis::vec3> bitangents;
+
+	auto vbo_positions = rf.create_vertex_buffer(utki::make_span(positions));
+	auto vbo_texture_coordinates_0 = rf.create_vertex_buffer(utki::make_span(texture_coordinates_0));
+	auto vbo_normals = rf.create_vertex_buffer(utki::make_span(normals));
+	auto vbo_tangents = rf.create_vertex_buffer(utki::make_span(tangents));
+	auto vbo_bitangents = rf.create_vertex_buffer(utki::make_span(bitangents));
+
+	auto vao =  rf.create_vertex_array(
+				{vbo_positions, vbo_texture_coordinates_0, vbo_normals, vbo_tangents, vbo_bitangents},
+				indices,
+				ruis::render::vertex_array::mode::triangles
+			);
+
+	auto new_mesh = utki::make_shared<mesh>(vao);
+	return new_mesh;
+}
+
+utki::shared_ref<node> read_node(const jsondom::value& node_json, const std::vector<utki::shared_ref<mesh>>& meshes)
+{
+	trs transformation = transformation_identity;
+	auto new_node = utki::make_shared<node>(meshes[0], "tmp_name", transformation);
+	return new_node;
+}
 
 utki::shared_ref<scene> ruis::render::read_gltf(const papki::file& fi, ruis::render::render_factory& rf)
 {
-	auto gltf = fi.load();
+	auto new_scene = utki::make_shared<scene>();
+	std::vector<utki::shared_ref<node>>
+		nodes; // all nodes that are listed in gltf file overall, without binding to any scene(s)
+	std::vector<utki::shared_ref<mesh>> meshes; // order is important on loading stage
+	std::vector<utki::shared_ref<accessor>> accessors; // order is important on loading stage
+	std::vector<utki::shared_ref<buffer_view>> buffer_views; // order is important on loading stage
 
+	auto gltf = fi.load();
 	auto p = utki::make_span(gltf);
 
 	constexpr auto gltf_header_size = 4;
@@ -93,21 +212,60 @@ utki::shared_ref<scene> ruis::render::read_gltf(const papki::file& fi, ruis::ren
 
 	auto json_span = p.subspan(0, chunk_length);
 	auto json = jsondom::read(json_span);
-
+	p = p.subspan(chunk_length); // proceed to binary data, json dom hierarchy is formed
 	ASSERT(json.is_object())
 
 	for (const auto& kv : json.object()) {
 		std::cout << "key = " << kv.first << ", value type = " << unsigned(kv.second.get_type()) << std::endl;
 	}
 
-	p = p.subspan(chunk_length);
 
-	// read binary chunk
 	{
-		// TODO: bin_span
+		auto it = json.object().find("bufferViews");
+		if (it == json.object().end() || !it->second.is_array()) {
+			throw std::invalid_argument("read_gltf(): glTF does not have any valid bufferViews");
+		} else {
+			for (const auto& buffer_view_json : it->second.array()) {
+				buffer_views.push_back(read_buffer_view(buffer_view_json));
+			}
+		}
 	}
 
-	// TODO:
+	{
+		auto it = json.object().find("accessors");
+		if (it == json.object().end() || !it->second.is_array()) {
+			throw std::invalid_argument("read_gltf(): glTF does not have any valid accessors");
+		} else {
+			for (const auto& accessor_json : it->second.array()) {
+				accessors.push_back(read_accessor(accessor_json, buffer_views));
+			}
+		}
+	}
 
-	return utki::make_shared<scene>();
+	// load meshes
+	auto meshes_it = json.object().find("meshes");
+	if (meshes_it == json.object().end() || !meshes_it->second.is_array()) {
+		throw std::invalid_argument("read_gltf(): glTF does not have any valid nodes");
+	} else {
+		// load all meshes into the scene object (actually, there should be an uber-object for mesh storage, but we
+		// currenetly support only one scene)
+		for (const auto& mesh_json : meshes_it->second.array()) {
+			meshes.push_back(read_mesh(new_scene.get(), mesh_json, p, accessors, rf));
+		}
+	}
+
+	// load nodes
+	auto nodes_it = json.object().find("nodes");
+	if (nodes_it == json.object().end() || !nodes_it->second.is_array()) {
+		throw std::invalid_argument("read_gltf(): glTF does not have any valid nodes");
+	} else {
+		// load all nodes into an intermediate array, form scenes from nodes later
+		for (const auto& node_json : nodes_it->second.array()) {
+			nodes.push_back(read_node(node_json, meshes));
+		}
+	}
+
+	new_scene.get().nodes = nodes; // currently we support only one scene per gltf file
+
+	return new_scene;
 }

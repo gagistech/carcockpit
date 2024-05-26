@@ -22,3 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "mesh.hpp"
 
 using namespace ruis::render;
+
+mesh::mesh(utki::shared_ref<ruis::render::vertex_array> vao) :
+	vao(vao)
+{}

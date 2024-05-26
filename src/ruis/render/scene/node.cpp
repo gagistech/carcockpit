@@ -22,3 +22,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "node.hpp"
 
 using namespace ruis::render;
+
+node::node(utki::shared_ref<mesh> mesh_v, const std::string name, const trs& transformation) :
+	mesh_v(mesh_v),
+	name(name),
+	transformation(transformation)
+{}

@@ -99,7 +99,8 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	this->tex_rust_normal = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_normal").to_shared_ptr();
 	this->tex_rust_roughness = this->context.get().loader.load<ruis::res::texture_2d>("tex_spray_arm").to_shared_ptr();
 
-	this->tex_cube_env_hata = this->context.get().loader.load<ruis::res::texture_cube>("tex_cube_env_hata").to_shared_ptr();
+	this->tex_cube_env_hata =
+		this->context.get().loader.load<ruis::res::texture_cube>("tex_cube_env_hata").to_shared_ptr();
 
 	std::shared_ptr<ModelOBJ> light_model_obj = std::make_shared<ModelOBJ>();
 	std::shared_ptr<ModelOBJ> car_model_obj = std::make_shared<ModelOBJ>();
@@ -305,7 +306,7 @@ void car_widget::set_normal_mapping(bool toggle)
 bool car_widget::on_mouse_button(const ruis::mouse_button_event& e)
 {
 	std::cout << "Is Down = " << e.is_down << std::endl;
-	
+
 	if (e.button == ruis::mouse_button::wheel_up) {
 		camera_attractor /= 1.07;
 	} else if (e.button == ruis::mouse_button::wheel_down) {
@@ -438,7 +439,7 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	// phong_s->render(*this->vao_lamba_r, mvp, modelview, this->tex_car_diffuse->tex(), light_pos_view, light_int);
 	// skybox_s->render(*this->car_vao,
 	// 	mvp,
-	// 	modelview, 
+	// 	modelview,
 	// 	this->tex_cube_env_hata->tex());
 
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);

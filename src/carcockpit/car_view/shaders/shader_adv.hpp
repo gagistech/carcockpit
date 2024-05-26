@@ -40,9 +40,9 @@ public:
 	GLint sampler_normal_map;
 	GLint sampler_roughness_map;
 	GLint sampler_cube;
-	
+
 	GLint mat4_modelview;
-	//GLint mat4_projection;
+	// GLint mat4_projection;
 	GLint mat3_normal;
 
 	GLint vec4_light_position;

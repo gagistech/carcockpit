@@ -32,24 +32,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace ruis::render {
 
+struct trs {
+	ruis::vec3 translation;
+	ruis::quaternion rotation;
+	ruis::vec3 scale;
+};
+
+constexpr trs transformation_identity{
+	{0.0f, 0.0f, 0.0f},
+	{0.0f, 0.0f, 0.0f, 1.0f},
+	{1.0f, 1.0f, 1.0f}
+};
+
 class node
 {
+	ruis::mat4 transformation_matrix;
+
 public:
-	std::string name;
-
 	// TODO: add extras as JSON?
-
 	utki::shared_ref<mesh> mesh_v;
+	std::string name;
+	trs transformation;
 
 	std::vector<utki::shared_ref<node>> children;
 
-	struct trs {
-		ruis::vec3 translation;
-		ruis::quaternion rotation;
-		ruis::vec3 scale;
-	};
+	const ruis::mat4& getTransformationMatrix();
+	// std::variant<ruis::mat4, trs> transformation;
 
-	std::variant<ruis::mat4, trs> transformation;
+	node(utki::shared_ref<mesh> mesh_v, const std::string name, const trs& transformation = transformation_identity);
 };
 
 } // namespace ruis::render

@@ -30,6 +30,7 @@ class mesh
 	utki::shared_ref<ruis::render::vertex_array> vao;
 
 public:
+	mesh(utki::shared_ref<ruis::render::vertex_array> vao);
 };
 
 } // namespace ruis::render

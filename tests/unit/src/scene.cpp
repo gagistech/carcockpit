@@ -9,9 +9,16 @@ tst::set set("scene", [](tst::suite& suite) {
 	suite.add("basic_read", []() {
 		ruis::render::opengles::render_factory rf;
 
-		auto sc = ruis::render::read_gltf(papki::fs_file("samples_gltf/kub.glb"), rf);
+		//{
+			//auto sc = ruis::render::read_gltf(papki::fs_file("samples_gltf/kub.glb"), rf);
+			//tst::check(!sc.get().nodes.empty(), SL);
+		//}
 
-		tst::check(!sc.get().nodes.empty(), SL);
+		{
+			auto sc = ruis::render::read_gltf(papki::fs_file("samples_gltf/parent_and_children.glb"), rf);
+			tst::check(!sc.get().nodes.empty(), SL);
+		}
+		
 	});
 });
 } // namespace
