@@ -23,8 +23,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-node::node(utki::shared_ref<mesh> mesh_v, const std::string name, const trs& transformation) :
-	mesh_v(mesh_v),
+node::node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation) :
+	mesh_(mesh_),
 	name(name),
 	transformation(transformation)
 {}
+
+const ruis::mat4& node::get_transformation_matrix()
+{
+	transformation_matrix.set_identity();
+	transformation_matrix.translate(transformation.translation);
+	transformation_matrix.rotate(transformation.rotation);
+	transformation_matrix.scale(transformation.scale);
+
+	return transformation_matrix;
+}
+
+void node::render()
+{
+	if (mesh_ != nullptr)
+		mesh_->render();
+	for (const auto& child : children) {
+		child.get().render();
+	}
+}

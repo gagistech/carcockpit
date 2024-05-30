@@ -21,16 +21,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <ruis/render/shader.hpp>
 #include <ruis/render/vertex_array.hpp>
 
 namespace ruis::render {
 
-class mesh
+class material
+{
+public:
+	std::shared_ptr<ruis::render::shader> shader;
+	// textures resources ?
+};
+
+class primitive
 {
 	utki::shared_ref<ruis::render::vertex_array> vao;
 
 public:
-	mesh(utki::shared_ref<ruis::render::vertex_array> vao);
+	utki::shared_ref<material> material_;
+	primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_);
+	void render();
+};
+
+class mesh
+{
+public:
+	std::vector<utki::shared_ref<primitive>> primitives;
+	std::string name;
+	mesh(const std::vector<utki::shared_ref<primitive>>& primitives, const std::string& name);
+
+	void render();
 };
 
 } // namespace ruis::render

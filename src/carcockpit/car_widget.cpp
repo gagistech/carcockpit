@@ -26,8 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
+#include <papki/fs_file.hpp>
 #include <ruis/render/opengles/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
+
+#include "../ruis/render/scene/gltf_loader.hpp"
 
 using namespace carcockpit;
 
@@ -35,6 +38,9 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
 	ruis::fraction_widget(this->context, {})
 {
+	//ruis::render::gltf_loader l(*this->context.get().renderer.get().factory, true);
+	//auto scene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb"));
+
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	std::array<ruis::vector3, 36> cube_pos = {
 		{ruis::vector3(-0, -0, 0), ruis::vector3(0, -0, 0),   ruis::vector3(-0, 0, 0),   ruis::vector3(0, -0, 0),

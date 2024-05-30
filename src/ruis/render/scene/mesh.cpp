@@ -23,6 +23,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-mesh::mesh(utki::shared_ref<ruis::render::vertex_array> vao) :
-	vao(vao)
+mesh::mesh(const std::vector<utki::shared_ref<primitive>>& primitives, const std::string& name) :
+	primitives(primitives),
+	name(name)
 {}
+
+void mesh::render()
+{
+	for (const auto& primitive : primitives) {
+		primitive.get().render();
+	}
+}
+
+primitive::primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_) :
+	vao(vao),
+	material_(material_)
+{}
+
+void primitive::render()
+{
+	// material_.get().shader.get()->render(m, vao.get());
+}

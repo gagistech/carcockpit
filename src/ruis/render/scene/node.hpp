@@ -50,16 +50,18 @@ class node
 
 public:
 	// TODO: add extras as JSON?
-	utki::shared_ref<mesh> mesh_v;
+	std::shared_ptr<mesh> mesh_; // can be null, empty (intermediate) node
 	std::string name;
 	trs transformation;
 
 	std::vector<utki::shared_ref<node>> children;
 
-	const ruis::mat4& getTransformationMatrix();
+	const ruis::mat4& get_transformation_matrix();
 	// std::variant<ruis::mat4, trs> transformation;
 
-	node(utki::shared_ref<mesh> mesh_v, const std::string name, const trs& transformation = transformation_identity);
+	node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation = transformation_identity);
+
+	void render();
 };
 
 } // namespace ruis::render
