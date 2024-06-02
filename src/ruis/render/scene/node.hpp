@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/config.hpp>
 
 #include "mesh.hpp"
+#include "scene.hpp"
 
 namespace ruis::render {
 
@@ -43,6 +44,8 @@ constexpr trs transformation_identity{
 	{0.0f, 0.0f, 0.0f, 1.0f},
 	{1.0f, 1.0f, 1.0f}
 };
+
+class scene;
 
 class node
 {
@@ -61,7 +64,7 @@ public:
 
 	node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation = transformation_identity);
 
-	void render();
+	void render(const scene& s);
 };
 
 } // namespace ruis::render

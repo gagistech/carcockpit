@@ -24,13 +24,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/context.hpp>
 #include <ruis/render/renderer.hpp>
 
+#include "shaders/shader_adv.hpp"
+#include "shaders/shader_phong.hpp"
+#include "shaders/shader_skybox.hpp"
+
 #include "node.hpp"
+#include "scene.hpp"
 
 namespace ruis::render {
+
+class node;
 
 class scene
 {
 public:
+	std::string name;
 	// utki::shared_ref<ruis::context> context_;
 	std::vector<utki::shared_ref<node>> nodes;
 	// std::vector<utki::shared_ref<mesh>> meshes; // mesh order is important on loading stage
@@ -38,4 +46,54 @@ public:
 	scene();
 };
 
+class scene_renderer
+{
+protected:
+	ruis::mat4 projection;
+	virtual void render_node(utki::shared_ref<node> n, ruis::mat4 model) = 0;
+
+public:
+	void render(utki::shared_ref<node> n, ruis::mat4 parent_model);
+
+	virtual ~scene_renderer() {}
+};
+
+class scene_renderer_regular : public scene_renderer
+{
+	std::shared_ptr<shader_skybox> skybox_shader;
+	std::shared_ptr<shader_phong> phong_shader;
+	std::shared_ptr<shader_adv> advanced_shader;
+
+public:
+	ruis::mat4 view_matrix;
+
+	void render_node(utki::shared_ref<node> n, ruis::mat4 model) override;
+	scene_renderer_regular();
+};
+
 } // namespace ruis::render
+
+// class shadow_scene_renderer : public scene_renderer{
+// public:
+//   const matrix shadow_matrix;
+
+//   void render_node(const node& n, matrix model)override{
+//     // efwefew
+//   }
+// };
+
+// auto shadow_tex;
+
+// scene::render(){
+//   ordinary_scene_renderer or;
+
+//   or.render(root_node);
+
+//   if(shadow_cache_dirty){
+//     shadow_scene_renderer sr(light_pos);
+
+//     sr.render(root_node);
+
+//     shadow_tex = sr.get_result();
+//   }
+// }

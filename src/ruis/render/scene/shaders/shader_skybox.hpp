@@ -23,49 +23,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // #include <ruis/render/texturing_shader.hpp>
 #include <ruis/render/opengles/shader_base.hpp>
-#include <ruis/render/texture_2d.hpp>
 #include <ruis/render/texture_cube.hpp>
 
-namespace ruis {
-using mat3 = r4::matrix3<real>;
-using matrix3 = mat3;
-static_assert(sizeof(mat3) == sizeof(real) * 3 * 3, "size mismatch");
-} // namespace ruis
+namespace ruis::render {
 
-namespace carcockpit {
-
-class shader_adv : public ruis::render::opengles::shader_base
+class shader_skybox : public ruis::render::opengles::shader_base
 {
 public:
-	GLint sampler_normal_map;
-	GLint sampler_roughness_map;
-	GLint sampler_cube;
+	GLint mat4_modelview, mat3_normal, vec4_light_position, vec3_light_intensity;
 
-	GLint mat4_modelview;
-	// GLint mat4_projection;
-	GLint mat3_normal;
-
-	GLint vec4_light_position;
-	GLint vec3_light_intensity;
-	GLint vec3_set_normal_mapping;
-
-	ruis::vec3 set_normal_mapping_vector{1, 1, 1}; // experimental
-
-	shader_adv();
+	shader_skybox();
 	void render(
 		const ruis::render::vertex_array& va,
 		const r4::matrix4<float>& mvp,
 		const r4::matrix4<float>& modelview,
-		const r4::matrix4<float>& projection,
-		const ruis::render::texture_2d& tex_color,
-		const ruis::render::texture_2d& tex_normal,
-		const ruis::render::texture_2d& tex_roughness,
-		const ruis::render::texture_cube& tex_cube_env,
-		const ruis::vec4& light_pos,
-		const ruis::vec3& light_int
+		const ruis::render::texture_cube& tex_env_cube
 	) const;
-
-	void set_normal_mapping(bool on);
 };
 
-} // namespace carcockpit
+} // namespace ruis::render

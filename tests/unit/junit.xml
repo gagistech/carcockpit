@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name='' tests='1' disabled='0' errors='1' failures='0' skipped='0' time='0.001'>
-	<testsuite name='scene' tests='1' disabled='0' failures='0' errors='1' skipped='0'>
-		<testcase name='basic_read' status='errored' time='0.001'>
-			<error message='uncaught std::out_of_range: map::at'/>
-		</testcase>
+<testsuites name='' tests='1' disabled='0' errors='0' failures='0' skipped='0' time='0.001'>
+	<testsuite name='scene' tests='1' disabled='0' failures='0' errors='0' skipped='0'>
+		<testcase name='basic_read' status='passed' time='0.001'/>
 	</testsuite>
 </testsuites>

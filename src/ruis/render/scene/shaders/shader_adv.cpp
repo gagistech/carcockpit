@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/opengles/vertex_array.hpp>
 #include <ruis/render/opengles/vertex_buffer.hpp>
 
-using namespace carcockpit;
+using namespace ruis::render;
 
 static ruis::mat3 from_mat4(const ruis::mat4& mat)
 {

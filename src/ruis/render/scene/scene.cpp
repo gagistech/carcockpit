@@ -24,3 +24,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace ruis::render;
 
 scene::scene() {}
+
+void scene_renderer::render(utki::shared_ref<node> n, ruis::mat4 parent_model)
+{
+	ruis::mat4 node_model(parent_model);
+	node_model *= n.get().get_transformation_matrix();
+
+	this->render_node(n, node_model);
+
+	for (auto c : n.get().children) {
+		this->render(c, node_model);
+	}
+}
+
+scene_renderer_regular::scene_renderer_regular()
+{
+	skybox_shader = std::make_shared<shader_skybox>();
+	phong_shader = std::make_shared<shader_phong>();
+	advanced_shader = std::make_shared<shader_adv>();
+}
+
+void scene_renderer_regular::render_node(utki::shared_ref<node> n, ruis::mat4 model)
+{
+	// ruis::mat4 final_matrix = projection * model;
+	// phong_shader.get()->
+}

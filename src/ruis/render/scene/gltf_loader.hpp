@@ -41,21 +41,33 @@ class gltf_loader
 
 	utki::span<const uint8_t> glb_binary_buffer;
 
+	// order of items in arrays below is important on loading stage
+	std::vector<utki::shared_ref<scene>> scenes; // all scenes that are listed in gltf file
 	std::vector<utki::shared_ref<node>> nodes; // all nodes that are listed in gltf file
-	std::vector<utki::shared_ref<mesh>> meshes; // order is important on loading stage
-	std::vector<utki::shared_ref<accessor>> accessors; // order is important on loading stage
-	std::vector<utki::shared_ref<buffer_view>> buffer_views; // order is important on loading stage
+	std::vector<utki::shared_ref<mesh>> meshes; // meshes.
+	std::vector<utki::shared_ref<accessor>> accessors; // accessors.
+	std::vector<utki::shared_ref<buffer_view>> buffer_views; // bv's
+
+	std::vector<std::vector<uint32_t>> child_indices; // storage for node child hierarchy (only during loading stage)
 
 	inline int read_int(const jsondom::value& json, const std::string& name);
+	inline bool read_int_checked(const jsondom::value& json, const std::string& name, int& value);
+	inline bool read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value);
 	inline float read_float(const jsondom::value& json, const std::string& name);
 	inline const std::string& read_string(const jsondom::value& json, const std::string& name);
+	bool read_uint_array_checked(const jsondom::value& json, const std::string& name, std::vector<uint32_t>& array);
 	ruis::vec2 read_vec2(const jsondom::value& json, const std::string& name);
 	ruis::vec3 read_vec3(const jsondom::value& json, const std::string& name);
 	ruis::vec4 read_vec4(const jsondom::value& json, const std::string& name);
 	ruis::quat read_quat(const jsondom::value& json, const std::string& name);
 
 	template <typename T>
-	std::shared_ptr<ruis::render::vertex_buffer> create_vertex_buffer_float(utki::span<const uint8_t> buffer);
+	std::shared_ptr<ruis::render::vertex_buffer> create_vertex_buffer_float(
+		utki::span<const uint8_t> buffer,
+		uint32_t acc_count,
+		// uint32_t acc_offset,
+		uint32_t acc_stride
+	);
 
 	template <typename T, size_t dimension>
 	r4::vector<T, dimension> read_vec(const jsondom::value& json, const std::string& name);
@@ -63,7 +75,8 @@ class gltf_loader
 	utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json);
 	utki::shared_ref<accessor> read_accessor(const jsondom::value& accessor_json);
 	utki::shared_ref<mesh> read_mesh(const jsondom::value& mesh_json);
-	utki::shared_ref<node> read_node(const jsondom::value& node_json);
+	utki::shared_ref<node> read_node(const jsondom::value& node_json, int node_index);
+	utki::shared_ref<scene> read_scene(const jsondom::value& scene_json);
 
 public:
 	utki::shared_ref<scene> load(const papki::file& fi);
@@ -91,6 +104,8 @@ struct buffer_view // currently we support only one data buffer, the single data
 struct accessor {
 	utki::shared_ref<buffer_view> bv;
 	uint32_t count;
+	uint32_t byte_offset;
+	uint32_t byte_stride;
 
 	enum class type {
 		scalar = 1,
@@ -114,7 +129,14 @@ struct accessor {
 	std::shared_ptr<ruis::render::vertex_buffer> vbo;
 	std::shared_ptr<ruis::render::index_buffer> ibo;
 
-	accessor(utki::shared_ref<buffer_view> bv, uint32_t count, type type_, component_type component_type_);
+	accessor(
+		utki::shared_ref<buffer_view> bv,
+		uint32_t count,
+		uint32_t byte_offset,
+		uint32_t byte_stride,
+		type type_,
+		component_type component_type_
+	);
 };
 
 } // namespace ruis::render

@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/opengles/vertex_array.hpp>
 #include <ruis/render/opengles/vertex_buffer.hpp>
 
-using namespace carcockpit;
+using namespace ruis::render;
 
 shader_skybox::shader_skybox() :
 	shader_base(

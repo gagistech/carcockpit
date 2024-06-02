@@ -29,9 +29,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace std::string_view_literals;
 using namespace ruis::render;
 
-accessor::accessor(utki::shared_ref<buffer_view> bv, uint32_t count, type type_, component_type component_type_) :
+accessor::accessor(
+	utki::shared_ref<buffer_view> bv,
+	uint32_t count,
+	uint32_t byte_offset,
+	uint32_t byte_stride,
+	type type_,
+	component_type component_type_
+) :
 	bv(bv),
 	count(count),
+	byte_offset(byte_offset),
+	byte_stride(byte_stride),
 	type_(type_),
 	component_type_(component_type_)
 {}
@@ -44,6 +53,26 @@ gltf_loader::gltf_loader(ruis::render::render_factory& render_factory_, bool use
 inline int gltf_loader::read_int(const jsondom::value& json, const std::string& name)
 {
 	return json.object().at(name).number().to_int32();
+}
+
+inline bool gltf_loader::read_int_checked(const jsondom::value& json, const std::string& name, int& value)
+{
+	auto it = json.object().find(name);
+	if (it != json.object().end()) {
+		value = it->second.number().to_int32();
+		return true;
+	}
+	return false;
+}
+
+inline bool gltf_loader::read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value)
+{
+	auto it = json.object().find(name);
+	if (it != json.object().end()) {
+		value = it->second.number().to_uint32();
+		return true;
+	}
+	return false;
 }
 
 inline float gltf_loader::read_float(const jsondom::value& json, const std::string& name)
@@ -65,6 +94,23 @@ r4::vector<T, dimension> gltf_loader::read_vec(const jsondom::value& json, const
 		value[i++] = subjson.number().to_float();
 	}
 	return value;
+}
+
+bool gltf_loader::read_uint_array_checked(
+	const jsondom::value& json,
+	const std::string& name,
+	std::vector<uint32_t>& array
+)
+{
+	auto it = json.object().find(name);
+	if (it != json.object().end()) {
+		array.reserve(it->second.array().size());
+		for (const auto& index : it->second.array())
+			array.push_back(index.number().to_uint32());
+
+		return true;
+	}
+	return false;
 }
 
 ruis::vec2 gltf_loader::read_vec2(const jsondom::value& json, const std::string& name)
@@ -106,24 +152,37 @@ utki::shared_ref<buffer_view> gltf_loader::read_buffer_view(const jsondom::value
 }
 
 template <typename T>
-std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_float(utki::span<const uint8_t> buffer)
+std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_float(
+	utki::span<const uint8_t> buffer,
+	uint32_t acc_count, // in elements (e.g. a whole vec3)
+	// uint32_t acc_offset, // in bytes
+	uint32_t acc_stride // in bytes
+)
 {
 	utki::deserializer d(buffer);
 	std::vector<T> vertex_attribute_buffer;
-	vertex_attribute_buffer.reserve(buffer.size_bytes() / sizeof(T));
+	vertex_attribute_buffer.reserve(acc_count);
 
-	for (size_t i = 0; i < buffer.size_bytes(); i += sizeof(T)) {
+	// // skip offset:
+	// for (uint32_t skip = 0; skip < acc_offset; skip += sizeof(float))
+	// 	d.read_float_le();
+
+	for (uint32_t i = 0; i < acc_count; ++i) {
 		T t;
 
 		if constexpr (std::is_same_v<T, float>) {
 			t = d.read_float_le();
 		} else {
-			for (size_t j = 0; j < sizeof(T) / sizeof(float); ++j)
+			for (uint32_t j = 0; j < t.size(); ++j)
 				t[j] = d.read_float_le();
 		}
 		// we suppose this [] will also work for matrices, anyway, we don't expect matrices as vert attribs
 		// also, only float vectors for now. Need a template<> deserialize function for nice notation
 		vertex_attribute_buffer.push_back(std::move(t));
+
+		// skip stride:
+		for (uint32_t skip = 0; skip < acc_stride; skip += sizeof(float))
+			d.read_float_le();
 	}
 
 	auto vbo = render_factory_.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
@@ -151,60 +210,75 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 
 	int buffer_view_index = read_int(accessor_json, "bufferView");
 
+	uint32_t acc_count = 0;
+	uint32_t acc_offset = 0;
+	uint32_t acc_stride = 0;
+	read_uint32_checked(accessor_json, "count", acc_count);
+	read_uint32_checked(accessor_json, "byteOffset", acc_offset);
+	read_uint32_checked(accessor_json, "byteStride", acc_stride);
+
 	auto new_accessor = utki::make_shared<accessor>(
 		buffer_views[buffer_view_index],
-		read_int(accessor_json, "count"),
+		acc_count,
+		acc_offset,
+		acc_stride,
 		type_,
 		static_cast<accessor::component_type>(read_int(accessor_json, "componentType"))
 	);
 
 	// TODO: take count and byteOffset into account
 
-	const size_t offset = new_accessor.get().bv.get().byte_offset;
-	const size_t length = new_accessor.get().bv.get().byte_length;
-	auto buf = glb_binary_buffer.subspan(offset, length);
+	const uint32_t bv_offset = new_accessor.get().bv.get().byte_offset;
+	const uint32_t bv_length = new_accessor.get().bv.get().byte_length;
+	auto buf = glb_binary_buffer.subspan(bv_offset + acc_offset, bv_length);
+
 	// const size_t num_components = static_cast<const size_t>(new_accessor.get().type_);
 
 	if (new_accessor.get().bv.get().target_ == buffer_view::target::array_buffer) {
 		if (new_accessor.get().component_type_ == accessor::component_type::act_float) {
 			if (new_accessor.get().type_ == accessor::type::scalar)
-				new_accessor.get().vbo = create_vertex_buffer_float<float>(buf);
-			if (new_accessor.get().type_ == accessor::type::vec2)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec2>(buf);
+				new_accessor.get().vbo = create_vertex_buffer_float<float>(buf, acc_count, acc_stride);
+			else if (new_accessor.get().type_ == accessor::type::vec2)
+				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec2>(buf, acc_count, acc_stride);
 			else if (new_accessor.get().type_ == accessor::type::vec3)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec3>(buf);
+				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec3>(buf, acc_count, acc_stride);
 			else if (new_accessor.get().type_ == accessor::type::vec4)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec4>(buf);
+				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec4>(buf, acc_count, acc_stride);
 			else {
 				throw std::logic_error("Matrix vertex attributes currently not supported");
 			}
 
 			// create_vertex_buffer_float<r4::vector<float, num_components>>(buf);
 		}
-	} else if (new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer) {
+	} else if (new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer &&
+			   new_accessor.get().type_ == accessor::type::scalar)
+	{
 		utki::deserializer d(buf);
+		// TODO: think about what to do if index count > 65535
 		if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short) {
 			std::vector<uint16_t> index_attribute_buffer;
-			index_attribute_buffer.reserve(length / sizeof(uint16_t));
+			index_attribute_buffer.reserve(acc_count);
 
-			for (size_t i = 0; i < length; i += sizeof(uint16_t))
+			for (size_t i = 0; i < acc_count; ++i)
 				index_attribute_buffer.push_back(d.read_uint16_le());
 
 			new_accessor.get().ibo = render_factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
-		} else if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int) {
-			if (use_short_indices) {
-				std::vector<uint16_t> index_attribute_buffer;
-				index_attribute_buffer.reserve(length / sizeof(uint32_t));
 
-				for (size_t i = 0; i < length; i += sizeof(uint32_t))
+		} else if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int) {
+			if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
+				std::vector<uint16_t> index_attribute_buffer;
+				index_attribute_buffer.reserve(acc_count);
+
+				for (size_t i = 0; i < acc_count; ++i)
 					index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
 
 				new_accessor.get().ibo = render_factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
+
 			} else {
 				std::vector<uint32_t> index_attribute_buffer;
-				index_attribute_buffer.reserve(length / sizeof(uint32_t));
+				index_attribute_buffer.reserve(acc_count);
 
-				for (size_t i = 0; i < length; i += sizeof(uint32_t))
+				for (size_t i = 0; i < acc_count; ++i)
 					index_attribute_buffer.push_back(d.read_uint32_le());
 
 				new_accessor.get().ibo = render_factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
@@ -242,13 +316,23 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 
 		auto vao = render_factory_.create_vertex_array(
 			{
-				utki::shared_ref<ruis::render::vertex_buffer>(std::move(accessors[position_accessor].get().vbo)),
-				utki::shared_ref<ruis::render::vertex_buffer>(std::move(accessors[texcoord_0_accessor].get().vbo)),
-				utki::shared_ref<ruis::render::vertex_buffer>(std::move(accessors[normal_accessor].get().vbo)),
-				utki::shared_ref<ruis::render::vertex_buffer>(std::move(accessors[tangent_accessor].get().vbo))
+				utki::shared_ref<ruis::render::vertex_buffer>(
+					std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+				),
+				utki::shared_ref<ruis::render::vertex_buffer>(
+					std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+				),
+				utki::shared_ref<ruis::render::vertex_buffer>(
+					std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
+				),
+				utki::shared_ref<ruis::render::vertex_buffer>(
+					std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
+				)
 				// , vbo_bitangents
 			},
-			utki::shared_ref<ruis::render::index_buffer>(std::move(accessors[index_accessor].get().ibo)),
+			utki::shared_ref<ruis::render::index_buffer>(
+				std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
+			),
 			ruis::render::vertex_array::mode::triangles
 		);
 
@@ -260,36 +344,51 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 	return new_mesh;
 }
 
-utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json)
+utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json, int node_index)
 {
 	trs transformation = transformation_identity;
 
 	std::string name = read_string(node_json, "name");
-	transformation.rotation = read_quat(node_json, "rotation");
-	transformation.scale = read_vec3(node_json, "scale");
-	transformation.translation = read_vec3(node_json, "translation");
+
+	auto it = node_json.object().find("rotation");
+	if (it != node_json.object().end())
+		transformation.rotation = read_quat(node_json, "rotation");
+
+	it = node_json.object().find("scale");
+	if (it != node_json.object().end())
+		transformation.scale = read_vec3(node_json, "scale");
+
+	it = node_json.object().find("translation");
+	if (it != node_json.object().end())
+		transformation.translation = read_vec3(node_json, "translation");
 
 	int mesh_index = -1;
-	try {
-		mesh_index = read_int(node_json, "mesh");
-	} catch (std::exception& e) {
-		// no mesh: empty node, not an error
-	}
-	// catch(std::out_of_range)
-	// catch(std::logic_error)
-	// catch(std::invalid_argument)
+	bool ok = read_int_checked(node_json, "mesh", mesh_index);
 
-	auto new_node =
-		utki::make_shared<node>(mesh_index > 0 ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
+	child_indices.push_back(std::vector<uint32_t>());
+	read_uint_array_checked(node_json, "children", child_indices[node_index]);
+
+	auto new_node = utki::make_shared<node>(ok ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
 	return new_node;
+}
+
+utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json)
+{
+	auto new_scene = utki::make_shared<scene>();
+	std::vector<uint32_t> node_indices;
+	new_scene.get().name = read_string(scene_json, "name");
+	read_uint_array_checked(scene_json, "nodes", node_indices);
+
+	for (uint32_t ni : node_indices) {
+		new_scene.get().nodes.push_back(this->nodes[ni]);
+	}
+
+	return new_scene;
 }
 
 utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 {
-	auto new_scene = utki::make_shared<scene>();
-
 	auto gltf = fi.load();
-
 	utki::deserializer d(gltf);
 
 	constexpr auto gltf_header_size = 4;
@@ -381,17 +480,43 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 
 	std::cout << "loading nodes" << std::endl;
 	// load nodes
+	int i = 0;
 	auto nodes_it = json.object().find("nodes");
 	if (nodes_it == json.object().end() || !nodes_it->second.is_array()) {
 		throw std::invalid_argument("read_gltf(): glTF does not have any valid nodes");
 	} else {
 		// load all nodes into an intermediate array, form scenes from nodes later
 		for (const auto& node_json : nodes_it->second.array()) {
-			nodes.push_back(read_node(node_json));
+			nodes.push_back(read_node(node_json, i++));
 		}
 	}
 
-	new_scene.get().nodes = nodes; // currently we support only one scene per gltf file
+	// hierarchize nodes
+	ASSERT(nodes.size() == child_indices.size())
+	for (uint32_t i = 0; i < nodes.size(); ++i) {
+		for (uint32_t ci : child_indices[i]) {
+			nodes[i].get().children.push_back(nodes[ci]);
+		}
+	}
 
-	return new_scene;
+	// read scenes
+	auto scenes_it = json.object().find("scenes");
+	if (scenes_it == json.object().end() || !scenes_it->second.is_array()) {
+		throw std::invalid_argument("read_gltf(): glTF does not have any valid scenes");
+	} else {
+		// load all nodes into an intermediate array, form scenes from nodes later
+		for (const auto& scene_json : scenes_it->second.array()) {
+			scenes.push_back(read_scene(scene_json));
+		}
+	}
+
+	int active_scene_index = -1;
+	bool ok = read_int_checked(json, "scene", active_scene_index);
+	if (!ok) {
+		// this .gltf file is a library
+		return utki::make_shared<scene>();
+	} else {
+		auto active_scene = scenes[active_scene_index];
+		return active_scene;
+	}
 }

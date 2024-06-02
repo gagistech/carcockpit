@@ -33,13 +33,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ruis/render/scene/gltf_loader.hpp"
 
 using namespace carcockpit;
+using namespace ruis::render;
 
 car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters params) :
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
 	ruis::fraction_widget(this->context, {})
 {
-	//ruis::render::gltf_loader l(*this->context.get().renderer.get().factory, true);
-	//auto scene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb"));
+	// ruis::render::gltf_loader l(*this->context.get().renderer.get().factory, true);
+	// auto scene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb"));
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	std::array<ruis::vector3, 36> cube_pos = {

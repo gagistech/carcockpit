@@ -31,7 +31,7 @@ using matrix3 = mat3;
 static_assert(sizeof(mat3) == sizeof(real) * 3 * 3, "size mismatch");
 } // namespace ruis
 
-namespace carcockpit {
+namespace ruis::render {
 
 class shader_phong : public ruis::render::opengles::shader_base
 {
@@ -49,4 +49,4 @@ public:
 	) const;
 };
 
-} // namespace carcockpit
+} // namespace ruis::render

@@ -39,11 +39,11 @@ const ruis::mat4& node::get_transformation_matrix()
 	return transformation_matrix;
 }
 
-void node::render()
+void node::render(const scene& s)
 {
 	if (mesh_ != nullptr)
 		mesh_->render();
 	for (const auto& child : children) {
-		child.get().render();
+		child.get().render(s);
 	}
 }
