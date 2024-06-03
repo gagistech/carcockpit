@@ -19,42 +19,40 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /* ================ LICENSE END ================ */
 
-#include <clargs/parser.hpp>
+#pragma once
+
 #include <ruisapp/application.hpp>
 
-#include "application.hpp"
-#include "car_widget.hpp"
-#include "gui.hpp"
+#include "shaders/shader_adv.hpp"
+#include "shaders/shader_phong.hpp"
+#include "shaders/shader_skybox.hpp"
 
-using namespace std::string_literals;
 using namespace std::string_view_literals;
 
 namespace carcockpit {
 
-const ruisapp::application_factory app_fac([](auto executable, auto args) {
-	bool window = false;
+class application : public ruisapp::application
+{
+public:
+	application(bool window, std::string_view res_path);
 
-	// TODO: look in /usr/local/share/carcockpit first?
-	std::string res_path = utki::cat("/usr/share/"sv, application::app_name);
-	// std::string res_path = "res/"s;
+	void toggleCamera();
+	void toggleNormalMapping();
 
-	clargs::parser p;
+	static constexpr std::string_view app_name = "carcockpit"sv;
 
-	p.add("window", "run in window mode", [&]() {
-		window = true;
-	});
+	static application& inst()
+	{
+		return static_cast<application&>(ruisapp::application::inst());
+	}
 
-	p.add(
-		"res-path",
-		utki::cat("resources path, default = /usr/share/"sv, application::app_name),
-		[&](std::string_view v) {
-			res_path = v;
-		}
-	);
+	ruis::render::shader_skybox shader_skybox_v;
+	ruis::render::shader_phong shader_phong_v;
+	ruis::render::shader_adv shader_adv_v;
 
-	p.parse(args);
-
-	return std::make_unique<application>(window, res_path);
-});
+private:
+	bool cam_toggle = false;
+	bool nm_toggle = true;
+};
 
 } // namespace carcockpit

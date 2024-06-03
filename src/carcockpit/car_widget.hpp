@@ -31,11 +31,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // #include "../ruis/render/scene/shaders/shader_adv.hpp"
 // #include "../ruis/render/scene/shaders/shader_phong.hpp"
 // #include "../ruis/render/scene/shaders/shader_skybox.hpp"
+#include "../ruis/render/scene/scene.hpp"
+
 #include "shaders/shader_adv.hpp"
 #include "shaders/shader_phong.hpp"
 #include "shaders/shader_skybox.hpp"
-
-#include "../ruis/render/scene/scene.hpp"
 
 namespace carcockpit {
 

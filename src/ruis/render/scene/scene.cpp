@@ -21,9 +21,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "scene.hpp"
 
+#include "../../../carcockpit/application.hpp"
+
 using namespace ruis::render;
 
 scene::scene() {}
+
+void scene::render(ruis::render::renderer& r)
+{
+	// TODO: render from here
+	[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
+}
 
 void scene_renderer::render(utki::shared_ref<node> n, ruis::mat4 parent_model)
 {
@@ -37,7 +45,8 @@ void scene_renderer::render(utki::shared_ref<node> n, ruis::mat4 parent_model)
 	}
 }
 
-scene_renderer_regular::scene_renderer_regular()
+scene_renderer_regular::scene_renderer_regular(ruis::render::renderer& r) :
+	scene_renderer(r)
 {
 	// skybox_shader = std::make_shared<shader_skybox>();
 	// phong_shader = std::make_shared<shader_phong>();

@@ -75,7 +75,7 @@ class gltf_loader
 	utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json);
 	utki::shared_ref<accessor> read_accessor(const jsondom::value& accessor_json);
 	utki::shared_ref<mesh> read_mesh(const jsondom::value& mesh_json);
-	utki::shared_ref<node> read_node(const jsondom::value& node_json, int node_index);
+	utki::shared_ref<node> read_node(const jsondom::value& node_json);
 	utki::shared_ref<scene> read_scene(const jsondom::value& scene_json);
 
 public:

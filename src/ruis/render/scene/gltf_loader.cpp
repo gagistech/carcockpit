@@ -181,8 +181,9 @@ std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_f
 		vertex_attribute_buffer.push_back(std::move(t));
 
 		// skip stride:
-		for (uint32_t skip = 0; skip < acc_stride; skip += sizeof(float))
-			d.read_float_le();
+		// for (uint32_t skip = 0; skip < acc_stride; skip += sizeof(float))
+		//	d.read_float_le();
+		[[maybe_unused]] auto skipped_span = d.read_span(acc_stride);
 	}
 
 	auto vbo = render_factory_.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
@@ -344,7 +345,7 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 	return new_mesh;
 }
 
-utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json, int node_index)
+utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json)
 {
 	trs transformation = transformation_identity;
 
@@ -366,7 +367,7 @@ utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json, i
 	bool ok = read_int_checked(node_json, "mesh", mesh_index);
 
 	child_indices.push_back(std::vector<uint32_t>());
-	read_uint_array_checked(node_json, "children", child_indices[node_index]);
+	read_uint_array_checked(node_json, "children", child_indices.back());
 
 	auto new_node = utki::make_shared<node>(ok ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
 	return new_node;
@@ -480,14 +481,13 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 
 	std::cout << "loading nodes" << std::endl;
 	// load nodes
-	int i = 0;
 	auto nodes_it = json.object().find("nodes");
 	if (nodes_it == json.object().end() || !nodes_it->second.is_array()) {
 		throw std::invalid_argument("read_gltf(): glTF does not have any valid nodes");
 	} else {
 		// load all nodes into an intermediate array, form scenes from nodes later
 		for (const auto& node_json : nodes_it->second.array()) {
-			nodes.push_back(read_node(node_json, i++));
+			nodes.push_back(read_node(node_json));
 		}
 	}
 
@@ -509,6 +509,9 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 			scenes.push_back(read_scene(scene_json));
 		}
 	}
+
+	#include <papki/span_file.hpp>
+	const papki::span_file fi(data);
 
 	int active_scene_index = -1;
 	bool ok = read_int_checked(json, "scene", active_scene_index);

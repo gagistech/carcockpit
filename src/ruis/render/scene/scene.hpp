@@ -44,13 +44,19 @@ public:
 	// std::vector<utki::shared_ref<mesh>> meshes; // mesh order is important on loading stage
 	// scene(utki::shared_ref<ruis::context> c);
 	scene();
+	void render(ruis::render::renderer& r);
 };
 
 class scene_renderer
 {
 protected:
+	ruis::render::renderer& r;
 	ruis::mat4 projection;
 	virtual void render_node(utki::shared_ref<node> n, ruis::mat4 model) = 0;
+
+	scene_renderer(ruis::render::renderer& r) :
+		r(r)
+	{}
 
 public:
 	void render(utki::shared_ref<node> n, ruis::mat4 parent_model);
@@ -68,7 +74,7 @@ public:
 	ruis::mat4 view_matrix;
 
 	void render_node(utki::shared_ref<node> n, ruis::mat4 model) override;
-	scene_renderer_regular();
+	scene_renderer_regular(ruis::render::renderer& r);
 };
 
 } // namespace ruis::render

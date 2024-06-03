@@ -54,7 +54,6 @@
             "type": "shell",
             "command": "make run-app",
             "problemMatcher": [],
-            "dependsOn": "build",
             "group": "build"
         },
         {
@@ -62,7 +61,6 @@
             "type": "shell",
             "command": "make run-app config=dbg",
             "problemMatcher": [],
-            "dependsOn": "build_dbg",
             "group": "build"
         },
         {

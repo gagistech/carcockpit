@@ -32,6 +32,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../ruis/render/scene/gltf_loader.hpp"
 
+#include "application.hpp"
+
 using namespace carcockpit;
 using namespace ruis::render;
 
@@ -459,13 +461,13 @@ void car_widget::render(const ruis::matrix4& matrix) const
 
 	auto vaao1 = demoscene->nodes[0].get().mesh_.get()->primitives[0].get().vao.to_shared_ptr();
 	mtrx = demoscene->nodes[0].get().get_transformation_matrix();
-	phong_s->render(*vaao1, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
+	application::inst()
+		.shader_phong_v.render(*vaao1, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
 
 	auto vaao2 = demoscene->nodes[0].get().children[0].get().mesh_.get()->primitives[0].get().vao.to_shared_ptr();
 	mtrx *= demoscene->nodes[0].get().children[0].get().get_transformation_matrix();
-	phong_s->render(*vaao2, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
-
-	
+	application::inst()
+		.shader_phong_v.render(*vaao2, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
 
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
