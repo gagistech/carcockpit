@@ -24,9 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/context.hpp>
 #include <ruis/render/renderer.hpp>
 
-#include "shaders/shader_adv.hpp"
-#include "shaders/shader_phong.hpp"
-#include "shaders/shader_skybox.hpp"
+// #include "shaders/shader_adv.hpp"
+// #include "shaders/shader_phong.hpp"
+// #include "shaders/shader_skybox.hpp"
 
 #include "node.hpp"
 #include "scene.hpp"
@@ -60,9 +60,9 @@ public:
 
 class scene_renderer_regular : public scene_renderer
 {
-	std::shared_ptr<shader_skybox> skybox_shader;
-	std::shared_ptr<shader_phong> phong_shader;
-	std::shared_ptr<shader_adv> advanced_shader;
+	// std::shared_ptr<shader_skybox> skybox_shader;
+	// std::shared_ptr<shader_phong> phong_shader;
+	// std::shared_ptr<shader_adv> advanced_shader;
 
 public:
 	ruis::mat4 view_matrix;

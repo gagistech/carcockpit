@@ -31,6 +31,8 @@ this_name := ruis_render
 $(eval $(call prorab-config, ../config))
 
 this_srcs += $(call prorab-src-dir, ruis)
+#this_ldlibs += `pkg-config --libs glesv2`
+#this_ldlibs += -lruisapp-opengles-xorg -l ruis-render-opengles
 
 this_static_lib_only := true
 this_no_install := true

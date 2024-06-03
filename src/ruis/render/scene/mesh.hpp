@@ -35,9 +35,8 @@ public:
 
 class primitive
 {
-	utki::shared_ref<ruis::render::vertex_array> vao;
-
 public:
+	utki::shared_ref<ruis::render::vertex_array> vao;
 	utki::shared_ref<material> material_;
 	primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_);
 	void render();

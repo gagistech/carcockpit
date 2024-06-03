@@ -39,9 +39,9 @@ void scene_renderer::render(utki::shared_ref<node> n, ruis::mat4 parent_model)
 
 scene_renderer_regular::scene_renderer_regular()
 {
-	skybox_shader = std::make_shared<shader_skybox>();
-	phong_shader = std::make_shared<shader_phong>();
-	advanced_shader = std::make_shared<shader_adv>();
+	// skybox_shader = std::make_shared<shader_skybox>();
+	// phong_shader = std::make_shared<shader_phong>();
+	// advanced_shader = std::make_shared<shader_adv>();
 }
 
 void scene_renderer_regular::render_node(utki::shared_ref<node> n, ruis::mat4 model)

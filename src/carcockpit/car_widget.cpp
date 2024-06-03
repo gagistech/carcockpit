@@ -259,6 +259,12 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 	LOG([&](auto& o) {
 		o << "Max texture size: " << *maxTextureSize << std::endl;
 	})
+
+	LOG([&](auto& o) {
+		o << "<< LOAD GLTF >>" << std::endl;
+	})
+	ruis::render::gltf_loader l(*this->context.get().renderer.get().factory, true);
+	demoscene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb")).to_shared_ptr();
 }
 
 void car_widget::update(uint32_t dt)
@@ -449,20 +455,33 @@ void car_widget::render(const ruis::matrix4& matrix) const
 	// 	modelview,
 	// 	this->tex_cube_env_hata->tex());
 
+	ruis::mat4 mtrx;
+
+	auto vaao1 = demoscene->nodes[0].get().mesh_.get()->primitives[0].get().vao.to_shared_ptr();
+	mtrx = demoscene->nodes[0].get().get_transformation_matrix();
+	phong_s->render(*vaao1, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
+
+	auto vaao2 = demoscene->nodes[0].get().children[0].get().mesh_.get()->primitives[0].get().vao.to_shared_ptr();
+	mtrx *= demoscene->nodes[0].get().children[0].get().get_transformation_matrix();
+	phong_s->render(*vaao2, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
+
+	
+
 	phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
 
-	advanced_s->render(
-		*this->car_vao,
-		mvp,
-		modelview,
-		projection,
-		this->tex_rust_diffuse->tex(),
-		this->tex_rust_normal->tex(),
-		this->tex_rust_roughness->tex(),
-		this->tex_cube_env_hata->tex(),
-		light_pos_view,
-		light_int
-	);
+	// advanced_s->render(
+	// 	*this->car_vao,
+	// 	mvp,
+	// 	modelview,
+	// 	projection,
+	// 	this->tex_rust_diffuse->tex(),
+	// 	this->tex_rust_normal->tex(),
+	// 	this->tex_rust_roughness->tex(),
+	// 	this->tex_cube_env_hata->tex(),
+	// 	light_pos_view,
+	// 	light_int
+	// );
+
 	// //advanced_s->render(*this->vao_lamba_r, mvp, modelview, projection,
 	// this->tex_car_diffuse->tex(),
 	// // 					this->tex_car_normal->tex(),
