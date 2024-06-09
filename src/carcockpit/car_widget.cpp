@@ -268,7 +268,7 @@ car_widget::car_widget(utki::shared_ref<ruis::context> context, all_parameters p
 
 	ruis::render::gltf_loader l(*this->context.get().renderer.get().factory, true);
 	demoscene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb")).to_shared_ptr();
-	//demoscene = l.load(papki::fs_file("../res/samples_gltf/spray.glb")).to_shared_ptr();
+	// demoscene = l.load(papki::fs_file("../res/samples_gltf/spray.glb")).to_shared_ptr();
 
 	sc_renderer = std::make_shared<ruis::render::scene_renderer>(this->context);
 	sc_renderer->set_scene(demoscene);

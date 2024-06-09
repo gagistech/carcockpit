@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <jsondom/dom.hpp>
 #include <papki/span_file.hpp>
+#include <rasterimage/image_variant.hpp>
 #include <utki/deserializer.hpp>
 #include <utki/string.hpp>
 #include <utki/util.hpp>
@@ -67,6 +68,7 @@ inline bool gltf_loader::read_int_checked(const jsondom::value& json, const std:
 }
 
 inline bool gltf_loader::read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value)
+// TODO: implement read_string_default instead, return value normally
 {
 	auto it = json.object().find(name);
 	if (it != json.object().end()) {
@@ -350,25 +352,50 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		std::cout << accessors.size() << std::endl;
 
 		// auto vbo_bitangents = render_factory_.create_vertex_buffer(utki::make_span(bitangents));
-		//utki::shared_ref<vertex_array> vao; 
-		if(tangent_accessor > 0)
-		{	
+		// utki::shared_ref<vertex_array> vao;
+		if (tangent_accessor > 0) {
+			// auto vao = render_factory_.create_vertex_array(
+			// 	{	
+			// 		utki::shared_ref<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo),
+			// 		utki::shared_ref<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo),
+			// 		utki::shared_ref<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo),
+			// 		utki::shared_ref<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
+			// 		// , vbo_bitangents
+			// 	},
+			// 	utki::shared_ref<ruis::render::index_buffer>(accessors[index_accessor].get().ibo),
+			// 	ruis::render::vertex_array::mode::triangles
+			// );
 			auto vao = render_factory_.create_vertex_array(
-				{
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
-					),
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
-					),
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
-					),
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
-					)
-					// , vbo_bitangents
-				},
+				{utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+				 ),
+				 utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+				 ),
+				 utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
+				 ),
+				  utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
+				 )},
+				utki::shared_ref<ruis::render::index_buffer>(
+					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
+				),
+				ruis::render::vertex_array::mode::triangles
+			);
+			auto material_ = utki::make_shared<material>();
+			primitives.push_back(utki::make_shared<primitive>(vao, material_));
+		} else {
+			auto vao = render_factory_.create_vertex_array(
+				{utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+				 ),
+				 utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+				 ),
+				 utki::shared_ref<ruis::render::vertex_buffer>(
+					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
+				 )},
 				utki::shared_ref<ruis::render::index_buffer>(
 					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
 				),
@@ -377,28 +404,6 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 			auto material_ = utki::make_shared<material>();
 			primitives.push_back(utki::make_shared<primitive>(vao, material_));
 		}
-		else
-		{
-			auto vao = render_factory_.create_vertex_array(
-				{
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
-					),
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
-					),
-					utki::shared_ref<ruis::render::vertex_buffer>(
-						std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
-					)
-				},
-				utki::shared_ref<ruis::render::index_buffer>(
-					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
-				),
-				ruis::render::vertex_array::mode::triangles
-			);	
-			auto material_ = utki::make_shared<material>();
-			primitives.push_back(utki::make_shared<primitive>(vao, material_));
-		}	
 	}
 
 	auto new_mesh = utki::make_shared<mesh>(primitives, name);
@@ -445,6 +450,85 @@ utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json
 	}
 
 	return new_scene;
+}
+
+utki::shared_ref<image_l> gltf_loader::read_image(const jsondom::value& image_json)
+{
+	[[maybe_unused]] bool ok;
+	uint32_t buffer_view_index = 0;
+	[[maybe_unused]] uint32_t mime_type = 0;
+	std::string name;
+	std::string mime_type_string;
+
+	ok = read_string_checked(image_json, "name", name);
+	ok = read_uint32_checked(image_json, "bufferView", buffer_view_index);
+	ok = read_string_checked(image_json, "mimeType", mime_type_string); // TODO: is a string
+
+	auto new_image =
+		utki::make_shared<image_l>(name, buffer_views[buffer_view_index], static_cast<image_l::mime_type>(0)); //// !!!!
+	return new_image;
+}
+
+utki::shared_ref<sampler_l> gltf_loader::read_sampler(const jsondom::value& sampler_json)
+{
+	[[maybe_unused]] bool ok;
+	uint32_t min_filter = 0;
+	uint32_t mag_filter = 0;
+	uint32_t wrap_s = 0;
+	uint32_t wrap_t = 0;
+
+	ok = read_uint32_checked(sampler_json, "minFilter", min_filter);
+	ok = read_uint32_checked(sampler_json, "magFilter", mag_filter);
+	ok = read_uint32_checked(sampler_json, "wrapS", wrap_s);
+	ok = read_uint32_checked(sampler_json, "wrapT", wrap_t);
+
+	auto new_sampler = utki::make_shared<sampler_l>(
+		static_cast<sampler_l::filter>(min_filter),
+		static_cast<sampler_l::filter>(mag_filter),
+		static_cast<sampler_l::wrap>(wrap_s),
+		static_cast<sampler_l::wrap>(wrap_t)
+	);
+	return new_sampler;
+}
+
+utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsondom::value& texture_json)
+{
+	[[maybe_unused]] bool ok;
+	uint32_t image_index = 0;
+	uint32_t sampler_index = 0;
+	ok = read_uint32_checked(texture_json, "source", image_index);
+	ok = read_uint32_checked(texture_json, "sampler", sampler_index);
+
+	auto image = images[image_index];
+	auto sampler = samplers[sampler_index];
+
+	auto image_span = glb_binary_buffer.subspan(image.get().bv.get().byte_offset, image.get().bv.get().byte_length);
+	const papki::span_file fi(image_span);
+
+	rasterimage::image_variant imvar;
+	if (image.get().mime_type_ == image_l::mime_type::image_png) {
+		imvar = rasterimage::read_png(fi);
+	} else if (image.get().mime_type_ == image_l::mime_type::image_jpeg) {
+		imvar = rasterimage::read_jpeg(fi);
+	} else {
+		throw std::invalid_argument("gltf: unknown texture image format");
+	}
+
+	ruis::render::render_factory::texture_2d_parameters tex_params; // TODO: fill texparams properly base on gltf file
+	tex_params.mag_filter = ruis::render::texture_2d::filter::linear;
+	tex_params.min_filter = ruis::render::texture_2d::filter::linear;
+	tex_params.mipmap = texture_2d::mipmap::linear;
+
+	return render_factory_.create_texture_2d(std::move(imvar), tex_params);
+
+	// auto new_texture =
+	// 	utki::make_shared<image_l>(name, buffer_views[buffer_view_index], static_cast<image_l::mime_type>(mime_type));
+	// return new_texture;
+}
+
+utki::shared_ref<material> gltf_loader::read_material(const jsondom::value& material_json)
+{
+	return utki::make_shared<material>();
 }
 
 utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
@@ -514,6 +598,56 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////
+
+	// std::cout << "loading images" << std::endl;
+	// {
+	// 	auto it = json.object().find("images");
+	// 	if (it == json.object().end() || !it->second.is_array()) {
+	// 		throw std::invalid_argument("read_gltf(): glTF does not have any valid images");
+	// 	} else {
+	// 		for (const auto& sub_json : it->second.array()) {
+	// 			images.push_back(read_image(sub_json));
+	// 		}
+	// 	}
+	// }
+
+	// std::cout << "loading samplers" << std::endl;
+	// {
+	// 	auto it = json.object().find("samplers");
+	// 	if (it == json.object().end() || !it->second.is_array()) {
+	// 		throw std::invalid_argument("read_gltf(): glTF does not have any valid samplers");
+	// 	} else {
+	// 		for (const auto& sub_json : it->second.array()) {
+	// 			samplers.push_back(read_sampler(sub_json));
+	// 		}
+	// 	}
+	// }
+
+	// std::cout << "loading textures" << std::endl;
+	// {
+	// 	auto it = json.object().find("textures");
+	// 	if (it == json.object().end() || !it->second.is_array()) {
+	// 		throw std::invalid_argument("read_gltf(): glTF does not have any valid textures");
+	// 	} else {
+	// 		for (const auto& sub_json : it->second.array()) {
+	// 			textures.push_back(read_texture(sub_json));
+	// 		}
+	// 	}
+	// }
+
+	// std::cout << "loading materials" << std::endl;
+	// {
+	// 	auto it = json.object().find("materials");
+	// 	if (it == json.object().end() || !it->second.is_array()) {
+	// 		throw std::invalid_argument("read_gltf(): glTF does not have any valid materials");
+	// 	} else {
+	// 		for (const auto& sub_json : it->second.array()) {
+	// 			materials.push_back(read_material(sub_json));
+	// 		}
+	// 	}
+	// }
+
 	std::cout << "loading accessors" << std::endl;
 	{
 		auto it = json.object().find("accessors");
@@ -530,7 +664,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	// load meshes
 	auto meshes_it = json.object().find("meshes");
 	if (meshes_it == json.object().end() || !meshes_it->second.is_array()) {
-		throw std::invalid_argument("read_gltf(): glTF does not have any valid nodes");
+		throw std::invalid_argument("read_gltf(): glTF does not have any valid meshes");
 	} else {
 		// load all meshes into the scene object (actually, there should be an uber-object for mesh storage, but we
 		// currenetly support only one scene)
@@ -570,8 +704,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 			scenes.push_back(read_scene(scene_json));
 		}
 	}
-
-	// const papki::span_file fi(data);
 
 	// create scene
 	auto active_scene = utki::make_shared<scene>();

@@ -86,7 +86,8 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 		for (const auto& primitive : n.get().mesh_->primitives) {
 			auto& phong = carcockpit::application::inst().shader_phong_v;
 
-			// TODO: primitive.get().material_ use later somehow, choose shader here
+			// TODO: primitive.get().material_ use later somehow, choose shader and textures here, set material-specific
+			// uniforms
 
 			phong.render(
 				primitive.get().vao.get(),

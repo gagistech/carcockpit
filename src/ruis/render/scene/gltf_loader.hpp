@@ -33,6 +33,9 @@ namespace ruis::render {
 
 struct buffer_view;
 struct accessor;
+struct image_l;
+struct sampler_l;
+class material;
 
 class gltf_loader
 {
@@ -47,6 +50,12 @@ class gltf_loader
 	std::vector<utki::shared_ref<mesh>> meshes; // meshes.
 	std::vector<utki::shared_ref<accessor>> accessors; // accessors.
 	std::vector<utki::shared_ref<buffer_view>> buffer_views; // bv's
+
+	// std::vector<utki::shared_ref<texture_l>> textures;
+	std::vector<utki::shared_ref<material>> materials;
+	std::vector<utki::shared_ref<ruis::render::texture_2d>> textures;
+	std::vector<utki::shared_ref<sampler_l>> samplers;
+	std::vector<utki::shared_ref<image_l>> images;
 
 	std::vector<std::vector<uint32_t>> child_indices; // storage for node child hierarchy (only during loading stage)
 
@@ -78,6 +87,11 @@ class gltf_loader
 	utki::shared_ref<mesh> read_mesh(const jsondom::value& mesh_json);
 	utki::shared_ref<node> read_node(const jsondom::value& node_json);
 	utki::shared_ref<scene> read_scene(const jsondom::value& scene_json);
+
+	utki::shared_ref<image_l> read_image(const jsondom::value& image_json);
+	utki::shared_ref<sampler_l> read_sampler(const jsondom::value& sampler_json);
+	utki::shared_ref<ruis::render::texture_2d> read_texture(const jsondom::value& texture_json);
+	utki::shared_ref<material> read_material(const jsondom::value& material_json);
 
 public:
 	utki::shared_ref<scene> load(const papki::file& fi);
@@ -144,5 +158,55 @@ struct accessor {
 		component_type component_type_
 	);
 };
+
+struct image_l { // TODO: put loader helper classes into separate namespace
+	std::string name;
+	utki::shared_ref<buffer_view> bv;
+	enum class mime_type {
+		undefined = 0,
+		image_jpeg = 1,
+		image_png = 2
+	} mime_type_;
+
+	image_l(std::string name, utki::shared_ref<buffer_view> bv, mime_type mime_type_) :
+		name(std::move(name)),
+		bv(std::move(bv)),
+		mime_type_(mime_type_)
+	{}
+};
+
+struct sampler_l {
+	enum class filter {
+		nearest = 9728,
+		linear = 9729,
+		nearest_mipmap_nearest = 9984,
+		linear_mipmap_nearest = 9985,
+		nearest_mipmap_linear = 9986,
+		linear_mipmap_linear = 9987
+	};
+
+	enum class wrap {
+		clamp_to_edge = 33071,
+		mirrored_repeat = 33648,
+		repeat = 10497
+	};
+
+	filter min;
+	filter mag;
+	wrap wrap_s;
+	wrap wrap_t;
+
+	sampler_l(filter min, filter mag, wrap wrap_s, wrap wrap_t) :
+		min(min),
+		mag(mag),
+		wrap_s(wrap_s),
+		wrap_t(wrap_t)
+	{}
+};
+
+// struct texture_l {
+// 	utki::shared_ref<image_l> source;
+// 	utki::shared_ref<sampler_l> sampler;
+// };
 
 } // namespace ruis::render

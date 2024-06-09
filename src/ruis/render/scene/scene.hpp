@@ -49,7 +49,7 @@ public:
 	// void render(ruis::render::renderer& r);
 };
 
-class camera
+class camera // TODO: derive from node
 {
 public:
 	ruis::vec3 pos;
@@ -66,7 +66,7 @@ public:
 	ruis::vec3 to_view_coords(ruis::vec3 vec);
 };
 
-class light
+class light // TODO: derive from node
 {
 public:
 	ruis::vec4 pos; // vec4, because w = 0 means light is at infinite distance
