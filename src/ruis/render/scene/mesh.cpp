@@ -28,19 +28,19 @@ mesh::mesh(const std::vector<utki::shared_ref<primitive>>& primitives, const std
 	name(name)
 {}
 
-void mesh::render()
-{
-	for (const auto& primitive : primitives) {
-		primitive.get().render();
-	}
-}
+// void mesh::render()
+// {
+// 	for (const auto& primitive : primitives) {
+// 		primitive.get().render();
+// 	}
+// }
 
 primitive::primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_) :
 	vao(vao),
 	material_(material_)
 {}
 
-void primitive::render()
-{
-	// material_.get().shader.get()->render(m, vao.get());
-}
+// void primitive::render()
+// {
+// 	// material_.get().shader.get()->render(m, vao.get());
+// }

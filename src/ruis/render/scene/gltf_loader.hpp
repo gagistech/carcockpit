@@ -55,6 +55,7 @@ class gltf_loader
 	inline bool read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value);
 	inline float read_float(const jsondom::value& json, const std::string& name);
 	inline const std::string& read_string(const jsondom::value& json, const std::string& name);
+	inline bool read_string_checked(const jsondom::value& json, const std::string& name, std::string& value);
 	bool read_uint_array_checked(const jsondom::value& json, const std::string& name, std::vector<uint32_t>& array);
 	ruis::vec2 read_vec2(const jsondom::value& json, const std::string& name);
 	ruis::vec3 read_vec3(const jsondom::value& json, const std::string& name);
@@ -88,15 +89,18 @@ struct buffer_view // currently we support only one data buffer, the single data
 	// utki::span<uint8_t> buffer; // for further development use
 	uint32_t byte_length;
 	uint32_t byte_offset;
+	uint32_t byte_stride;
 
 	enum class target {
+		undefined = 0,
 		array_buffer = 34962,
 		element_Array_buffer = 34963
 	} target_;
 
-	buffer_view(uint32_t byte_length, uint32_t byte_offset, target target_) :
+	buffer_view(uint32_t byte_length, uint32_t byte_offset, uint32_t byte_stride, target target_) :
 		byte_length(byte_length),
 		byte_offset(byte_offset),
+		byte_stride(byte_stride),
 		target_(target_)
 	{}
 };
@@ -105,9 +109,10 @@ struct accessor {
 	utki::shared_ref<buffer_view> bv;
 	uint32_t count;
 	uint32_t byte_offset;
-	uint32_t byte_stride;
+	// uint32_t byte_stride;
 
 	enum class type {
+		undefined = 0,
 		scalar = 1,
 		vec2 = 2,
 		vec3 = 3,
@@ -118,6 +123,7 @@ struct accessor {
 	} type_;
 
 	enum class component_type {
+		undefined = 0,
 		act_signed_byte = 5120,
 		act_unsigned_byte = 5121,
 		act_signed_short = 5122,
@@ -133,7 +139,7 @@ struct accessor {
 		utki::shared_ref<buffer_view> bv,
 		uint32_t count,
 		uint32_t byte_offset,
-		uint32_t byte_stride,
+		// uint32_t byte_stride,
 		type type_,
 		component_type component_type_
 	);

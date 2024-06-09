@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // #include "../ruis/render/scene/shaders/shader_phong.hpp"
 // #include "../ruis/render/scene/shaders/shader_skybox.hpp"
 #include "../ruis/render/scene/scene.hpp"
+#include "../ruis/render/scene/scene_renderer.hpp"
 
 #include "shaders/shader_adv.hpp"
 #include "shaders/shader_phong.hpp"
@@ -42,6 +43,7 @@ namespace carcockpit {
 class car_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
 {
 	std::shared_ptr<ruis::render::scene> demoscene;
+	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
 
 	std::shared_ptr<ruis::res::texture_2d> tex;
 	std::shared_ptr<ruis::res::texture_2d> tex_test;

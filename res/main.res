@@ -74,6 +74,18 @@ tex_spray_arm{
 	file {spray/arm.jpg}  mipmap{linear}
 }
 
+texture_default_black{
+	file {default/texture_default_black.png}  mipmap{linear}
+}
+
+texture_default_white{
+	file {default/texture_default_white.png}  mipmap{linear}
+}
+
+texture_default_normal{
+	file {default/texture_default_normal.png}  mipmap{linear}
+}
+
 tex_cube_env_hata{
 	file_px{envs/hata/px.png}
 	file_nx{envs/hata/nx.png}

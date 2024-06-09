@@ -21,85 +21,56 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <ruis/context.hpp>
-#include <ruis/render/renderer.hpp>
-
 // #include "shaders/shader_adv.hpp"
 // #include "shaders/shader_phong.hpp"
 // #include "shaders/shader_skybox.hpp"
 
 #include "node.hpp"
-#include "scene.hpp"
 
 namespace ruis::render {
 
 class node;
+class camera;
+class light;
 
 class scene
 {
 public:
 	std::string name;
-	// utki::shared_ref<ruis::context> context_;
+
 	std::vector<utki::shared_ref<node>> nodes;
-	// std::vector<utki::shared_ref<mesh>> meshes; // mesh order is important on loading stage
-	// scene(utki::shared_ref<ruis::context> c);
+	std::vector<utki::shared_ref<camera>> cameras;
+	std::vector<utki::shared_ref<light>> lights;
+
+	std::shared_ptr<camera> active_camera;
 	scene();
-	void render(ruis::render::renderer& r);
+	void update(uint32_t dt);
+	uint32_t time = 0;
+	// void render(ruis::render::renderer& r);
 };
 
-class scene_renderer
+class camera
 {
-protected:
-	ruis::render::renderer& r;
-	ruis::mat4 projection;
-	virtual void render_node(utki::shared_ref<node> n, ruis::mat4 model) = 0;
-
-	scene_renderer(ruis::render::renderer& r) :
-		r(r)
-	{}
-
 public:
-	void render(utki::shared_ref<node> n, ruis::mat4 parent_model);
+	ruis::vec3 pos;
+	ruis::vec3 target;
+	ruis::vec3 up{0, 1, 0};
 
-	virtual ~scene_renderer() {}
+	ruis::real fovy;
+	ruis::real near{0.1};
+	ruis::real far{100};
+
+	ruis::mat4 get_projection_matrix(ruis::real aspect_ratio);
+	ruis::mat4 get_view_matrix();
+
+	ruis::vec3 to_view_coords(ruis::vec3 vec);
 };
 
-class scene_renderer_regular : public scene_renderer
+class light
 {
-	// std::shared_ptr<shader_skybox> skybox_shader;
-	// std::shared_ptr<shader_phong> phong_shader;
-	// std::shared_ptr<shader_adv> advanced_shader;
-
 public:
-	ruis::mat4 view_matrix;
-
-	void render_node(utki::shared_ref<node> n, ruis::mat4 model) override;
-	scene_renderer_regular(ruis::render::renderer& r);
+	ruis::vec4 pos; // vec4, because w = 0 means light is at infinite distance
+	ruis::vec3 intensity;
 };
 
 } // namespace ruis::render
-
-// class shadow_scene_renderer : public scene_renderer{
-// public:
-//   const matrix shadow_matrix;
-
-//   void render_node(const node& n, matrix model)override{
-//     // efwefew
-//   }
-// };
-
-// auto shadow_tex;
-
-// scene::render(){
-//   ordinary_scene_renderer or;
-
-//   or.render(root_node);
-
-//   if(shadow_cache_dirty){
-//     shadow_scene_renderer sr(light_pos);
-
-//     sr.render(root_node);
-
-//     shadow_tex = sr.get_result();
-//   }
-// }

@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "gltf_loader.hpp"
 
 #include <jsondom/dom.hpp>
+#include <papki/span_file.hpp>
 #include <utki/deserializer.hpp>
 #include <utki/string.hpp>
 #include <utki/util.hpp>
@@ -33,14 +34,14 @@ accessor::accessor(
 	utki::shared_ref<buffer_view> bv,
 	uint32_t count,
 	uint32_t byte_offset,
-	uint32_t byte_stride,
+	// uint32_t byte_stride,
 	type type_,
 	component_type component_type_
 ) :
 	bv(bv),
 	count(count),
 	byte_offset(byte_offset),
-	byte_stride(byte_stride),
+	// byte_stride(byte_stride),
 	type_(type_),
 	component_type_(component_type_)
 {}
@@ -83,6 +84,16 @@ inline float gltf_loader::read_float(const jsondom::value& json, const std::stri
 inline const std::string& gltf_loader::read_string(const jsondom::value& json, const std::string& name)
 {
 	return json.object().at(name).string();
+}
+
+inline bool gltf_loader::read_string_checked(const jsondom::value& json, const std::string& name, std::string& value)
+{
+	auto it = json.object().find(name);
+	if (it != json.object().end()) {
+		value = it->second.string();
+		return true;
+	}
+	return false;
 }
 
 template <typename T, size_t dimension>
@@ -143,11 +154,18 @@ ruis::quat gltf_loader::read_quat(const jsondom::value& json, const std::string&
 
 utki::shared_ref<buffer_view> gltf_loader::read_buffer_view(const jsondom::value& buffer_view_json)
 {
-	auto new_buffer_view = utki::make_shared<buffer_view>(
-		read_int(buffer_view_json, "byteLength"),
-		read_int(buffer_view_json, "byteOffset"),
-		static_cast<buffer_view::target>(read_int(buffer_view_json, "target"))
-	);
+	[[maybe_unused]] bool b;
+	uint32_t byte_length = 0;
+	uint32_t byte_offset = 0;
+	uint32_t byte_stride = 0;
+	uint32_t target = 0;
+	b = read_uint32_checked(buffer_view_json, "byteLength", byte_length);
+	b = read_uint32_checked(buffer_view_json, "byteOffset", byte_offset);
+	b = read_uint32_checked(buffer_view_json, "byteStride", byte_stride);
+	b = read_uint32_checked(buffer_view_json, "target", target);
+
+	auto new_buffer_view =
+		utki::make_shared<buffer_view>(byte_length, byte_offset, byte_stride, static_cast<buffer_view::target>(target));
 	return new_buffer_view;
 }
 
@@ -192,8 +210,10 @@ std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_f
 
 utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& accessor_json)
 {
+	[[maybe_unused]] bool ok = true;
 	accessor::type type_ = accessor::type::vec3;
-	std::string type_s = read_string(accessor_json, "type");
+	std::string type_s;
+	ok = read_string_checked(accessor_json, "type", type_s);
 
 	if (type_s == "SCALAR")
 		type_ = accessor::type::scalar;
@@ -209,49 +229,57 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	else if (type_s == "MAT4")
 		type_ = accessor::type::mat4;
 
-	int buffer_view_index = read_int(accessor_json, "bufferView");
+	uint32_t buffer_view_index = 0;
+	ok = read_uint32_checked(accessor_json, "bufferView", buffer_view_index);
 
 	uint32_t acc_count = 0;
 	uint32_t acc_offset = 0;
-	uint32_t acc_stride = 0;
-	read_uint32_checked(accessor_json, "count", acc_count);
-	read_uint32_checked(accessor_json, "byteOffset", acc_offset);
-	read_uint32_checked(accessor_json, "byteStride", acc_stride);
+	uint32_t component_type = 0;
+	// uint32_t acc_stride = 0;
+	ok = read_uint32_checked(accessor_json, "count", acc_count);
+	ok = read_uint32_checked(accessor_json, "byteOffset", acc_offset);
+	ok = read_uint32_checked(accessor_json, "componentType", component_type);
+	// read_uint32_checked(accessor_json, "byteStride", acc_stride);
 
 	auto new_accessor = utki::make_shared<accessor>(
 		buffer_views[buffer_view_index],
 		acc_count,
 		acc_offset,
-		acc_stride,
+		// acc_stride,
 		type_,
-		static_cast<accessor::component_type>(read_int(accessor_json, "componentType"))
+		static_cast<accessor::component_type>(component_type)
 	);
 
 	// TODO: take count and byteOffset into account
 
 	const uint32_t bv_offset = new_accessor.get().bv.get().byte_offset;
 	const uint32_t bv_length = new_accessor.get().bv.get().byte_length;
+	const uint32_t bv_stride = new_accessor.get().bv.get().byte_stride;
+
 	auto buf = glb_binary_buffer.subspan(bv_offset + acc_offset, bv_length);
 
 	// const size_t num_components = static_cast<const size_t>(new_accessor.get().type_);
 
-	if (new_accessor.get().bv.get().target_ == buffer_view::target::array_buffer) {
-		if (new_accessor.get().component_type_ == accessor::component_type::act_float) {
-			if (new_accessor.get().type_ == accessor::type::scalar)
-				new_accessor.get().vbo = create_vertex_buffer_float<float>(buf, acc_count, acc_stride);
-			else if (new_accessor.get().type_ == accessor::type::vec2)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec2>(buf, acc_count, acc_stride);
-			else if (new_accessor.get().type_ == accessor::type::vec3)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec3>(buf, acc_count, acc_stride);
-			else if (new_accessor.get().type_ == accessor::type::vec4)
-				new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec4>(buf, acc_count, acc_stride);
-			else {
-				throw std::logic_error("Matrix vertex attributes currently not supported");
-			}
+	// if (new_accessor.get().bv.get().target_ == buffer_view::target::array_buffer) {
 
-			// create_vertex_buffer_float<r4::vector<float, num_components>>(buf);
+	if (new_accessor.get().component_type_ == accessor::component_type::act_float) {
+		if (new_accessor.get().type_ == accessor::type::scalar)
+			new_accessor.get().vbo = create_vertex_buffer_float<float>(buf, acc_count, bv_stride);
+		else if (new_accessor.get().type_ == accessor::type::vec2)
+			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec2>(buf, acc_count, bv_stride);
+		else if (new_accessor.get().type_ == accessor::type::vec3)
+			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec3>(buf, acc_count, bv_stride);
+		else if (new_accessor.get().type_ == accessor::type::vec4)
+			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec4>(buf, acc_count, bv_stride);
+		else {
+			throw std::logic_error("Matrix vertex attributes currently not supported");
 		}
-	} else if (new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer &&
+
+		// create_vertex_buffer_float<r4::vector<float, num_components>>(buf);
+	} else if ((new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short ||
+				new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int) &&
+			   // new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer &&
+			   //  there are gltf exporters which don't mark target at all. So we must detect index arrays another way
 			   new_accessor.get().type_ == accessor::type::scalar)
 	{
 		utki::deserializer d(buf);
@@ -299,11 +327,19 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 	for (const auto& json_primitive : json_primitives_array) {
 		auto attributes_json = json_primitive.object().at("attributes");
 
-		int index_accessor = read_int(json_primitive, "indices");
-		int position_accessor = read_int(attributes_json, "POSITION");
-		int normal_accessor = read_int(attributes_json, "NORMAL");
-		int texcoord_0_accessor = read_int(attributes_json, "TEXCOORD_0");
-		int tangent_accessor = read_int(attributes_json, "TANGENT");
+		int index_accessor = -1;
+		int position_accessor = -1;
+		int normal_accessor = -1;
+		int texcoord_0_accessor = -1;
+		int tangent_accessor = -1;
+
+		[[maybe_unused]] bool ok = true;
+
+		ok = read_int_checked(json_primitive, "indices", index_accessor);
+		ok = read_int_checked(attributes_json, "POSITION", position_accessor);
+		ok = read_int_checked(attributes_json, "NORMAL", normal_accessor);
+		ok = read_int_checked(attributes_json, "TEXCOORD_0", texcoord_0_accessor);
+		ok = read_int_checked(attributes_json, "TANGENT", tangent_accessor);
 
 		std::cout << name << std::endl;
 		std::cout << index_accessor << std::endl;
@@ -314,31 +350,55 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		std::cout << accessors.size() << std::endl;
 
 		// auto vbo_bitangents = render_factory_.create_vertex_buffer(utki::make_span(bitangents));
-
-		auto vao = render_factory_.create_vertex_array(
-			{
-				utki::shared_ref<ruis::render::vertex_buffer>(
-					std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+		//utki::shared_ref<vertex_array> vao; 
+		if(tangent_accessor > 0)
+		{	
+			auto vao = render_factory_.create_vertex_array(
+				{
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+					),
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+					),
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
+					),
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
+					)
+					// , vbo_bitangents
+				},
+				utki::shared_ref<ruis::render::index_buffer>(
+					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
 				),
-				utki::shared_ref<ruis::render::vertex_buffer>(
-					std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+				ruis::render::vertex_array::mode::triangles
+			);
+			auto material_ = utki::make_shared<material>();
+			primitives.push_back(utki::make_shared<primitive>(vao, material_));
+		}
+		else
+		{
+			auto vao = render_factory_.create_vertex_array(
+				{
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
+					),
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
+					),
+					utki::shared_ref<ruis::render::vertex_buffer>(
+						std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
+					)
+				},
+				utki::shared_ref<ruis::render::index_buffer>(
+					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
 				),
-				utki::shared_ref<ruis::render::vertex_buffer>(
-					std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
-				),
-				utki::shared_ref<ruis::render::vertex_buffer>(
-					std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
-				)
-				// , vbo_bitangents
-			},
-			utki::shared_ref<ruis::render::index_buffer>(
-				std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
-			),
-			ruis::render::vertex_array::mode::triangles
-		);
-
-		auto material_ = utki::make_shared<material>();
-		primitives.push_back(utki::make_shared<primitive>(vao, material_));
+				ruis::render::vertex_array::mode::triangles
+			);	
+			auto material_ = utki::make_shared<material>();
+			primitives.push_back(utki::make_shared<primitive>(vao, material_));
+		}	
 	}
 
 	auto new_mesh = utki::make_shared<mesh>(primitives, name);
@@ -500,6 +560,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	}
 
 	// read scenes
+	std::cout << "loading scenes" << std::endl;
 	auto scenes_it = json.object().find("scenes");
 	if (scenes_it == json.object().end() || !scenes_it->second.is_array()) {
 		throw std::invalid_argument("read_gltf(): glTF does not have any valid scenes");
@@ -510,16 +571,32 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	#include <papki/span_file.hpp>
-	const papki::span_file fi(data);
+	// const papki::span_file fi(data);
 
+	// create scene
+	auto active_scene = utki::make_shared<scene>();
 	int active_scene_index = -1;
 	bool ok = read_int_checked(json, "scene", active_scene_index);
 	if (!ok) {
 		// this .gltf file is a library
-		return utki::make_shared<scene>();
 	} else {
-		auto active_scene = scenes[active_scene_index];
-		return active_scene;
+		active_scene = scenes[active_scene_index];
 	}
+
+	// create cameras (currently generates one default camera)
+	std::cout << "create camera" << std::endl;
+
+	auto cam = utki::make_shared<camera>();
+	cam.get().pos = {0, 3.5, -8};
+	cam.get().target = {0, 1, 0};
+	cam.get().up = {0, 1, 0};
+	cam.get().near = 0.1;
+	cam.get().far = 100;
+	cam.get().fovy = 3.1415926 / 3;
+
+	active_scene.get().cameras.push_back(cam);
+	active_scene.get().active_camera = cam.to_shared_ptr();
+
+	std::cout << "gltf load finished" << std::endl;
+	return active_scene;
 }

@@ -64,7 +64,7 @@ public:
 
 	node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation = transformation_identity);
 
-	void render(const scene& s);
+	// void render(const scene& s);
 };
 
 } // namespace ruis::render
