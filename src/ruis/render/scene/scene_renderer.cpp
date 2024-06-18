@@ -66,6 +66,8 @@ void scene_renderer::render()
 
 	ruis::mat4 root_model_matrix;
 	root_model_matrix.set_identity();
+	root_model_matrix.scale(35, 35, 35);
+	root_model_matrix.translate(0, -0.1, 0);
 
 	for (const auto& node_ : scene_v->nodes) {
 		this->render_node(node_, root_model_matrix);
@@ -89,11 +91,13 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 			// TODO: primitive.get().material_ use later somehow, choose shader and textures here, set material-specific
 			// uniforms
 
+			auto tex_diffuse = primitive.get().material_.get().tex_diffuse;
+
 			phong.render(
 				primitive.get().vao.get(),
 				mvp,
 				modelview,
-				texture_default_white->tex(),
+				tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
 				light_pos_view_coords,
 				main_light.intensity
 			);

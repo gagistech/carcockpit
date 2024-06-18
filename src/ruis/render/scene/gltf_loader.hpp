@@ -39,7 +39,7 @@ class material;
 
 class gltf_loader
 {
-	ruis::render::render_factory& render_factory_;
+	ruis::render::factory& factory_;
 	bool use_short_indices; // opengles 2.0, for example, supports only 16-bit indices
 
 	utki::span<const uint8_t> glb_binary_buffer;
@@ -82,6 +82,13 @@ class gltf_loader
 	template <typename T, size_t dimension>
 	r4::vector<T, dimension> read_vec(const jsondom::value& json, const std::string& name);
 
+	template <typename T>
+	std::vector<utki::shared_ref<T>> read_root_array(
+		std::function<T(const jsondom::value& j)> read_func,
+		const jsondom::value& root_json,
+		const std::string& name
+	);
+
 	utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json);
 	utki::shared_ref<accessor> read_accessor(const jsondom::value& accessor_json);
 	utki::shared_ref<mesh> read_mesh(const jsondom::value& mesh_json);
@@ -95,7 +102,7 @@ class gltf_loader
 
 public:
 	utki::shared_ref<scene> load(const papki::file& fi);
-	gltf_loader(ruis::render::render_factory& render_factory_, bool use_short_indices);
+	gltf_loader(ruis::render::factory& factory_, bool use_short_indices);
 };
 
 struct buffer_view // currently we support only one data buffer, the single data buffer located in the .glb file

@@ -25,6 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/texture_2d.hpp>
 #include <ruis/render/vertex_array.hpp>
 
+// #include <ruis/res/texture_2d.hpp>
+
 namespace ruis::render {
 class material
 {

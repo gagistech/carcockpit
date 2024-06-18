@@ -7,7 +7,7 @@
 namespace {
 tst::set set("scene", [](tst::suite& suite) {
 	suite.add("basic_read", []() {
-		ruis::render::opengles::render_factory rf;
+		ruis::render::opengles::factory rf;
 
 		//{
 		// auto sc = ruis::render::read_gltf(papki::fs_file("samples_gltf/kub.glb"), rf);
