@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruisapp/application.hpp>
 
 #include "application.hpp"
-#include "car_widget.hpp"
+#include "gltf_viewer_widget.hpp"
 #include "gui.hpp"
 
 using namespace std::string_literals;

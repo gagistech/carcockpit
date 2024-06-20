@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "application.hpp"
 
-#include "car_widget.hpp"
+#include "gltf_viewer_widget.hpp"
 #include "gui.hpp"
 
 using namespace carcockpit;
@@ -65,7 +65,7 @@ application::application(bool window, std::string_view res_path) :
 void application::toggleCamera()
 {
 	cam_toggle = !cam_toggle;
-	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
+	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
 	if (car_w) {
 		car_w->toggleCamera(cam_toggle);
 	}
@@ -74,7 +74,7 @@ void application::toggleCamera()
 void application::toggleNormalMapping()
 {
 	nm_toggle = !nm_toggle;
-	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::car_widget>("car_widget");
+	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
 	if (car_w) {
 		car_w->set_normal_mapping(nm_toggle);
 	}

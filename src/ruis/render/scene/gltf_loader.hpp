@@ -40,7 +40,6 @@ class material;
 class gltf_loader
 {
 	ruis::render::factory& factory_;
-	bool use_short_indices; // opengles 2.0, for example, supports only 16-bit indices
 
 	utki::span<const uint8_t> glb_binary_buffer;
 
@@ -102,7 +101,7 @@ class gltf_loader
 
 public:
 	utki::shared_ref<scene> load(const papki::file& fi);
-	gltf_loader(ruis::render::factory& factory_, bool use_short_indices);
+	gltf_loader(ruis::render::factory& factory_);
 };
 
 struct buffer_view // currently we support only one data buffer, the single data buffer located in the .glb file

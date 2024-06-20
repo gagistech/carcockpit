@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/widgets/label/image.hpp>
 #include <ruis/widgets/slider/slider.hpp>
 
-#include "car_widget.hpp"
+#include "gltf_viewer_widget.hpp"
 #include "gauge.hpp"
 
 using namespace std::string_literals;
@@ -125,10 +125,10 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             )
                         }
                     ),
-                    m::car_widget(c,
+                    m::gltf_viewer_widget(c,
                         {
                             .widget_params = {
-                                .id = "car_widget"s,
+                                .id = "gltf_viewer_widget"s,
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -160,15 +160,15 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 
 	auto& gauge = kp.get().get_widget_as<ruis::gauge>("gauge");
 	auto& slider = kp.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
-	auto& car_widget = kp.get().get_widget_as<carcockpit::car_widget>("car_widget");
+	auto& gltf_viewer_widget = kp.get().get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
 
-	slider.fraction_change_handler = [&cw = car_widget, &g = gauge](ruis::fraction_widget& s) {
+	slider.fraction_change_handler = [&cw = gltf_viewer_widget, &g = gauge](ruis::fraction_widget& s) {
 		g.set_fraction(s.get_fraction());
 		// cw.set_rotation(s.fraction());
 		cw.set_fraction(s.get_fraction());
 	};
 
-	auto car = kp.get().try_get_widget_as<carcockpit::car_widget>("car_widget");
+	auto car = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
 
 	c.get().updater.get().start(car, 0);
 

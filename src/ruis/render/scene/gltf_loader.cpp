@@ -47,9 +47,8 @@ accessor::accessor(
 	component_type_(component_type_)
 {}
 
-gltf_loader::gltf_loader(ruis::render::factory& factory_, bool use_short_indices) :
-	factory_(factory_),
-	use_short_indices(use_short_indices)
+gltf_loader::gltf_loader(ruis::render::factory& factory_) :
+	factory_(factory_)
 {}
 
 inline int gltf_loader::read_int(const jsondom::value& json, const std::string& name)
@@ -292,7 +291,7 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	{
 		utki::deserializer d(buf);
 		// TODO: think about what to do if index count > 65535
-		if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short) {
+		if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short /*|| acc_count < 65536*/) {
 			std::vector<uint16_t> index_attribute_buffer;
 			index_attribute_buffer.reserve(acc_count);
 
@@ -301,26 +300,28 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 
 			new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
 
-		} else if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int) {
-			if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
-				std::vector<uint16_t> index_attribute_buffer;
-				index_attribute_buffer.reserve(acc_count);
+		} else if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int /*|| acc_count >= 65536*/) {
+			
+			std::vector<uint32_t> index_attribute_buffer;
+			index_attribute_buffer.reserve(acc_count);
 
-				for (size_t i = 0; i < acc_count; ++i)
-					index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
+			for (size_t i = 0; i < acc_count; ++i)
+				index_attribute_buffer.push_back(d.read_uint32_le());
 
-				new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
-
-			} else {
-				std::vector<uint32_t> index_attribute_buffer;
-				index_attribute_buffer.reserve(acc_count);
-
-				for (size_t i = 0; i < acc_count; ++i)
-					index_attribute_buffer.push_back(d.read_uint32_le());
-
-				new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
-			}
+			new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
 		}
+
+			// if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
+			// 	std::vector<uint16_t> index_attribute_buffer;
+			// 	index_attribute_buffer.reserve(acc_count);
+
+			// 	for (size_t i = 0; i < acc_count; ++i)
+			// 		index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
+
+			// 	new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
+
+			// } 
+		
 	}
 
 	return new_accessor;

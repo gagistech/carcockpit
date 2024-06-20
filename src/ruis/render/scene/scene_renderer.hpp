@@ -42,6 +42,7 @@ class scene_renderer
 {
 protected:
 	std::shared_ptr<ruis::render::scene> scene_v;
+	std::shared_ptr<ruis::render::camera> external_camera;
 	// ruis::render::renderer& r;
 	utki::shared_ref<ruis::context> context_v;
 	ruis::mat4 view_matrix;
@@ -60,6 +61,8 @@ public:
 	scene_renderer(utki::shared_ref<ruis::context> c);
 	void render();
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
+	void set_external_camera(std::shared_ptr<ruis::render::camera> cam);
+
 
 	virtual ~scene_renderer() {}
 };

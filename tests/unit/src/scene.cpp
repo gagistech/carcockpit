@@ -15,7 +15,7 @@ tst::set set("scene", [](tst::suite& suite) {
 		//}
 
 		{
-			ruis::render::gltf_loader l(rf, true);
+			ruis::render::gltf_loader l(rf);
 			auto scene = l.load(papki::fs_file("samples_gltf/parent_and_children.glb"));
 			tst::check(!scene.get().nodes.empty(), SL);
 		}

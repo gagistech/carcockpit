@@ -41,12 +41,17 @@ void scene_renderer::set_scene(std::shared_ptr<ruis::render::scene> scene_v)
 	this->scene_v = scene_v;
 }
 
+void scene_renderer::set_external_camera(std::shared_ptr<ruis::render::camera> cam)
+{
+	external_camera = cam;
+}
+
 void scene_renderer::render()
 {
 	if (!scene_v)
 		return;
 
-	auto cam = scene_v.get()->active_camera;
+	auto cam = external_camera ? external_camera : scene_v.get()->active_camera;
 
 	if (!cam)
 		return;
