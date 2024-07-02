@@ -25,8 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/widgets/label/image.hpp>
 #include <ruis/widgets/slider/slider.hpp>
 
-#include "gltf_viewer_widget.hpp"
 #include "gauge.hpp"
+#include "gltf_viewer_widget.hpp"
 
 using namespace std::string_literals;
 

@@ -34,6 +34,8 @@ scene_renderer::scene_renderer(utki::shared_ref<ruis::context> c) :
 	texture_default_white = context_v.get().loader.load<ruis::res::texture_2d>("texture_default_white").to_shared_ptr();
 	texture_default_normal =
 		context_v.get().loader.load<ruis::res::texture_2d>("texture_default_normal").to_shared_ptr();
+	texture_default_environment_cube =
+		context_v.get().loader.load<ruis::res::texture_cube>("tex_cube_env_hata").to_shared_ptr();
 }
 
 void scene_renderer::set_scene(std::shared_ptr<ruis::render::scene> scene_v)
@@ -66,7 +68,7 @@ void scene_renderer::render()
 	} else {
 		main_light.pos = {2, 4, -2, 1};
 		main_light.intensity = {1, 1, 1};
-		main_light.intensity *= 1.4;
+		main_light.intensity *= 2.0;
 	}
 
 	ruis::mat4 root_model_matrix;
@@ -83,29 +85,44 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 {
 	parent_model_matrix *= n.get().get_transformation_matrix();
 
-	ruis::mat4 modelview = view_matrix * parent_model_matrix;
-	ruis::mat4 mvp = projection_matrix * modelview;
+	ruis::mat4 modelview_matrix = view_matrix * parent_model_matrix;
+	ruis::mat4 mvp_matrix = projection_matrix * modelview_matrix;
 
 	ruis::vec4 light_pos_view_coords = view_matrix * main_light.pos; // light position in view (camera) coords
 	// render the node itself
 
 	if (n.get().mesh_) {
 		for (const auto& primitive : n.get().mesh_->primitives) {
-			auto& phong = carcockpit::application::inst().shader_phong_v;
 
-			// TODO: primitive.get().material_ use later somehow, choose shader and textures here, set material-specific
-			// uniforms
+			[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
+			auto& advanced = carcockpit::application::inst().shader_adv_v;
+
+			// choose shader and textures here, set material-specific uniforms
 
 			auto tex_diffuse = primitive.get().material_.get().tex_diffuse;
+			auto tex_normal = primitive.get().material_.get().tex_normal;
+			auto tex_arm = primitive.get().material_.get().tex_arm;
 
-			phong.render(
+			advanced.render(
 				primitive.get().vao.get(),
-				mvp,
-				modelview,
+				mvp_matrix,
+				modelview_matrix,
+				projection_matrix,
 				tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
+				tex_normal ? *tex_normal.get() : texture_default_normal->tex(),
+				tex_arm ? *tex_arm.get() : texture_default_white->tex(),
+				texture_default_environment_cube->tex(),      // TODO load environment as well, if supported by gltf ?
 				light_pos_view_coords,
 				main_light.intensity
 			);
+			// phong.render(
+			// 	primitive.get().vao.get(),
+			// 	mvp_matrix,
+			// 	modelview_matrix,
+			// 	tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
+			// 	light_pos_view_coords,
+			// 	main_light.intensity
+			// );
 		}
 	}
 	// render children

@@ -479,7 +479,8 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	// application::inst()
 	// 	.shader_phong_v.render(*vaao2, mvp * mtrx, modelview * mtrx, this->tex_test->tex(), light_pos_view, light_int);
 
-	//phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view, light_int);
+	// phong_s->render(*this->light_vao, mvp_monkey, modelview_monkey, this->tex_test->tex(), light_pos_view,
+	// light_int);
 
 	camrip->pos = camera_position;
 	camrip->target = camera_target;
@@ -487,7 +488,7 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	camrip->fovy = 3.1415926535f / 4.f;
 	camrip->near = 0.1;
 	camrip->far = 20.f;
-	
+
 	sc_renderer->render();
 
 	// advanced_s->render(

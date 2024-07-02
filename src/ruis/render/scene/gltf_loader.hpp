@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <variant>
+
 #include <jsondom/dom.hpp>
 #include <ruis/context.hpp>
 #include <ruis/render/renderer.hpp>
@@ -36,6 +38,14 @@ struct accessor;
 struct image_l;
 struct sampler_l;
 class material;
+typedef std::variant<
+	std::vector<float>,
+	std::vector<ruis::vec2>,
+	std::vector<ruis::vec3>,
+	std::vector<ruis::vec4>,
+	std::vector<uint16_t>,
+	std::vector<uint32_t>>
+	vertex_data_t;
 
 class gltf_loader
 {
@@ -58,20 +68,10 @@ class gltf_loader
 
 	std::vector<std::vector<uint32_t>> child_indices; // storage for node child hierarchy (only during loading stage)
 
-	inline int read_int(const jsondom::value& json, const std::string& name);
-	inline bool read_int_checked(const jsondom::value& json, const std::string& name, int& value);
-	inline bool read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value);
-	inline float read_float(const jsondom::value& json, const std::string& name);
-	inline const std::string& read_string(const jsondom::value& json, const std::string& name);
-	inline bool read_string_checked(const jsondom::value& json, const std::string& name, std::string& value);
-	bool read_uint_array_checked(const jsondom::value& json, const std::string& name, std::vector<uint32_t>& array);
-	ruis::vec2 read_vec2(const jsondom::value& json, const std::string& name);
-	ruis::vec3 read_vec3(const jsondom::value& json, const std::string& name);
-	ruis::vec4 read_vec4(const jsondom::value& json, const std::string& name);
-	ruis::quat read_quat(const jsondom::value& json, const std::string& name);
-
 	template <typename T>
-	std::shared_ptr<ruis::render::vertex_buffer> create_vertex_buffer_float(
+	// std::shared_ptr<vertex_data_t>
+	void create_vertex_buffer_float(
+		utki::shared_ref<ruis::render::accessor>,
 		utki::span<const uint8_t> buffer,
 		uint32_t acc_count,
 		// uint32_t acc_offset,
@@ -86,6 +86,14 @@ class gltf_loader
 		std::function<T(const jsondom::value& j)> read_func,
 		const jsondom::value& root_json,
 		const std::string& name
+	);
+
+	template <typename index_t>
+	utki::shared_ref<ruis::render::vertex_array> create_vao_with_tangent_space(
+		utki::shared_ref<accessor> index_accessor,
+		utki::shared_ref<accessor> position_accessor,
+		utki::shared_ref<accessor> texcoord_0_accessor,
+		utki::shared_ref<accessor> normal_accessor
 	);
 
 	utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json);
@@ -154,6 +162,11 @@ struct accessor {
 
 	std::shared_ptr<ruis::render::vertex_buffer> vbo;
 	std::shared_ptr<ruis::render::index_buffer> ibo;
+
+	vertex_data_t data;
+
+	//std::shared_ptr<vertex_data_t> data;
+	//void* data;
 
 	accessor(
 		utki::shared_ref<buffer_view> bv,

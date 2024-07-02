@@ -24,6 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/context.hpp>
 #include <ruis/render/renderer.hpp>
 #include <ruis/res/texture_2d.hpp>
+#include <ruis/res/texture_cube.hpp>
+
 
 // #include "shaders/shader_adv.hpp"
 // #include "shaders/shader_phong.hpp"
@@ -52,6 +54,7 @@ protected:
 	std::shared_ptr<ruis::res::texture_2d> texture_default_white;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_black;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_normal;
+	std::shared_ptr<ruis::res::texture_cube> texture_default_environment_cube;
 	// camera main_camera;
 	void render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix);
 	// void render_mesh(utki::shared_ref<node> n, ruis::mat4 model);
@@ -62,7 +65,6 @@ public:
 	void render();
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
 	void set_external_camera(std::shared_ptr<ruis::render::camera> cam);
-
 
 	virtual ~scene_renderer() {}
 };

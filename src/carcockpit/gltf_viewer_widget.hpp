@@ -79,7 +79,7 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
 
-	ruis::vec3 camera_target{0, 1, 0};
+	ruis::vec3 camera_target{0, -2, 0};
 
 	ruis::real camera_transition_duration = 0.2; // not seconds ;)
 	// bool camera_transition_ongoing = true;
@@ -122,7 +122,10 @@ public:
 };
 
 namespace make {
-inline utki::shared_ref<gltf_viewer_widget> gltf_viewer_widget(utki::shared_ref<ruis::context> c, gltf_viewer_widget::all_parameters params)
+inline utki::shared_ref<gltf_viewer_widget> gltf_viewer_widget(
+	utki::shared_ref<ruis::context> c,
+	gltf_viewer_widget::all_parameters params
+)
 {
 	return utki::make_shared<carcockpit::gltf_viewer_widget>(std::move(c), std::move(params));
 }

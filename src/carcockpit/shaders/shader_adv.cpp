@@ -79,7 +79,7 @@ shader_adv::shader_adv() :
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
 							// Pass along the texture coordinate	
-							tc = vec2(a1.x, a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
+							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
 							gl_Position = matrix * a0;
 						}	
 						
@@ -122,7 +122,7 @@ shader_adv::shader_adv() :
 							vec3 diffuse = max( Kd - metalness, 0.0 ) * sDotN                    * light_intensity;
 							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness )  * light_intensity;
 
-							return (( ambient + diffuse + spec ) * diffR) + (env_refl * metalness);
+							return (( ambient + diffuse ) * diffR + spec ) + (env_refl * metalness);
 						}			
 
 						void main() 

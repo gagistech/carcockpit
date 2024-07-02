@@ -28,6 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <utki/string.hpp>
 #include <utki/util.hpp>
 
+
 using namespace std::string_view_literals;
 using namespace ruis::render;
 
@@ -51,55 +52,69 @@ gltf_loader::gltf_loader(ruis::render::factory& factory_) :
 	factory_(factory_)
 {}
 
-inline int gltf_loader::read_int(const jsondom::value& json, const std::string& name)
-{
-	return json.object().at(name).number().to_int32();
-}
-
-inline bool gltf_loader::read_int_checked(const jsondom::value& json, const std::string& name, int& value)
+inline int read_int(const jsondom::value& json, const std::string& name, const int default_value = -1)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) {
-		value = it->second.number().to_int32();
-		return true;
-	}
-	return false;
+	if (it != json.object().end()) 
+		return it->second.number().to_int32();
+	
+	return default_value;
 }
 
-inline bool gltf_loader::read_uint32_checked(const jsondom::value& json, const std::string& name, uint32_t& value)
-// TODO: implement read_string_default instead, return value normally
+inline uint32_t read_uint(const jsondom::value& json, const std::string& name, const uint32_t default_value = 0)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) {
-		value = it->second.number().to_uint32();
-		return true;
-	}
-	return false;
+	if (it != json.object().end()) 
+		return it->second.number().to_uint32();
+	
+	return default_value;
 }
 
-inline float gltf_loader::read_float(const jsondom::value& json, const std::string& name)
-{
-	return json.object().at(name).number().to_float();
-}
-
-inline const std::string& gltf_loader::read_string(const jsondom::value& json, const std::string& name)
-{
-	return json.object().at(name).string();
-}
-
-inline bool gltf_loader::read_string_checked(const jsondom::value& json, const std::string& name, std::string& value)
+inline float read_float(const jsondom::value& json, const std::string& name, const float default_value = 0.0f)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) {
-		value = it->second.string();
-		return true;
-	}
-	return false;
+	if (it != json.object().end()) 
+		return it->second.number().to_float();
+	
+	return default_value;
 }
+
+inline std::string read_string(const jsondom::value& json, const std::string& name, const std::string default_value = "")
+{
+	auto it = json.object().find(name);
+	if (it != json.object().end()) 
+		return it->second.string();
+
+	return default_value;
+}
+
+std::vector<uint32_t> read_uint_array(
+	const jsondom::value& json,
+	const std::string& name,
+	uint32_t dafault_value = 0
+)
+{
+	std::vector<uint32_t> arr;
+	auto it = json.object().find(name);
+	if (it != json.object().end() && json.object().at(name).is_array()) {
+	
+		arr.reserve(it->second.array().size());
+		
+		for (const auto& index : it->second.array())
+			arr.push_back(index.number().to_uint32());
+	}
+	return arr;
+}
+
 
 template <typename T, size_t dimension>
-r4::vector<T, dimension> gltf_loader::read_vec(const jsondom::value& json, const std::string& name)
+r4::vector<T, dimension> read_vec(const jsondom::value& json, const std::string& name, const r4::vector<T, dimension> default_value)
 {
+	auto it = json.object().find(name);
+
+	if(it == json.object().end() || !json.object().at(name).is_array())
+		return default_value;
+
 	r4::vector<T, dimension> value;
 	int i = 0;
 	for (const auto& subjson : json.object().at(name).array()) {
@@ -108,40 +123,28 @@ r4::vector<T, dimension> gltf_loader::read_vec(const jsondom::value& json, const
 	return value;
 }
 
-bool gltf_loader::read_uint_array_checked(
-	const jsondom::value& json,
-	const std::string& name,
-	std::vector<uint32_t>& array
-)
+ruis::vec2 read_vec2(const jsondom::value& json, const std::string& name, const ruis::vec2 default_value = {0, 0})
+{
+	return read_vec<float, 2>(json, name, default_value);
+}
+
+ruis::vec3 read_vec3(const jsondom::value& json, const std::string& name, const ruis::vec3 default_value = {0, 0, 0})
+{
+	return read_vec<float, 3>(json, name, default_value);
+}
+
+ruis::vec4 read_vec4(const jsondom::value& json, const std::string& name, const ruis::vec4 default_value = {0, 0, 0, 0})
+{
+	return read_vec<float, 4>(json, name, default_value);
+}
+
+ruis::quat read_quat(const jsondom::value& json, const std::string& name, const ruis::quat default_value = {1, 0, 0, 0})
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) {
-		array.reserve(it->second.array().size());
-		for (const auto& index : it->second.array())
-			array.push_back(index.number().to_uint32());
 
-		return true;
-	}
-	return false;
-}
+	if(it == json.object().end() || !json.object().at(name).is_array())
+		return default_value;
 
-ruis::vec2 gltf_loader::read_vec2(const jsondom::value& json, const std::string& name)
-{
-	return read_vec<float, 2>(json, name);
-}
-
-ruis::vec3 gltf_loader::read_vec3(const jsondom::value& json, const std::string& name)
-{
-	return read_vec<float, 3>(json, name);
-}
-
-ruis::vec4 gltf_loader::read_vec4(const jsondom::value& json, const std::string& name)
-{
-	return read_vec<float, 4>(json, name);
-}
-
-ruis::quat gltf_loader::read_quat(const jsondom::value& json, const std::string& name)
-{
 	ruis::quat value;
 	int i = 0;
 	for (const auto& subjson : json.object().at(name).array()) {
@@ -155,15 +158,10 @@ ruis::quat gltf_loader::read_quat(const jsondom::value& json, const std::string&
 
 utki::shared_ref<buffer_view> gltf_loader::read_buffer_view(const jsondom::value& buffer_view_json)
 {
-	[[maybe_unused]] bool b;
-	uint32_t byte_length = 0;
-	uint32_t byte_offset = 0;
-	uint32_t byte_stride = 0;
-	uint32_t target = 0;
-	b = read_uint32_checked(buffer_view_json, "byteLength", byte_length);
-	b = read_uint32_checked(buffer_view_json, "byteOffset", byte_offset);
-	b = read_uint32_checked(buffer_view_json, "byteStride", byte_stride);
-	b = read_uint32_checked(buffer_view_json, "target", target);
+	const uint32_t byte_length = read_uint(buffer_view_json, "byteLength");
+	const uint32_t byte_offset = read_uint(buffer_view_json, "byteOffset");
+	const uint32_t byte_stride = read_uint(buffer_view_json, "byteStride");
+	const uint32_t target = read_uint(buffer_view_json, "target");
 
 	auto new_buffer_view =
 		utki::make_shared<buffer_view>(byte_length, byte_offset, byte_stride, static_cast<buffer_view::target>(target));
@@ -171,7 +169,8 @@ utki::shared_ref<buffer_view> gltf_loader::read_buffer_view(const jsondom::value
 }
 
 template <typename T>
-std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_float(
+void gltf_loader::create_vertex_buffer_float(
+	utki::shared_ref<ruis::render::accessor> new_accessor,
 	utki::span<const uint8_t> buffer,
 	uint32_t acc_count, // in elements (e.g. a whole vec3)
 	// uint32_t acc_offset, // in bytes
@@ -183,7 +182,7 @@ std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_f
 	vertex_attribute_buffer.reserve(acc_count);
 
 	int n_skip_bytes = int(acc_stride) - int(sizeof(T));
-	if (n_skip_bytes < 0)
+	if (n_skip_bytes < 0) // TODO exception
 		n_skip_bytes = 0;
 
 	// // skip offset:
@@ -198,29 +197,27 @@ std::shared_ptr<ruis::render::vertex_buffer> gltf_loader::create_vertex_buffer_f
 		} else {
 			for (uint32_t j = 0; j < t.size(); ++j)
 				t[j] = d.read_float_le();
-		}
-		// we suppose this [] will also work for matrices, anyway, we don't expect matrices as vert attribs
+		}	
 		// also, only float vectors for now. Need a template<> deserialize function for nice notation
 		vertex_attribute_buffer.push_back(std::move(t));
-
-		// skip stride:
-		// for (uint32_t skip = 0; skip < acc_stride; skip += sizeof(float))
-		//	d.read_float_le();
-		//[[maybe_unused]] auto skipped_span = d.read_span(acc_stride);
-
 		d.skip(n_skip_bytes);
 	}
 
-	auto vbo = factory_.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
-	return vbo;
+	// std::shared_ptr<vertex_data_t> var = std::make_shared<vertex_data_t>( std::move(vertex_attribute_buffer) );
+	// new_accessor.get().data = var;
+	// new_accessor.get().vbo = factory_.create_vertex_buffer(utki::make_span(new_accessor.get().data.get()));
+
+	new_accessor.get().vbo = factory_.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
+	new_accessor.get().data = std::move(vertex_attribute_buffer);
+	
+
+	// return std::make_shared<vertex_data_t>(var);
 }
 
 utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& accessor_json)
 {
-	[[maybe_unused]] bool ok = true;
 	accessor::type type_ = accessor::type::vec3;
-	std::string type_s;
-	ok = read_string_checked(accessor_json, "type", type_s);
+	const std::string type_s = read_string(accessor_json, "type");
 
 	if (type_s == "SCALAR")
 		type_ = accessor::type::scalar;
@@ -236,17 +233,10 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	else if (type_s == "MAT4")
 		type_ = accessor::type::mat4;
 
-	uint32_t buffer_view_index = 0;
-	ok = read_uint32_checked(accessor_json, "bufferView", buffer_view_index);
-
-	uint32_t acc_count = 0;
-	uint32_t acc_offset = 0;
-	uint32_t component_type = 0;
-	// uint32_t acc_stride = 0;
-	ok = read_uint32_checked(accessor_json, "count", acc_count);
-	ok = read_uint32_checked(accessor_json, "byteOffset", acc_offset);
-	ok = read_uint32_checked(accessor_json, "componentType", component_type);
-	// read_uint32_checked(accessor_json, "byteStride", acc_stride);
+	const uint32_t buffer_view_index = read_uint(accessor_json, "bufferView");
+	const uint32_t acc_count = read_uint(accessor_json, "count");
+	const uint32_t acc_offset = read_uint(accessor_json, "byteOffset");
+	const uint32_t component_type = read_uint(accessor_json, "componentType");
 
 	auto new_accessor = utki::make_shared<accessor>(
 		buffer_views[buffer_view_index],
@@ -271,13 +261,13 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 
 	if (new_accessor.get().component_type_ == accessor::component_type::act_float) {
 		if (new_accessor.get().type_ == accessor::type::scalar)
-			new_accessor.get().vbo = create_vertex_buffer_float<float>(buf, acc_count, bv_stride);
+			create_vertex_buffer_float<float>(new_accessor, buf, acc_count, bv_stride);
 		else if (new_accessor.get().type_ == accessor::type::vec2)
-			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec2>(buf, acc_count, bv_stride);
+			create_vertex_buffer_float<ruis::vec2>(new_accessor, buf, acc_count, bv_stride);
 		else if (new_accessor.get().type_ == accessor::type::vec3)
-			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec3>(buf, acc_count, bv_stride);
+			create_vertex_buffer_float<ruis::vec3>(new_accessor, buf, acc_count, bv_stride);
 		else if (new_accessor.get().type_ == accessor::type::vec4)
-			new_accessor.get().vbo = create_vertex_buffer_float<ruis::vec4>(buf, acc_count, bv_stride);
+			create_vertex_buffer_float<ruis::vec4>(new_accessor, buf, acc_count, bv_stride);
 		else {
 			throw std::logic_error("Matrix vertex attributes currently not supported");
 		}
@@ -291,37 +281,40 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	{
 		utki::deserializer d(buf);
 		// TODO: think about what to do if index count > 65535
-		if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short /*|| acc_count < 65536*/) {
+		if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_short /*|| acc_count < 65536*/)
+		{
 			std::vector<uint16_t> index_attribute_buffer;
 			index_attribute_buffer.reserve(acc_count);
 
 			for (size_t i = 0; i < acc_count; ++i)
 				index_attribute_buffer.push_back(d.read_uint16_le());
 
+			new_accessor.get().data = index_attribute_buffer;
 			new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
 
-		} else if (new_accessor.get().component_type_ == accessor::component_type::act_unsigned_int /*|| acc_count >= 65536*/) {
-			
+		} else if (new_accessor.get().component_type_ ==
+				   accessor::component_type::act_unsigned_int /*|| acc_count >= 65536*/)
+		{
 			std::vector<uint32_t> index_attribute_buffer;
 			index_attribute_buffer.reserve(acc_count);
 
 			for (size_t i = 0; i < acc_count; ++i)
 				index_attribute_buffer.push_back(d.read_uint32_le());
 
+			new_accessor.get().data = index_attribute_buffer;
 			new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
 		}
 
-			// if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
-			// 	std::vector<uint16_t> index_attribute_buffer;
-			// 	index_attribute_buffer.reserve(acc_count);
+		// if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
+		// 	std::vector<uint16_t> index_attribute_buffer;
+		// 	index_attribute_buffer.reserve(acc_count);
 
-			// 	for (size_t i = 0; i < acc_count; ++i)
-			// 		index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
+		// 	for (size_t i = 0; i < acc_count; ++i)
+		// 		index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
 
-			// 	new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
+		// 	new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
 
-			// } 
-		
+		// }
 	}
 
 	return new_accessor;
@@ -329,98 +322,62 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 
 utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 {
-	[[maybe_unused]] bool ok = true;
-
 	std::vector<utki::shared_ref<primitive>> primitives;
-	std::string name;
-	ok = read_string_checked(mesh_json, "name", name);
+	std::string name = read_string(mesh_json, "name");
 	auto json_primitives_array = mesh_json.object().at("primitives").array();
 
 	for (const auto& json_primitive : json_primitives_array) {
 		auto attributes_json = json_primitive.object().at("attributes");
 
-		int index_accessor = -1;
-		int position_accessor = -1;
-		int normal_accessor = -1;
-		int texcoord_0_accessor = -1;
-		int tangent_accessor = -1;
+		int index_accessor = read_int(json_primitive, "indices");
+		int position_accessor = read_int(attributes_json, "POSITION");
+		int normal_accessor = read_int(attributes_json, "NORMAL");
+		int texcoord_0_accessor = read_int(attributes_json, "TEXCOORD_0");
+		int tangent_accessor = read_int(attributes_json, "TANGENT");
+		int material_index = read_int(json_primitive, "material");
 
-		int material_index = -1;
+		if (index_accessor >= 0 && texcoord_0_accessor >= 0 && normal_accessor >= 0 && tangent_accessor < 0) {
+			// generate tangents and bitangents
+			if (accessors[index_accessor].get().component_type_ == accessor::component_type::act_unsigned_int) {
+				auto vao = create_vao_with_tangent_space<uint32_t>(
+					accessors[index_accessor],
+					accessors[position_accessor],
+					accessors[texcoord_0_accessor],
+					accessors[normal_accessor]
+				);
 
-		ok = read_int_checked(json_primitive, "material", material_index);
+				auto material_ = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
+				primitives.push_back(utki::make_shared<primitive>(vao, material_));
 
-		ok = read_int_checked(json_primitive, "indices", index_accessor);
+			} else if (accessors[index_accessor].get().component_type_ == accessor::component_type::act_unsigned_short)
+			{
+				auto vao = create_vao_with_tangent_space<uint32_t>(
+					accessors[index_accessor],
+					accessors[position_accessor],
+					accessors[texcoord_0_accessor],
+					accessors[normal_accessor]
+				);
 
-		ok = read_int_checked(attributes_json, "POSITION", position_accessor);
-		ok = read_int_checked(attributes_json, "NORMAL", normal_accessor);
-		ok = read_int_checked(attributes_json, "TEXCOORD_0", texcoord_0_accessor);
-		ok = read_int_checked(attributes_json, "TANGENT", tangent_accessor);
-
-		std::cout << name << std::endl;
-		std::cout << index_accessor << std::endl;
-		std::cout << position_accessor << std::endl;
-		std::cout << normal_accessor << std::endl;
-		std::cout << texcoord_0_accessor << std::endl;
-		std::cout << tangent_accessor << std::endl;
-		std::cout << accessors.size() << std::endl;
-
-		// auto vbo_bitangents = factory_.create_vertex_buffer(utki::make_span(bitangents));
-		// utki::shared_ref<vertex_array> vao;
-		if (tangent_accessor > 0) {
-			auto vao = factory_.create_vertex_array(
-				{
-					utki::shared_ref<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo),
-					utki::shared_ref<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo),
-					utki::shared_ref<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo),
-					utki::shared_ref<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
-					// , vbo_bitangents
-				},
-				utki::shared_ref<ruis::render::index_buffer>(accessors[index_accessor].get().ibo),
-				ruis::render::vertex_array::mode::triangles
-			);
-			// auto vao = factory_.create_vertex_array(
-			// 	{utki::shared_ref<ruis::render::vertex_buffer>(
-			// 		 std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
-			// 	 ),
-			// 	 utki::shared_ref<ruis::render::vertex_buffer>(
-			// 		 std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
-			// 	 ),
-			// 	 utki::shared_ref<ruis::render::vertex_buffer>(
-			// 		 std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
-			// 	 ),
-			// 	  utki::shared_ref<ruis::render::vertex_buffer>(
-			// 		 std::shared_ptr<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
-			// 	 )},
-			// 	utki::shared_ref<ruis::render::index_buffer>(
-			// 		std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
-			// 	),
-			// 	ruis::render::vertex_array::mode::triangles
-			// );
-
-			auto material_ = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
-
-			primitives.push_back(utki::make_shared<primitive>(vao, material_));
-		} else {
-			auto vao = factory_.create_vertex_array(
-				{utki::shared_ref<ruis::render::vertex_buffer>(
-					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo)
-				 ),
-				 utki::shared_ref<ruis::render::vertex_buffer>(
-					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo)
-				 ),
-				 utki::shared_ref<ruis::render::vertex_buffer>(
-					 std::shared_ptr<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo)
-				 )},
-				utki::shared_ref<ruis::render::index_buffer>(
-					std::shared_ptr<ruis::render::index_buffer>(accessors[index_accessor].get().ibo)
-				),
-				ruis::render::vertex_array::mode::triangles
-			);
-
-			auto material_ = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
-
-			primitives.push_back(utki::make_shared<primitive>(vao, material_));
+				auto material_ = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
+				primitives.push_back(utki::make_shared<primitive>(vao, material_));
+			}
+			else
+			{
+				// TODO: branch all possible combinations if input data 
+			}
 		}
+
+		// 	auto vao = factory_.create_vertex_array(
+		// 		{
+		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo),
+		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo),
+		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo),
+		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
+		// 			// , vbo_bitangents
+		// 		},
+		// 		utki::shared_ref<ruis::render::index_buffer>(accessors[index_accessor].get().ibo),
+		// 		ruis::render::vertex_array::mode::triangles
+		// 	);		
 	}
 
 	auto new_mesh = utki::make_shared<mesh>(primitives, name);
@@ -445,24 +402,19 @@ utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json)
 	if (it != node_json.object().end())
 		transformation.translation = read_vec3(node_json, "translation");
 
-	int mesh_index = -1;
-	bool ok = read_int_checked(node_json, "mesh", mesh_index);
+	int mesh_index = read_int(node_json, "mesh");
+	child_indices.push_back( read_uint_array(node_json, "children") );
 
-	child_indices.push_back(std::vector<uint32_t>());
-	read_uint_array_checked(node_json, "children", child_indices.back());
-
-	auto new_node = utki::make_shared<node>(ok ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
+	auto new_node = utki::make_shared<node>(mesh_index >= 0 ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
 	return new_node;
 }
 
 utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json)
 {
 	auto new_scene = utki::make_shared<scene>();
-	std::vector<uint32_t> node_indices;
-	[[maybe_unused]] bool ok = true;
-	ok = read_string_checked(scene_json, "name", new_scene.get().name);
-	read_uint_array_checked(scene_json, "nodes", node_indices);
-
+	std::vector<uint32_t> node_indices = read_uint_array(scene_json, "nodes");;
+	new_scene.get().name = read_string(scene_json, "name");
+	
 	for (uint32_t ni : node_indices) {
 		new_scene.get().nodes.push_back(this->nodes[ni]);
 	}
@@ -472,15 +424,9 @@ utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json
 
 utki::shared_ref<image_l> gltf_loader::read_image(const jsondom::value& image_json)
 {
-	[[maybe_unused]] bool ok;
-	uint32_t buffer_view_index = 0;
-	[[maybe_unused]] uint32_t mime_type = 0;
-	std::string name;
-	std::string mime_type_string;
-
-	ok = read_string_checked(image_json, "name", name);
-	ok = read_uint32_checked(image_json, "bufferView", buffer_view_index);
-	ok = read_string_checked(image_json, "mimeType", mime_type_string);
+	uint32_t buffer_view_index = read_uint(image_json, "bufferView");
+	std::string name = read_string(image_json, "name");
+	std::string mime_type_string = read_string(image_json, "mimeType");
 
 	image_l::mime_type mt = mime_type_string == "image/jpeg" ? image_l::mime_type::image_jpeg
 		: mime_type_string == "image/png"                    ? image_l::mime_type::image_png
@@ -492,33 +438,19 @@ utki::shared_ref<image_l> gltf_loader::read_image(const jsondom::value& image_js
 
 utki::shared_ref<sampler_l> gltf_loader::read_sampler(const jsondom::value& sampler_json)
 {
-	[[maybe_unused]] bool ok;
-	uint32_t min_filter = 0;
-	uint32_t mag_filter = 0;
-	uint32_t wrap_s = 0;
-	uint32_t wrap_t = 0;
-
-	ok = read_uint32_checked(sampler_json, "minFilter", min_filter);
-	ok = read_uint32_checked(sampler_json, "magFilter", mag_filter);
-	ok = read_uint32_checked(sampler_json, "wrapS", wrap_s);
-	ok = read_uint32_checked(sampler_json, "wrapT", wrap_t);
-
 	auto new_sampler = utki::make_shared<sampler_l>(
-		static_cast<sampler_l::filter>(min_filter),
-		static_cast<sampler_l::filter>(mag_filter),
-		static_cast<sampler_l::wrap>(wrap_s),
-		static_cast<sampler_l::wrap>(wrap_t)
+		static_cast<sampler_l::filter>(read_uint(sampler_json, "minFilter")),
+		static_cast<sampler_l::filter>(read_uint(sampler_json, "magFilter")),
+		static_cast<sampler_l::wrap>(read_uint(sampler_json, "wrapS")),
+		static_cast<sampler_l::wrap>(read_uint(sampler_json, "wrapT"))
 	);
 	return new_sampler;
 }
 
 utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsondom::value& texture_json)
 {
-	[[maybe_unused]] bool ok;
-	uint32_t image_index = 0;
-	uint32_t sampler_index = 0;
-	ok = read_uint32_checked(texture_json, "source", image_index);
-	ok = read_uint32_checked(texture_json, "sampler", sampler_index);
+	uint32_t image_index = read_uint(texture_json, "source");
+	uint32_t sampler_index = read_uint(texture_json, "sampler");
 
 	auto image = images[image_index];
 	auto sampler = samplers[sampler_index];
@@ -541,10 +473,6 @@ utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsond
 	tex_params.mipmap = texture_2d::mipmap::linear;
 
 	return factory_.create_texture_2d(std::move(imvar), tex_params);
-
-	// auto new_texture =
-	// 	utki::make_shared<image_l>(name, buffer_views[buffer_view_index], static_cast<image_l::mime_type>(mime_type));
-	// return new_texture;
 }
 
 // "materials": [
@@ -573,30 +501,27 @@ utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsond
 
 utki::shared_ref<material> gltf_loader::read_material(const jsondom::value& material_json)
 {
-	[[maybe_unused]] bool ok;
 	auto mat = utki::make_shared<material>();
 
-	std::string name;
+	mat.get().name = read_string(material_json, "name");
 	int diffuse_index = -1;
 	int normal_index = -1;
 	int arm_index = -1; // ambient metallic roughness
 
-	ok = read_string_checked(material_json, "name", mat.get().name);
-
 	auto it = material_json.object().find("normalTexture");
 	if (it != material_json.object().end() && it->second.is_object()) {
-		ok = read_int_checked(it->second, "index", normal_index);
+		normal_index = read_int(it->second, "index");
 	}
 
 	auto it_pbr = material_json.object().find("pbrMetallicRoughness");
 	if (it_pbr != material_json.object().end() && it_pbr->second.is_object()) {
 		auto it = it_pbr->second.object().find("baseColorTexture");
 		if (it != it_pbr->second.object().end() && it->second.is_object()) {
-			ok = read_int_checked(it->second, "index", diffuse_index);
+			diffuse_index = read_int(it->second, "index");
 		}
 		it = it_pbr->second.object().find("metallicRoughnessTexture");
 		if (it != it_pbr->second.object().end() && it->second.is_object()) {
-			ok = read_int_checked(it->second, "index", arm_index);
+			arm_index = read_int(it->second, "index");
 		}
 	}
 
@@ -776,9 +701,8 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 
 	// create scene
 	auto active_scene = utki::make_shared<scene>();
-	int active_scene_index = -1;
-	bool ok = read_int_checked(json, "scene", active_scene_index);
-	if (!ok) {
+	int active_scene_index = read_int(json, "scene");
+	if (active_scene_index < 0) {
 		// this .gltf file is a library
 	} else {
 		active_scene = scenes[active_scene_index];
@@ -800,4 +724,154 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 
 	std::cout << "gltf load finished" << std::endl;
 	return active_scene;
+}
+
+template <typename index_t>
+utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangent_space(
+	utki::shared_ref<accessor> index_accessor,
+	utki::shared_ref<accessor> position_accessor,
+	utki::shared_ref<accessor> texcoord_0_accessor,
+	utki::shared_ref<accessor> normal_accessor
+)
+{
+	int total_vertices = position_accessor.get().count;
+	int total_triangles = index_accessor.get().count / 3;
+
+	//const index_t* index_data = static_cast<const index_t*>(index_accessor.get().data);
+	//const index_t* pTriangle;
+
+	std::cout << "index is " << sizeof(index_t) << "-byte" << std::endl;
+
+	const auto& indices = std::get<std::vector<index_t>>(index_accessor.get().data);
+
+	const auto& positions = std::get<std::vector<ruis::vec3>>(position_accessor.get().data);
+	const auto& texcoords = std::get<std::vector<ruis::vec2>>(texcoord_0_accessor.get().data);
+	const auto& normals = std::get<std::vector<ruis::vec3>>(normal_accessor.get().data);
+
+	// const float* position_data = static_cast<const float*>(position_accessor.get().data);
+	// const float* texcoord_data = static_cast<const float*>(texcoord_0_accessor.get().data);
+	// const float* normal_data = static_cast<const float*>(normal_accessor.get().data);
+
+	std::vector<ruis::vec3> tangents;  // or vec4 ?
+	std::vector<ruis::vec3> bitangents;
+
+	tangents.resize(total_vertices);
+	bitangents.resize(total_vertices);
+
+	ruis::vec2 texEdge1 = {0.0f, 0.0f};
+	ruis::vec2 texEdge2 = {0.0f, 0.0f};
+
+	ruis::vec3 edge1 = {0.0f, 0.0f, 0.0f};
+	ruis::vec3 edge2 = {0.0f, 0.0f, 0.0f};
+
+	ruis::vec3 bitangent = {0.0f, 0.0f, 0.0f};
+
+	ruis::vec4 tangent = {0.0f, 0.0f, 0.0f, 0.0f};
+
+	// Calculate the vertex tangents and bitangents.
+	for (int i = 0; i < total_triangles; ++i) {
+		
+		//pTriangle = &index_data[i * 3];
+
+		edge1 = positions[indices[i*3 + 1]] - positions[indices[i*3 + 0]];
+		edge2 = positions[indices[i*3 + 2]] - positions[indices[i*3 + 0]];
+
+		texEdge1 = texcoords[indices[i*3 + 1]] - texcoords[indices[i*3 + 0]];
+		texEdge2 = texcoords[indices[i*3 + 2]] - texcoords[indices[i*3 + 0]];
+
+		// edge1[0] = position_data[pTriangle[1] + 0] - position_data[pTriangle[0] + 0];
+		// edge1[1] = position_data[pTriangle[1] + 1] - position_data[pTriangle[0] + 1];
+		// edge1[2] = position_data[pTriangle[1] + 2] - position_data[pTriangle[0] + 2];
+
+		// edge2[0] = position_data[pTriangle[2] + 0] - position_data[pTriangle[0] + 0];
+		// edge2[1] = position_data[pTriangle[2] + 1] - position_data[pTriangle[0] + 1];
+		// edge2[2] = position_data[pTriangle[2] + 2] - position_data[pTriangle[0] + 2];
+
+		// texEdge1[0] = texcoord_data[pTriangle[1] + 0] - texcoord_data[pTriangle[0] + 0];
+		// texEdge1[1] = texcoord_data[pTriangle[1] + 1] - texcoord_data[pTriangle[0] + 1];
+
+		// texEdge2[0] = texcoord_data[pTriangle[2] + 0] - texcoord_data[pTriangle[0] + 0];
+		// texEdge2[1] = texcoord_data[pTriangle[2] + 1] - texcoord_data[pTriangle[0] + 1];
+
+		// Calculate the triangle face tangent and bitangent.
+
+		float det = texEdge1[0] * texEdge2[1] - texEdge2[0] * texEdge1[1];
+
+		using std::abs;
+		if (abs(det) < 1e-6f) {
+			tangent = {1.0f, 0.0f, 0.0f, 0.0f};
+			bitangent = {0.0f, 1.0f, 0.0f};
+		} else {
+			det = 1.0f / det;
+
+			tangent[0] = (texEdge2[1] * edge1[0] - texEdge1[1] * edge2[0]) * det;
+			tangent[1] = (texEdge2[1] * edge1[1] - texEdge1[1] * edge2[1]) * det;
+			tangent[2] = (texEdge2[1] * edge1[2] - texEdge1[1] * edge2[2]) * det;
+
+			bitangent[0] = (-texEdge2[0] * edge1[0] + texEdge1[0] * edge2[0]) * det;
+			bitangent[1] = (-texEdge2[0] * edge1[1] + texEdge1[0] * edge2[1]) * det;
+			bitangent[2] = (-texEdge2[0] * edge1[2] + texEdge1[0] * edge2[2]) * det;
+		}
+
+		// TODO: figure out what is happening here and refactor with vector ops
+
+		// Accumulate the tangents and bitangents.
+		tangents[indices[i*3 + 0]] += tangent;
+		bitangents[indices[i*3 + 0]] += bitangent;
+
+		tangents[indices[i*3 + 1]] += tangent;
+		bitangents[indices[i*3 + 1]] += bitangent;
+
+		tangents[indices[i*3 + 2]] += tangent;
+		bitangents[indices[i*3 + 2]] += bitangent;
+	}
+
+	// Orthogonalize and normalize the vertex tangents.
+	for (int i = 0; i < total_vertices; ++i) {
+		// Gram-Schmidt orthogonalize tangent with normal.
+		//ruis::vec3 normal{normal_data[i * 3], normal_data[i * 3 + 1], normal_data[i * 3 + 2]};
+
+		float nDotT = normals[i] * tangents[i]; // dot product
+
+		tangents[i] -= normals[i] * nDotT;
+
+		// Normalize the tangent.
+		tangents[i].normalize();
+
+		// Calculate the handedness of the local tangent space.
+		// The bitangent vector is the cross product between the triangle face
+		// normal vector and the calculated tangent vector. The resulting
+		// bitangent vector should be the same as the bitangent vector
+		// calculated from the set of linear equations above. If they point in
+		// different directions then we need to invert the cross product
+		// calculated bitangent vector. We store this scalar multiplier in the
+		// tangent vector's 'w' component so that the correct bitangent vector
+		// can be generated in the normal mapping shader's vertex shader.
+		//
+		// TODO: revise this comment
+
+		ruis::vec3 bitangent_other = normals[i].cross(tangents[i]);
+
+		float bDotB = bitangent_other * bitangents[i];
+
+		//tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
+		float sign = (bDotB < 0.0f) ? -1.0f : 1.0f;
+
+		bitangents[i] = bitangent_other * sign;
+	}
+
+	auto tangents_vbo = factory_.create_vertex_buffer(utki::make_span(tangents));
+	auto bitangents_vbo = factory_.create_vertex_buffer(utki::make_span(bitangents));
+
+	auto vao = factory_.create_vertex_array(
+		{utki::shared_ref<ruis::render::vertex_buffer>(position_accessor.get().vbo),
+		 utki::shared_ref<ruis::render::vertex_buffer>(texcoord_0_accessor.get().vbo),
+		 utki::shared_ref<ruis::render::vertex_buffer>(normal_accessor.get().vbo),
+		 tangents_vbo,
+		 bitangents_vbo},
+		utki::shared_ref<ruis::render::index_buffer>(index_accessor.get().ibo),
+		ruis::render::vertex_array::mode::triangles
+	);
+
+	return vao;
 }
