@@ -43,18 +43,17 @@ shader_skybox::shader_skybox() :
 		R"qwertyuiop(
 						attribute highp vec4 a0; // position
 
-						uniform highp mat4 matrix;       // mvp matrix
-						uniform highp mat4 mat3_imv;     // inverse modelview matrix 
-						uniform highp mat4 mat4_ip;      // inverse projection matrix 
+						uniform highp mat4 matrix;       // inverse projection matrix 
+						uniform highp mat3 mat3_imv;     // inverse modelview matrix 
 
 						varying highp vec3 eyeDirection;
 
 						void main(void)
 						{	
-							vec3 unprojected = (inverseProjection * aPosition).xyz;
-							eyeDirection = inverseModelview * unprojected;
+							vec3 unprojected = (matrix * a0).xyz;
+							eyeDirection = mat3_imv * unprojected;
 
-							gl_Position = aPosition;
+							gl_Position = a0;
 						}
 	)qwertyuiop",
 		R"qwertyuiop(			
@@ -69,10 +68,8 @@ shader_skybox::shader_skybox() :
 							gl_FragColor = vec4( textureCube(texture0, eyeDirection) );
 						}
 	)qwertyuiop"
-	)
-	,
-	mat3_inverse_modelview(this->get_uniform("mat4_imv")),
-	mat4_inverse_projection(this->get_uniform("mat4_ip"))
+	),
+	mat3_inverse_modelview(this->get_uniform("mat3_imv"))
 {}
 
 void shader_skybox::render(
@@ -93,7 +90,6 @@ void shader_skybox::render(
 	this->bind(); // bind the program
 
 	this->set_uniform_matrix3f(this->mat3_inverse_modelview, inverse_modelview);
-	this->set_uniform_matrix4f(this->mat4_inverse_projection, inverse_projection);
 
-	this->shader_base::render(r4::matrix4<float>(), va);
+	this->shader_base::render(inverse_projection, va);
 }

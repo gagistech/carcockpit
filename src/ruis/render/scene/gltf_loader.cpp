@@ -28,7 +28,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <utki/string.hpp>
 #include <utki/util.hpp>
 
-
 using namespace std::string_view_literals;
 using namespace ruis::render;
 
@@ -55,64 +54,66 @@ gltf_loader::gltf_loader(ruis::render::factory& factory_) :
 inline int read_int(const jsondom::value& json, const std::string& name, const int default_value = -1)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) 
+	if (it != json.object().end())
 		return it->second.number().to_int32();
-	
+
 	return default_value;
 }
 
 inline uint32_t read_uint(const jsondom::value& json, const std::string& name, const uint32_t default_value = 0)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) 
+	if (it != json.object().end())
 		return it->second.number().to_uint32();
-	
+
 	return default_value;
 }
 
 inline float read_float(const jsondom::value& json, const std::string& name, const float default_value = 0.0f)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) 
+	if (it != json.object().end())
 		return it->second.number().to_float();
-	
+
 	return default_value;
 }
 
-inline std::string read_string(const jsondom::value& json, const std::string& name, const std::string default_value = "")
+inline std::string read_string(
+	const jsondom::value& json,
+	const std::string& name,
+	const std::string default_value = ""
+)
 {
 	auto it = json.object().find(name);
-	if (it != json.object().end()) 
+	if (it != json.object().end())
 		return it->second.string();
 
 	return default_value;
 }
 
-std::vector<uint32_t> read_uint_array(
-	const jsondom::value& json,
-	const std::string& name,
-	uint32_t dafault_value = 0
-)
+std::vector<uint32_t> read_uint_array(const jsondom::value& json, const std::string& name, uint32_t dafault_value = 0)
 {
 	std::vector<uint32_t> arr;
 	auto it = json.object().find(name);
 	if (it != json.object().end() && json.object().at(name).is_array()) {
-	
 		arr.reserve(it->second.array().size());
-		
+
 		for (const auto& index : it->second.array())
 			arr.push_back(index.number().to_uint32());
 	}
 	return arr;
 }
 
-
 template <typename T, size_t dimension>
-r4::vector<T, dimension> read_vec(const jsondom::value& json, const std::string& name, const r4::vector<T, dimension> default_value)
+r4::vector<T, dimension> read_vec(
+	const jsondom::value& json,
+	const std::string& name,
+	const r4::vector<T, dimension> default_value
+)
 {
 	auto it = json.object().find(name);
 
-	if(it == json.object().end() || !json.object().at(name).is_array())
+	if (it == json.object().end() || !json.object().at(name).is_array())
 		return default_value;
 
 	r4::vector<T, dimension> value;
@@ -142,7 +143,7 @@ ruis::quat read_quat(const jsondom::value& json, const std::string& name, const 
 {
 	auto it = json.object().find(name);
 
-	if(it == json.object().end() || !json.object().at(name).is_array())
+	if (it == json.object().end() || !json.object().at(name).is_array())
 		return default_value;
 
 	ruis::quat value;
@@ -197,7 +198,7 @@ void gltf_loader::create_vertex_buffer_float(
 		} else {
 			for (uint32_t j = 0; j < t.size(); ++j)
 				t[j] = d.read_float_le();
-		}	
+		}
 		// also, only float vectors for now. Need a template<> deserialize function for nice notation
 		vertex_attribute_buffer.push_back(std::move(t));
 		d.skip(n_skip_bytes);
@@ -209,7 +210,6 @@ void gltf_loader::create_vertex_buffer_float(
 
 	new_accessor.get().vbo = factory_.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
 	new_accessor.get().data = std::move(vertex_attribute_buffer);
-	
 
 	// return std::make_shared<vertex_data_t>(var);
 }
@@ -360,10 +360,8 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 
 				auto material_ = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
 				primitives.push_back(utki::make_shared<primitive>(vao, material_));
-			}
-			else
-			{
-				// TODO: branch all possible combinations if input data 
+			} else {
+				// TODO: branch all possible combinations if input data
 			}
 		}
 
@@ -377,7 +375,7 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		// 		},
 		// 		utki::shared_ref<ruis::render::index_buffer>(accessors[index_accessor].get().ibo),
 		// 		ruis::render::vertex_array::mode::triangles
-		// 	);		
+		// 	);
 	}
 
 	auto new_mesh = utki::make_shared<mesh>(primitives, name);
@@ -403,18 +401,20 @@ utki::shared_ref<node> gltf_loader::read_node(const jsondom::value& node_json)
 		transformation.translation = read_vec3(node_json, "translation");
 
 	int mesh_index = read_int(node_json, "mesh");
-	child_indices.push_back( read_uint_array(node_json, "children") );
+	child_indices.push_back(read_uint_array(node_json, "children"));
 
-	auto new_node = utki::make_shared<node>(mesh_index >= 0 ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
+	auto new_node =
+		utki::make_shared<node>(mesh_index >= 0 ? meshes[mesh_index].to_shared_ptr() : nullptr, name, transformation);
 	return new_node;
 }
 
 utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json)
 {
 	auto new_scene = utki::make_shared<scene>();
-	std::vector<uint32_t> node_indices = read_uint_array(scene_json, "nodes");;
+	std::vector<uint32_t> node_indices = read_uint_array(scene_json, "nodes");
+	;
 	new_scene.get().name = read_string(scene_json, "name");
-	
+
 	for (uint32_t ni : node_indices) {
 		new_scene.get().nodes.push_back(this->nodes[ni]);
 	}
@@ -737,8 +737,8 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 	int total_vertices = position_accessor.get().count;
 	int total_triangles = index_accessor.get().count / 3;
 
-	//const index_t* index_data = static_cast<const index_t*>(index_accessor.get().data);
-	//const index_t* pTriangle;
+	// const index_t* index_data = static_cast<const index_t*>(index_accessor.get().data);
+	// const index_t* pTriangle;
 
 	std::cout << "index is " << sizeof(index_t) << "-byte" << std::endl;
 
@@ -751,7 +751,7 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 	// const float* texcoord_data = static_cast<const float*>(texcoord_0_accessor.get().data);
 	// const float* normal_data = static_cast<const float*>(normal_accessor.get().data);
 
-	std::vector<ruis::vec3> tangents;  // or vec4 ?
+	std::vector<ruis::vec3> tangents; // or vec4 ?
 	std::vector<ruis::vec3> bitangents;
 
 	tangents.resize(total_vertices);
@@ -769,14 +769,13 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 
 	// Calculate the vertex tangents and bitangents.
 	for (int i = 0; i < total_triangles; ++i) {
-		
-		//pTriangle = &index_data[i * 3];
+		// pTriangle = &index_data[i * 3];
 
-		edge1 = positions[indices[i*3 + 1]] - positions[indices[i*3 + 0]];
-		edge2 = positions[indices[i*3 + 2]] - positions[indices[i*3 + 0]];
+		edge1 = positions[indices[i * 3 + 1]] - positions[indices[i * 3 + 0]];
+		edge2 = positions[indices[i * 3 + 2]] - positions[indices[i * 3 + 0]];
 
-		texEdge1 = texcoords[indices[i*3 + 1]] - texcoords[indices[i*3 + 0]];
-		texEdge2 = texcoords[indices[i*3 + 2]] - texcoords[indices[i*3 + 0]];
+		texEdge1 = texcoords[indices[i * 3 + 1]] - texcoords[indices[i * 3 + 0]];
+		texEdge2 = texcoords[indices[i * 3 + 2]] - texcoords[indices[i * 3 + 0]];
 
 		// edge1[0] = position_data[pTriangle[1] + 0] - position_data[pTriangle[0] + 0];
 		// edge1[1] = position_data[pTriangle[1] + 1] - position_data[pTriangle[0] + 1];
@@ -815,20 +814,20 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 		// TODO: figure out what is happening here and refactor with vector ops
 
 		// Accumulate the tangents and bitangents.
-		tangents[indices[i*3 + 0]] += tangent;
-		bitangents[indices[i*3 + 0]] += bitangent;
+		tangents[indices[i * 3 + 0]] += tangent;
+		bitangents[indices[i * 3 + 0]] += bitangent;
 
-		tangents[indices[i*3 + 1]] += tangent;
-		bitangents[indices[i*3 + 1]] += bitangent;
+		tangents[indices[i * 3 + 1]] += tangent;
+		bitangents[indices[i * 3 + 1]] += bitangent;
 
-		tangents[indices[i*3 + 2]] += tangent;
-		bitangents[indices[i*3 + 2]] += bitangent;
+		tangents[indices[i * 3 + 2]] += tangent;
+		bitangents[indices[i * 3 + 2]] += bitangent;
 	}
 
 	// Orthogonalize and normalize the vertex tangents.
 	for (int i = 0; i < total_vertices; ++i) {
 		// Gram-Schmidt orthogonalize tangent with normal.
-		//ruis::vec3 normal{normal_data[i * 3], normal_data[i * 3 + 1], normal_data[i * 3 + 2]};
+		// ruis::vec3 normal{normal_data[i * 3], normal_data[i * 3 + 1], normal_data[i * 3 + 2]};
 
 		float nDotT = normals[i] * tangents[i]; // dot product
 
@@ -853,7 +852,7 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 
 		float bDotB = bitangent_other * bitangents[i];
 
-		//tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
+		// tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
 		float sign = (bDotB < 0.0f) ? -1.0f : 1.0f;
 
 		bitangents[i] = bitangent_other * sign;

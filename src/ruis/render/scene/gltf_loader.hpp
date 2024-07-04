@@ -165,8 +165,8 @@ struct accessor {
 
 	vertex_data_t data;
 
-	//std::shared_ptr<vertex_data_t> data;
-	//void* data;
+	// std::shared_ptr<vertex_data_t> data;
+	// void* data;
 
 	accessor(
 		utki::shared_ref<buffer_view> bv,

@@ -26,7 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/res/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
 
-
 // #include "shaders/shader_adv.hpp"
 // #include "shaders/shader_phong.hpp"
 // #include "shaders/shader_skybox.hpp"
@@ -43,6 +42,7 @@ class light;
 class scene_renderer
 {
 protected:
+	std::shared_ptr<ruis::render::vertex_array> fullscreen_quad_vao;
 	std::shared_ptr<ruis::render::scene> scene_v;
 	std::shared_ptr<ruis::render::camera> external_camera;
 	// ruis::render::renderer& r;

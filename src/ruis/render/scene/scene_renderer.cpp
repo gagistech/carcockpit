@@ -60,9 +60,9 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 	if (!cam)
 		return;
 
-	float aspect = dims.d.x() / dims.d.y(); 
-	projection_matrix = viewport_matrix * cam->get_projection_matrix(aspect); 
-	
+	float aspect = dims.d.x() / dims.d.y();
+	projection_matrix = viewport_matrix * cam->get_projection_matrix(aspect);
+
 	view_matrix = cam->get_view_matrix();
 
 	if (scene_v.get()->lights.size() > 0) // scene has at least 1 light
@@ -74,11 +74,13 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 		main_light.intensity *= 2.0;
 	}
 
+	glDisable(GL_DEPTH_TEST);
 	render_environment();
+	glEnable(GL_DEPTH_TEST);
 
 	ruis::mat4 root_model_matrix;
 	root_model_matrix.set_identity();
-	root_model_matrix.scale(35, 35, 35);         // TODO: get rid of
+	root_model_matrix.scale(35, 35, 35); // TODO: get rid of
 	root_model_matrix.translate(0, -0.1, 0);
 
 	for (const auto& node_ : scene_v->nodes) {
@@ -88,17 +90,32 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 
 void scene_renderer::prepare_fullscreen_quad_vao()
 {
-	//fullscreen_quad_vao
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+	std::array<ruis::vec2, 4> pos = {
+		{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}
+	};
+
+	auto pos_vbo = this->context_v.get().renderer.get().factory->create_vertex_buffer(utki::make_span(pos));
+
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+	std::array<uint16_t, 36> indices = {
+		{0, 2, 1, 1, 2, 3}
+	};
+
+	auto indices_vbo = this->context_v.get().renderer.get().factory->create_index_buffer(utki::make_span(indices));
+
+	this->fullscreen_quad_vao =
+		context_v.get()
+			.renderer.get()
+			.factory->create_vertex_array({pos_vbo}, indices_vbo, ruis::render::vertex_array::mode::triangles)
+			.to_shared_ptr();
 }
 
 void scene_renderer::render_environment()
 {
 	[[maybe_unused]] auto& skybox = carcockpit::application::inst().shader_skybox_v;
 
-	skybox.render(fullscreen_quad_vao.get(),
-			view_matrix,
-			projection_matrix,
-			texture_default_environment_cube->tex());
+	skybox.render(*fullscreen_quad_vao.get(), view_matrix, projection_matrix, texture_default_environment_cube->tex());
 }
 
 void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix)
@@ -108,15 +125,15 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 	[[maybe_unused]] ruis::mat4 modelview_matrix = view_matrix * parent_model_matrix;
 	[[maybe_unused]] ruis::mat4 mvp_matrix = projection_matrix * modelview_matrix;
 
-	[[maybe_unused]] ruis::vec4 light_pos_view_coords = view_matrix * main_light.pos; // light position in view (camera) coords
+	[[maybe_unused]] ruis::vec4 light_pos_view_coords =
+		view_matrix * main_light.pos; // light position in view (camera) coords
 	// render the node itself
 
 	if (n.get().mesh_) {
 		for (const auto& primitive : n.get().mesh_->primitives) {
-
 			[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
 			[[maybe_unused]] auto& advanced = carcockpit::application::inst().shader_adv_v;
-			
+
 			// choose shader and textures here, set material-specific uniforms
 
 			auto tex_diffuse = primitive.get().material_.get().tex_diffuse;
@@ -131,12 +148,11 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 				tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
 				tex_normal ? *tex_normal.get() : texture_default_normal->tex(),
 				tex_arm ? *tex_arm.get() : texture_default_white->tex(),
-				texture_default_environment_cube->tex(),      // TODO load environment as well, if supported by gltf ?
+				texture_default_environment_cube->tex(), // TODO load environment as well, if supported by gltf ?
 				light_pos_view_coords,
 				main_light.intensity
 			);
 
-				
 			// phong.render(
 			// 	primitive.get().vao.get(),
 			// 	mvp_matrix,

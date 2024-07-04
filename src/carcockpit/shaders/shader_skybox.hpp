@@ -30,7 +30,7 @@ class shader_skybox : public ruis::render::opengles::shader_base
 {
 public:
 	GLint mat3_inverse_modelview;
-	GLint mat4_inverse_projection;
+	// GLint mat4_inverse_projection;
 
 	shader_skybox();
 	void render(

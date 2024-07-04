@@ -41,8 +41,8 @@ gltf_viewer_widget::gltf_viewer_widget(utki::shared_ref<ruis::context> context, 
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
 	ruis::fraction_widget(this->context, {})
 {
-	//this->tex = this->context.get().loader.load<ruis::res::texture_2d>("tex_sample").to_shared_ptr();
-	//this->rot.set_identity();
+	// this->tex = this->context.get().loader.load<ruis::res::texture_2d>("tex_sample").to_shared_ptr();
+	// this->rot.set_identity();
 
 	int maxTextureSize;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
@@ -55,7 +55,7 @@ gltf_viewer_widget::gltf_viewer_widget(utki::shared_ref<ruis::context> context, 
 
 	ruis::render::gltf_loader l(*this->context.get().renderer.get().factory);
 	// demoscene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb")).to_shared_ptr();
-	//demoscene = l.load(papki::fs_file("../res/samples_gltf/camera.glb")).to_shared_ptr();
+	// demoscene = l.load(papki::fs_file("../res/samples_gltf/camera.glb")).to_shared_ptr();
 	demoscene = l.load(papki::fs_file("../res/samples_gltf/spray.glb")).to_shared_ptr();
 
 	sc_renderer = std::make_shared<ruis::render::scene_renderer>(this->context);
@@ -176,14 +176,14 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 {
 	this->widget::render(matrix);
 
-    ruis::mat4 viewport_matrix { matrix };  
+	ruis::mat4 viewport_matrix{matrix};
 	viewport_matrix.scale(this->rect().d / 2);
 	viewport_matrix.translate(1, 1);
 	viewport_matrix.scale(1, -1, -1);
 
 	ruis::mat4 viewport;
 	viewport.set_identity();
-	
+
 	//	viewport = matrix;
 	//	viewport.scale(1.0f / this->rect().d[0], 1.0f / this->rect().d[1], 1.0f);
 
@@ -193,8 +193,8 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 
 	// glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glClear(GL_DEPTH_BUFFER_BIT); // TODO: probably this should be done externally, 
-	                              // because it clears all the framebuffer, not just area of this widget
+	glClear(GL_DEPTH_BUFFER_BIT); // TODO: probably this should be done externally,
+								  // because it clears all the framebuffer, not just area of this widget
 
 	camrip->pos = camera_position;
 	camrip->target = camera_target;

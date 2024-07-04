@@ -45,12 +45,11 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
 	std::shared_ptr<ruis::render::camera> camrip;
 
-
 	ruis::vec3 camera_position_front{0, 1.5, 7};
 	ruis::vec3 camera_position_top{0, 9, 0};
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
-	ruis::vec3 camera_target{0, -2, 0};
+	ruis::vec3 camera_target{0, 0, 0};
 
 	ruis::real camera_transition_duration = 0.2; // not seconds ;)
 	// bool camera_transition_ongoing = true;
