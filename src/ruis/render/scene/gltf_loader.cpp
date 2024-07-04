@@ -743,7 +743,6 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 	std::cout << "index is " << sizeof(index_t) << "-byte" << std::endl;
 
 	const auto& indices = std::get<std::vector<index_t>>(index_accessor.get().data);
-
 	const auto& positions = std::get<std::vector<ruis::vec3>>(position_accessor.get().data);
 	const auto& texcoords = std::get<std::vector<ruis::vec2>>(texcoord_0_accessor.get().data);
 	const auto& normals = std::get<std::vector<ruis::vec3>>(normal_accessor.get().data);

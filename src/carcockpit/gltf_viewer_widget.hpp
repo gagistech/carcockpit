@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <model_obj.hpp>
 #include <ruis/res/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
 #include <ruis/updateable.hpp>
@@ -46,39 +45,11 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
 	std::shared_ptr<ruis::render::camera> camrip;
 
-	std::shared_ptr<ruis::res::texture_2d> tex;
-	std::shared_ptr<ruis::res::texture_2d> tex_test;
-
-	std::shared_ptr<ruis::res::texture_2d> tex_car_diffuse;
-	std::shared_ptr<ruis::res::texture_2d> tex_car_normal;
-	std::shared_ptr<ruis::res::texture_2d> tex_car_roughness;
-	// std::shared_ptr<ruis::res::texture_2d> tex_car_opacity;
-	// std::shared_ptr<ruis::res::texture_2d> tex_car_metallic;
-
-	std::shared_ptr<ruis::res::texture_2d> tex_rust_diffuse;
-	std::shared_ptr<ruis::res::texture_2d> tex_rust_normal;
-	std::shared_ptr<ruis::res::texture_2d> tex_rust_roughness;
-
-	std::shared_ptr<ruis::res::texture_cube> tex_cube_env_hata;
-
-	ruis::quaternion rot = ruis::quaternion().set_identity();
-
-	std::shared_ptr<ruis::render::vertex_array> cube_vao;
-	std::shared_ptr<ruis::render::vertex_array> car_vao;
-	std::shared_ptr<ruis::render::vertex_array> light_vao;
-	std::shared_ptr<ruis::render::vertex_array> vao_lamba_l;
-	std::shared_ptr<ruis::render::vertex_array> vao_lamba_r;
-
-	std::shared_ptr<ruis::render::shader_skybox> skybox_s;
-	std::shared_ptr<ruis::render::shader_phong> phong_s;
-	std::shared_ptr<ruis::render::shader_adv> advanced_s;
 
 	ruis::vec3 camera_position_front{0, 1.5, 7};
 	ruis::vec3 camera_position_top{0, 9, 0};
-
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
-
 	ruis::vec3 camera_target{0, -2, 0};
 
 	ruis::real camera_transition_duration = 0.2; // not seconds ;)

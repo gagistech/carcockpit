@@ -5,21 +5,19 @@ include prorab-license.mk
 
 # ===============================
 # ========= model_obj ===========
-$(eval $(prorab-clear-this-vars))
+# $(eval $(prorab-clear-this-vars))
 
-this_name := model_obj
+# this_name := model_obj
 
-$(eval $(call prorab-config, ../config))
+# $(eval $(call prorab-config, ../config))
 
-this_srcs += $(call prorab-src-dir, model_obj)
+# this_srcs += $(call prorab-src-dir, model_obj)
 
-this_static_lib_only := true
-this_no_install := true
+# this_static_lib_only := true
+# this_no_install := true
 
-# no lint for model_obj
-this_lint_cmd := 
-
-$(eval $(prorab-build-lib))
+# # no lint for model_obj
+# this_lint_cmd := $(eval $(prorab-build-lib))
 
 
 # ==========================
@@ -64,11 +62,12 @@ else ifeq ($(os),linux)
     this_ldflags += -rdynamic
 endif
 
-this__libmodel_obj := $(this_out_dir)libmodel_obj.a
+#this__libmodel_obj := $(this_out_dir)libmodel_obj.a
 this__libruis_render := $(this_out_dir)libruis_render.a
 
-this_cxxflags += -isystem model_obj
-this_ldlibs += $(this__libmodel_obj) $(this__libruis_render)
+#this_cxxflags += -isystem model_obj
+this_ldlibs += $(this__libruis_render)
+#this_ldlibs += $(this__libmodel_obj) $(this__libruis_render)
 
 this_ldlibs += -lruisapp-opengles-xorg -lpapki -lclargs -ltml -lruis -lutki -lm -l ruis-render-opengles
 this_ldlibs += -l jsondom
@@ -77,7 +76,8 @@ this_ldlibs += `pkg-config --libs glesv2`
 
 $(eval $(prorab-build-app))
 
-$(eval $(call prorab-depend, $(prorab_this_name), $(this__libmodel_obj) $(this__libruis_render)))
+#$(eval $(call prorab-depend, $(prorab_this_name), $(this__libmodel_obj) $(this__libruis_render)))
+$(eval $(call prorab-depend, $(prorab_this_name), $(this__libruis_render)))
 
 this_run_name := app
 this_test_cmd := $(prorab_this_name) --window --res-path=../res

@@ -36,6 +36,8 @@ scene_renderer::scene_renderer(utki::shared_ref<ruis::context> c) :
 		context_v.get().loader.load<ruis::res::texture_2d>("texture_default_normal").to_shared_ptr();
 	texture_default_environment_cube =
 		context_v.get().loader.load<ruis::res::texture_cube>("tex_cube_env_hata").to_shared_ptr();
+
+	prepare_fullscreen_quad_vao();
 }
 
 void scene_renderer::set_scene(std::shared_ptr<ruis::render::scene> scene_v)
@@ -48,7 +50,7 @@ void scene_renderer::set_external_camera(std::shared_ptr<ruis::render::camera> c
 	external_camera = cam;
 }
 
-void scene_renderer::render()
+void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_matrix)
 {
 	if (!scene_v)
 		return;
@@ -58,8 +60,9 @@ void scene_renderer::render()
 	if (!cam)
 		return;
 
-	projection_matrix = cam->get_projection_matrix(2.0); // TODO: pass resolution to this render(), and maybe
-														 // framebuffer
+	float aspect = dims.d.x() / dims.d.y(); 
+	projection_matrix = viewport_matrix * cam->get_projection_matrix(aspect); 
+	
 	view_matrix = cam->get_view_matrix();
 
 	if (scene_v.get()->lights.size() > 0) // scene has at least 1 light
@@ -71,9 +74,11 @@ void scene_renderer::render()
 		main_light.intensity *= 2.0;
 	}
 
+	render_environment();
+
 	ruis::mat4 root_model_matrix;
 	root_model_matrix.set_identity();
-	root_model_matrix.scale(35, 35, 35);
+	root_model_matrix.scale(35, 35, 35);         // TODO: get rid of
 	root_model_matrix.translate(0, -0.1, 0);
 
 	for (const auto& node_ : scene_v->nodes) {
@@ -81,22 +86,37 @@ void scene_renderer::render()
 	}
 }
 
+void scene_renderer::prepare_fullscreen_quad_vao()
+{
+	//fullscreen_quad_vao
+}
+
+void scene_renderer::render_environment()
+{
+	[[maybe_unused]] auto& skybox = carcockpit::application::inst().shader_skybox_v;
+
+	skybox.render(fullscreen_quad_vao.get(),
+			view_matrix,
+			projection_matrix,
+			texture_default_environment_cube->tex());
+}
+
 void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix)
 {
 	parent_model_matrix *= n.get().get_transformation_matrix();
 
-	ruis::mat4 modelview_matrix = view_matrix * parent_model_matrix;
-	ruis::mat4 mvp_matrix = projection_matrix * modelview_matrix;
+	[[maybe_unused]] ruis::mat4 modelview_matrix = view_matrix * parent_model_matrix;
+	[[maybe_unused]] ruis::mat4 mvp_matrix = projection_matrix * modelview_matrix;
 
-	ruis::vec4 light_pos_view_coords = view_matrix * main_light.pos; // light position in view (camera) coords
+	[[maybe_unused]] ruis::vec4 light_pos_view_coords = view_matrix * main_light.pos; // light position in view (camera) coords
 	// render the node itself
 
 	if (n.get().mesh_) {
 		for (const auto& primitive : n.get().mesh_->primitives) {
 
 			[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
-			auto& advanced = carcockpit::application::inst().shader_adv_v;
-
+			[[maybe_unused]] auto& advanced = carcockpit::application::inst().shader_adv_v;
+			
 			// choose shader and textures here, set material-specific uniforms
 
 			auto tex_diffuse = primitive.get().material_.get().tex_diffuse;
@@ -115,6 +135,8 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 				light_pos_view_coords,
 				main_light.intensity
 			);
+
+				
 			// phong.render(
 			// 	primitive.get().vao.get(),
 			// 	mvp_matrix,

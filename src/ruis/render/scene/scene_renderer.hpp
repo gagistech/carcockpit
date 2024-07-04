@@ -59,10 +59,12 @@ protected:
 	void render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix);
 	// void render_mesh(utki::shared_ref<node> n, ruis::mat4 model);
 	// void render_primitive(utki::shared_ref<node> n, ruis::mat4 model);
+	void render_environment();
+	void prepare_fullscreen_quad_vao();
 
 public:
 	scene_renderer(utki::shared_ref<ruis::context> c);
-	void render();
+	void render(const ruis::rect& dims, const ruis::mat4& viewport_matrix);
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
 	void set_external_camera(std::shared_ptr<ruis::render::camera> cam);
 

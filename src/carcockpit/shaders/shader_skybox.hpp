@@ -26,17 +26,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/texture_cube.hpp>
 
 namespace ruis::render {
-
 class shader_skybox : public ruis::render::opengles::shader_base
 {
 public:
-	GLint mat4_modelview, mat3_normal, vec4_light_position, vec3_light_intensity;
+	GLint mat3_inverse_modelview;
+	GLint mat4_inverse_projection;
 
 	shader_skybox();
 	void render(
 		const ruis::render::vertex_array& va,
-		const r4::matrix4<float>& mvp,
 		const r4::matrix4<float>& modelview,
+		const r4::matrix4<float>& projection,
 		const ruis::render::texture_cube& tex_env_cube
 	) const;
 };
