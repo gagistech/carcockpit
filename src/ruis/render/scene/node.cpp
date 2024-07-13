@@ -23,9 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-node::node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation) :
-	mesh_(mesh_),
-	name(name),
+node::node(std::shared_ptr<mesh> mesh_v, std::string name, const trs& transformation) :
+	mesh_v(std::move(mesh_v)),
+	name(std::move(name)),
 	transformation(transformation)
 {}
 
@@ -38,12 +38,3 @@ const ruis::mat4& node::get_transformation_matrix()
 
 	return transformation_matrix;
 }
-
-// void node::render(const scene& s)
-// {
-// 	if (mesh_ != nullptr)
-// 		mesh_->render();
-// 	for (const auto& child : children) {
-// 		child.get().render(s);
-// 	}
-// }

@@ -52,6 +52,7 @@ shader_skybox::shader_skybox() :
 						{	
 							vec3 unprojected = (matrix * a0).xyz;
 							eyeDirection = mat3_imv * unprojected;
+							eyeDirection.y = -eyeDirection.y;
 
 							gl_Position = a0;
 						}

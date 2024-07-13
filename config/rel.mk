@@ -2,7 +2,7 @@ include $(config_dir)base/base.mk
 
 this_cxxflags += -O3
 
-#this_lint_cmd = $(prorab_lint_cmd_clang_tidy)
+this_lint_cmd = $(prorab_lint_cmd_clang_tidy)
 
 # WORKAROUND: on ubuntu jammy dpkg-buildpackage passes -ffat-lto-objects compilation flag
 # which is not supported by clang and clang-tidy complains about it:

@@ -26,10 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/res/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
 
-// #include "shaders/shader_adv.hpp"
-// #include "shaders/shader_phong.hpp"
-// #include "shaders/shader_skybox.hpp"
-
 #include "node.hpp"
 #include "scene.hpp"
 
@@ -45,20 +41,18 @@ protected:
 	std::shared_ptr<ruis::render::vertex_array> fullscreen_quad_vao;
 	std::shared_ptr<ruis::render::scene> scene_v;
 	std::shared_ptr<ruis::render::camera> external_camera;
-	// ruis::render::renderer& r;
 	utki::shared_ref<ruis::context> context_v;
 	ruis::mat4 view_matrix;
 	ruis::mat4 projection_matrix;
-	light main_light;
+	ruis::render::light main_light;
+	ruis::real scene_scaling_factor{1};
 
 	std::shared_ptr<ruis::res::texture_2d> texture_default_white;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_black;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_normal;
 	std::shared_ptr<ruis::res::texture_cube> texture_default_environment_cube;
-	// camera main_camera;
+	std::shared_ptr<ruis::res::texture_cube> texture_environment_cube;
 	void render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix);
-	// void render_mesh(utki::shared_ref<node> n, ruis::mat4 model);
-	// void render_primitive(utki::shared_ref<node> n, ruis::mat4 model);
 	void render_environment();
 	void prepare_fullscreen_quad_vao();
 
@@ -66,47 +60,9 @@ public:
 	scene_renderer(utki::shared_ref<ruis::context> c);
 	void render(const ruis::rect& dims, const ruis::mat4& viewport_matrix);
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
+	void set_scene_scaling_factor(ruis::real scene_scaling_factor);
+	void set_environment_cube(std::shared_ptr<ruis::res::texture_cube> texture_environment_cube);
 	void set_external_camera(std::shared_ptr<ruis::render::camera> cam);
-
-	virtual ~scene_renderer() {}
 };
-
-// class scene_renderer_regular : public scene_renderer
-// {
-// 	// std::shared_ptr<shader_skybox> skybox_shader;
-// 	// std::shared_ptr<shader_phong> phong_shader;
-// 	// std::shared_ptr<shader_adv> advanced_shader;
-
-// public:
-// 	ruis::mat4 view_matrix;
-
-// 	void render_node(utki::shared_ref<node> n, ruis::mat4 model) override;
-// 	scene_renderer_regular(ruis::render::renderer& r);
-// };
-
-// class shadow_scene_renderer : public scene_renderer{
-// public:
-//   const matrix shadow_matrix;
-
-//   void render_node(const node& n, matrix model)override{
-//     // efwefew
-//   }
-// };
-
-// auto shadow_tex;
-
-// scene::render(){
-//   ordinary_scene_renderer or;
-
-//   or.render(root_node);
-
-//   if(shadow_cache_dirty){
-//     shadow_scene_renderer sr(light_pos);
-
-//     sr.render(root_node);
-
-//     shadow_tex = sr.get_result();
-//   }
-// }
 
 } // namespace ruis::render

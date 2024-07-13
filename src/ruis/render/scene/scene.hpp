@@ -35,6 +35,8 @@ class light;
 
 class scene
 {
+	uint32_t time = 0;
+
 public:
 	std::string name;
 
@@ -43,11 +45,13 @@ public:
 	std::vector<utki::shared_ref<light>> lights;
 
 	std::shared_ptr<camera> active_camera;
-	scene();
+
+	scene() = default;
 	void update(uint32_t dt);
-	uint32_t time = 0;
-	// void render(ruis::render::renderer& r);
 };
+
+constexpr float default_camera_near = 0.1;
+constexpr float default_camera_far = 100.0;
 
 class camera // TODO: derive from node
 {
@@ -56,9 +60,9 @@ public:
 	ruis::vec3 target;
 	ruis::vec3 up{0, 1, 0};
 
-	ruis::real fovy;
-	ruis::real near{0.1};
-	ruis::real far{100};
+	ruis::real fovy{M_PI_2};
+	ruis::real near{default_camera_near};
+	ruis::real far{default_camera_far};
 
 	ruis::mat4 get_projection_matrix(ruis::real aspect_ratio);
 	ruis::mat4 get_view_matrix();
@@ -67,10 +71,11 @@ public:
 };
 
 class light // TODO: derive from node
+			// TODO: give user options to tweak light
 {
 public:
-	ruis::vec4 pos; // vec4, because w = 0 means light is at infinite distance
-	ruis::vec3 intensity;
+	ruis::vec4 pos{1, 1, 1, 1}; // vec4, because w = 0 means light is at infinite distance
+	ruis::vec3 intensity{1, 1, 1};
 };
 
 } // namespace ruis::render

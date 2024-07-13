@@ -41,8 +41,8 @@ class primitive
 {
 public:
 	utki::shared_ref<ruis::render::vertex_array> vao;
-	utki::shared_ref<material> material_;
-	primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_);
+	utki::shared_ref<material> material_v;
+	primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_v);
 	// void render();
 };
 
@@ -51,9 +51,7 @@ class mesh
 public:
 	std::vector<utki::shared_ref<primitive>> primitives;
 	std::string name;
-	mesh(const std::vector<utki::shared_ref<primitive>>& primitives, const std::string& name);
-
-	void render();
+	mesh(const std::vector<utki::shared_ref<primitive>>& primitives, std::string name);
 };
 
 } // namespace ruis::render

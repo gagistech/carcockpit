@@ -38,18 +38,17 @@ struct accessor;
 struct image_l;
 struct sampler_l;
 class material;
-typedef std::variant<
+using vertex_data_t = std::variant<
 	std::vector<float>,
 	std::vector<ruis::vec2>,
 	std::vector<ruis::vec3>,
 	std::vector<ruis::vec4>,
 	std::vector<uint16_t>,
-	std::vector<uint32_t>>
-	vertex_data_t;
+	std::vector<uint32_t>>;
 
 class gltf_loader
 {
-	ruis::render::factory& factory_;
+	ruis::render::factory& factory_v;
 
 	utki::span<const uint8_t> glb_binary_buffer;
 
@@ -68,7 +67,7 @@ class gltf_loader
 
 	std::vector<std::vector<uint32_t>> child_indices; // storage for node child hierarchy (only during loading stage)
 
-	template <typename T>
+	template <typename tp_type>
 	// std::shared_ptr<vertex_data_t>
 	void create_vertex_buffer_float(
 		utki::shared_ref<ruis::render::accessor>,
@@ -78,17 +77,14 @@ class gltf_loader
 		uint32_t acc_stride
 	);
 
-	template <typename T, size_t dimension>
-	r4::vector<T, dimension> read_vec(const jsondom::value& json, const std::string& name);
-
-	template <typename T>
-	std::vector<utki::shared_ref<T>> read_root_array(
-		std::function<T(const jsondom::value& j)> read_func,
+	template <typename tp_type>
+	std::vector<utki::shared_ref<tp_type>> read_root_array(
+		std::function<tp_type(const jsondom::value& j)> read_func,
 		const jsondom::value& root_json,
 		const std::string& name
 	);
 
-	template <typename index_t>
+	template <typename tp_type>
 	utki::shared_ref<ruis::render::vertex_array> create_vao_with_tangent_space(
 		utki::shared_ref<accessor> index_accessor,
 		utki::shared_ref<accessor> position_accessor,
@@ -109,7 +105,7 @@ class gltf_loader
 
 public:
 	utki::shared_ref<scene> load(const papki::file& fi);
-	gltf_loader(ruis::render::factory& factory_);
+	gltf_loader(ruis::render::factory& factory_v);
 };
 
 struct buffer_view // currently we support only one data buffer, the single data buffer located in the .glb file
@@ -122,14 +118,14 @@ struct buffer_view // currently we support only one data buffer, the single data
 	enum class target {
 		undefined = 0,
 		array_buffer = 34962,
-		element_Array_buffer = 34963
-	} target_;
+		element_array_buffer = 34963
+	} target_v;
 
-	buffer_view(uint32_t byte_length, uint32_t byte_offset, uint32_t byte_stride, target target_) :
+	buffer_view(uint32_t byte_length, uint32_t byte_offset, uint32_t byte_stride, target target_v) :
 		byte_length(byte_length),
 		byte_offset(byte_offset),
 		byte_stride(byte_stride),
-		target_(target_)
+		target_v(target_v)
 	{}
 };
 
@@ -148,7 +144,7 @@ struct accessor {
 		mat2 = 5, // whoa
 		mat3 = 9,
 		mat4 = 16
-	} type_;
+	} type_v;
 
 	enum class component_type {
 		undefined = 0,
@@ -158,7 +154,7 @@ struct accessor {
 		act_unsigned_short = 5123,
 		act_unsigned_int = 5125,
 		act_float = 5126
-	} component_type_;
+	} component_type_v;
 
 	std::shared_ptr<ruis::render::vertex_buffer> vbo;
 	std::shared_ptr<ruis::render::index_buffer> ibo;
@@ -173,24 +169,24 @@ struct accessor {
 		uint32_t count,
 		uint32_t byte_offset,
 		// uint32_t byte_stride,
-		type type_,
-		component_type component_type_
+		type type_v,
+		component_type component_type_v
 	);
 };
 
-struct image_l { // TODO: put loader helper classes into separate namespace
+struct image_l {
 	std::string name;
 	utki::shared_ref<buffer_view> bv;
 	enum class mime_type {
 		undefined = 0,
 		image_jpeg = 1,
 		image_png = 2
-	} mime_type_;
+	} mime_type_v;
 
-	image_l(std::string name, utki::shared_ref<buffer_view> bv, mime_type mime_type_) :
+	image_l(std::string name, utki::shared_ref<buffer_view> bv, mime_type mime_type_v) :
 		name(std::move(name)),
 		bv(std::move(bv)),
-		mime_type_(mime_type_)
+		mime_type_v(mime_type_v)
 	{}
 };
 

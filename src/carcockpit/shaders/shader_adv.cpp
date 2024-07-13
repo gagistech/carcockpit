@@ -30,17 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-static ruis::mat3 from_mat4(const ruis::mat4& mat)
-{
-	ruis::mat3 m;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j)
-			m[i][j] = mat[i][j];
-	return m;
-}
-
-static const ruis::vec4 default_light_position{5.0f, 5.0f, 5.0f, 1.0f};
-static const ruis::vec3 default_light_intensity{2.0f, 2.0f, 2.0f};
+constexpr ruis::vec4 default_light_position{5.0f, 5.0f, 5.0f, 1.0f};
+constexpr ruis::vec3 default_light_intensity{2.0f, 2.0f, 2.0f};
 
 shader_adv::shader_adv() :
 	shader_base(
@@ -205,7 +196,7 @@ void shader_adv::render(
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_cube&>(tex_cube_env).bind(3);
 
-	ruis::mat3 normal = from_mat4(modelview);
+	ruis::mat3 normal = modelview.submatrix<0, 0, 3, 3>();
 	normal.invert();
 	normal.transpose();
 

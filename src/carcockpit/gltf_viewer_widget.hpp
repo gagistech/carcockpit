@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // #include "../ruis/render/scene/shaders/shader_phong.hpp"
 // #include "../ruis/render/scene/shaders/shader_skybox.hpp"
 #include "../ruis/render/scene/scene.hpp"
-#include "../ruis/render/scene/scene_renderer.hpp"
+#include "../ruis/render/scene/scene_renderer.hxx"
 
 #include "shaders/shader_adv.hpp"
 #include "shaders/shader_phong.hpp"
@@ -39,49 +39,58 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace carcockpit {
 
+constexpr ruis::vec3 default_camera_position_front{0, 1.5, 7};
+constexpr ruis::vec3 default_camera_position_top{0, 9, 0};
+constexpr float default_camera_transition_duration{0.1};
+
 class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
 {
 	std::shared_ptr<ruis::render::scene> demoscene;
 	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
 	std::shared_ptr<ruis::render::camera> camrip;
+	// std::shared_ptr<ruis::res::texture_cube> texture_environment_cube;
 
-	ruis::vec3 camera_position_front{0, 1.5, 7};
-	ruis::vec3 camera_position_top{0, 9, 0};
+	ruis::vec3 camera_position_front{default_camera_position_front};
+	ruis::vec3 camera_position_top{default_camera_position_top};
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
-	ruis::vec3 camera_target{0, 0, 0};
 
-	ruis::real camera_transition_duration = 0.2; // not seconds ;)
-	// bool camera_transition_ongoing = true;
+	ruis::real camera_transition_duration{default_camera_transition_duration}; // not seconds
 	bool mouse_rotate = false;
-	bool mouse_pan = false;
+	// bool mouse_pan = false;
 	ruis::vec2 mouse_changeview_start;
 	ruis::vec3 camera_changeview_start;
 
-	unsigned fps = 0;
-
+	uint32_t fps = 0;
 	uint32_t fps_sec_counter = 0;
 	uint32_t time = 0;
 
 public:
-	struct parameters {};
+	struct parameters {
+		std::string path_to_gltf;
+		float scaling_factor{1.0f};
+		ruis::vec3 camera_target{0, 0, 0};
+		bool smooth_navigation_orbit = true;
+		bool smooth_navigation_zoom = true;
+		ruis::real orbit_angle_upper_limit = M_PI_2;
+		ruis::real orbit_angle_lower_limit = -M_PI_2;
+		std::shared_ptr<ruis::res::texture_cube> environment_cube;
+	};
 
 private:
-	// TODO: remove lint suppression
-	// NOLINTNEXTLINE(clang-diagnostic-unused-private-field)
 	parameters params;
 
 public:
 	struct all_parameters {
 		ruis::widget::parameters widget_params;
-		parameters car_params;
+		parameters gltf_params;
 	};
 
 	gltf_viewer_widget(utki::shared_ref<ruis::context> context, all_parameters params);
 
 	void render(const ruis::matrix4& matrix) const override;
 	void update(uint32_t dt) override;
-	void toggleCamera(bool toggle);
+	void toggle_camera(bool toggle);
 	void set_normal_mapping(bool toggle);
 
 	bool on_mouse_button(const ruis::mouse_button_event& e) override;

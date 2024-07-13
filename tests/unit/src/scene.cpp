@@ -1,11 +1,11 @@
 #include <papki/fs_file.hpp>
 #include <ruis/render/opengles/renderer.hpp>
-#include <ruis/render/scene/gltf_loader.hpp>
+#include <ruis/render/scene/gltf_loader.hxx>
 #include <tst/check.hpp>
 #include <tst/set.hpp>
 
 namespace {
-tst::set set("scene", [](tst::suite& suite) {
+const tst::set set("scene", [](tst::suite& suite) {
 	suite.add("basic_read", []() {
 		ruis::render::opengles::factory rf;
 

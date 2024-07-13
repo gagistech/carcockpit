@@ -36,14 +36,14 @@ class application : public ruisapp::application
 public:
 	application(bool window, std::string_view res_path);
 
-	void toggleCamera();
-	void toggleNormalMapping();
+	void toggle_camera();
+	void toggle_normal_mapping();
 
 	static constexpr std::string_view app_name = "carcockpit"sv;
 
 	static application& inst()
 	{
-		return static_cast<application&>(ruisapp::application::inst());
+		return dynamic_cast<application&>(ruisapp::application::inst());
 	}
 
 	ruis::render::shader_skybox shader_skybox_v;

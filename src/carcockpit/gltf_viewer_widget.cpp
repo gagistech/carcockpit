@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/opengles/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
 
-#include "../ruis/render/scene/gltf_loader.hpp"
+#include "../ruis/render/scene/gltf_loader.hxx"
 
 #include "application.hpp"
 
@@ -39,30 +39,24 @@ using namespace ruis::render;
 
 gltf_viewer_widget::gltf_viewer_widget(utki::shared_ref<ruis::context> context, all_parameters params) :
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
-	ruis::fraction_widget(this->context, {})
+	ruis::fraction_widget(this->context, {}),
+	params(std::move(params.gltf_params))
 {
-	// this->tex = this->context.get().loader.load<ruis::res::texture_2d>("tex_sample").to_shared_ptr();
-	// this->rot.set_identity();
-
-	int maxTextureSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	LOG([&](auto& o) {
-		o << "Max texture size: " << maxTextureSize << std::endl;
-	})
-	LOG([&](auto& o) {
-		o << "<< LOAD GLTF >>" << std::endl;
+		o << "[LOAD GLTF] " << this->params.path_to_gltf << std::endl;
 	})
 
 	ruis::render::gltf_loader l(*this->context.get().renderer.get().factory);
-	// demoscene = l.load(papki::fs_file("../res/samples_gltf/parent_and_children.glb")).to_shared_ptr();
-	// demoscene = l.load(papki::fs_file("../res/samples_gltf/camera.glb")).to_shared_ptr();
-	demoscene = l.load(papki::fs_file("../res/samples_gltf/spray.glb")).to_shared_ptr();
+
+	demoscene = l.load(papki::fs_file(this->params.path_to_gltf)).to_shared_ptr();
 
 	sc_renderer = std::make_shared<ruis::render::scene_renderer>(this->context);
 	sc_renderer->set_scene(demoscene);
 
 	camrip = std::make_shared<ruis::render::camera>();
 	sc_renderer->set_external_camera(camrip);
+	sc_renderer->set_scene_scaling_factor(this->params.scaling_factor);
+	sc_renderer->set_environment_cube(this->params.environment_cube);
 }
 
 void gltf_viewer_widget::update(uint32_t dt)
@@ -88,7 +82,6 @@ void gltf_viewer_widget::update(uint32_t dt)
 		ruis::real l2 = remains.x() * remains.x() + remains.y() * remains.y() + remains.z() * remains.z();
 		const ruis::real threshold = 0.00001;
 		if (l2 < threshold) {
-			// camera_transition_ongoing = false;
 			camera_position = camera_attractor;
 		}
 	}
@@ -102,7 +95,7 @@ void gltf_viewer_widget::update(uint32_t dt)
 	this->clear_cache();
 }
 
-void gltf_viewer_widget::toggleCamera(bool toggle)
+void gltf_viewer_widget::toggle_camera(bool toggle)
 {
 	// camera_transition_ongoing = true;
 	if (toggle)
@@ -116,14 +109,32 @@ void gltf_viewer_widget::set_normal_mapping(bool toggle)
 	application::inst().shader_adv_v.set_normal_mapping(toggle);
 }
 
+constexpr float snap_speed = 1.07; // 1 is zero speed
+
 bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 {
-	std::cout << "Is Down = " << e.is_down << std::endl;
-
 	if (e.button == ruis::mouse_button::wheel_up) {
-		camera_attractor /= 1.07;
+		camera_attractor -= this->params.camera_target;
+		camera_attractor /= snap_speed;
+		camera_attractor += this->params.camera_target;
+
+		if (!this->params.smooth_navigation_zoom) {
+			camera_attractor -= this->params.camera_target;
+			camera_position /= snap_speed;
+			camera_attractor += this->params.camera_target;
+		}
+
 	} else if (e.button == ruis::mouse_button::wheel_down) {
-		camera_attractor *= 1.07;
+		camera_attractor -= this->params.camera_target;
+		camera_attractor *= snap_speed;
+		camera_attractor += this->params.camera_target;
+
+		if (!this->params.smooth_navigation_zoom) {
+			camera_attractor -= this->params.camera_target;
+			camera_position *= snap_speed;
+			camera_attractor += this->params.camera_target;
+		}
+
 	} else if (e.button == ruis::mouse_button::left) {
 		mouse_rotate = e.is_down;
 		if (e.is_down) {
@@ -138,22 +149,26 @@ bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
 {
 	if (mouse_rotate) {
 		ruis::vec2 diff = e.pos - mouse_changeview_start;
-		ruis::vec4 diff4 = diff;
 
-		// ruis::mat4 inv_view = get_view_matrix().inv();
-		// diff4 = inv_view * diff4;
+		ruis::vec3 axis = -camera_changeview_start.cross(ruis::vec3(0, 1, 0));
+		axis.normalize();
 
 		ruis::quat q1, q2;
-		q1.set_rotation(0, 1, 0, -diff4.x() / 200.0f);
-		// camera_attractor.rotate(q);
-		q2.set_rotation(1, 0, 0, -diff4.y() / 200.0f);
-		// camera_attractor.rotate(q);
+		q1.set_rotation(axis.x(), axis.y(), axis.z(), -diff.y() * 2 / rect().d.y());
+		q2.set_rotation(0, 1, 0, -diff.x() * 2 / rect().d.x());
+
+		this->params.orbit_angle_lower_limit += this->params.orbit_angle_upper_limit; // TODO: restrict camera orbit
 
 		ruis::vec3 cam2go = camera_changeview_start;
+		cam2go -= this->params.camera_target;
 		cam2go.rotate(q1);
 		cam2go.rotate(q2);
+		cam2go += this->params.camera_target;
 
-		camera_attractor = cam2go;
+		if (this->params.smooth_navigation_orbit)
+			camera_attractor = cam2go;
+		else
+			camera_position = camera_attractor = cam2go;
 	}
 
 	return false;
@@ -168,7 +183,7 @@ ruis::mat4 gltf_viewer_widget::get_view_matrix() const
 {
 	ruis::mat4 view;
 	view.set_identity();
-	view.set_look_at(camera_position, camera_target, ruis::vec3(0, 2, 0));
+	view.set_look_at(camera_position, this->params.camera_target, ruis::vec3(0, 1, 0));
 	return view;
 }
 
@@ -181,44 +196,14 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	viewport_matrix.translate(1, 1);
 	viewport_matrix.scale(1, -1, -1);
 
-	ruis::mat4 viewport;
-	viewport.set_identity();
-
-	//	viewport = matrix;
-	//	viewport.scale(1.0f / this->rect().d[0], 1.0f / this->rect().d[1], 1.0f);
-
 	// float fms = static_cast<float>(this->time) / std::milli::den;
 	// float xx = 3 * cosf(fms / 2);
 	// float zz = 3 * sinf(fms / 2);
 
-	// glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glClear(GL_DEPTH_BUFFER_BIT); // TODO: probably this should be done externally,
-								  // because it clears all the framebuffer, not just area of this widget
-
 	camrip->pos = camera_position;
-	camrip->target = camera_target;
-	camrip->up = ruis::vec3(0, 2, 0);
-	camrip->fovy = 3.1415926535f / 4.f;
-	camrip->near = .1f;
-	camrip->far = 20.f;
+	camrip->target = this->params.camera_target;
+	camrip->up = ruis::vec3(0, 1, 0);
+	camrip->fovy = M_PI_4;
 
 	this->sc_renderer->render(rect(), viewport_matrix);
-
-	// advanced_s->render(
-	// 	*this->car_vao,
-	// 	mvp,
-	// 	modelview,
-	// 	projection,
-	// 	this->tex_rust_diffuse->tex(),
-	// 	this->tex_rust_normal->tex(),
-	// 	this->tex_rust_roughness->tex(),
-	// 	this->tex_cube_env_hata->tex(),
-	// 	light_pos_view,
-	// 	light_int
-	// );
-
-	glDisable(GL_DEPTH_TEST);
 }
-
-/// How to register mouse events outside app window ?

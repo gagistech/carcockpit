@@ -25,20 +25,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-scene::scene() {}
-
 void scene::update(uint32_t dt)
 {
 	time += dt;
 	[[maybe_unused]] float ft = static_cast<float>(time) / std::milli::den;
 	[[maybe_unused]] float fdt = static_cast<float>(dt) / std::milli::den;
 }
-
-// void scene::render(ruis::render::renderer& r)
-// {
-// 	// TODO: render from here
-// 	[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
-// }
 
 ruis::mat4 camera::get_projection_matrix(ruis::real aspect_ratio)
 {

@@ -128,20 +128,50 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                     m::gltf_viewer_widget(c,
                         {
                             .widget_params = {
-                                .id = "gltf_viewer_widget"s,
+                                .id = "gltf_viewer_widget_1"s,
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                                 },
-                                .clip=true
+                                .clip = true,
+                                .depth = true
                             }
-                            // ,
-                            // .params = {
-                            //             .diffuse = c.get().loader.load<ruis::res::image>("img_gauge_arrow"),
-                            //             .specular = c.get().loader.load<ruis::res::image>("img_gauge_arrow"),
-                            //             .roughness = c.get().loader.load<ruis::res::image>("img_gauge_arrow_shadow"),
-                            //             .normal = c.get().loader.load<ruis::res::image>("img_gauge_arrow_shadow")
-                            //         }
+                            ,
+                            .gltf_params = {
+                                .path_to_gltf = "../res/samples_gltf/spray.glb"s,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .scaling_factor = 10.0f,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .camera_target = ruis::vec3(1, 1, 1),
+                                .smooth_navigation_orbit = true,
+                                .smooth_navigation_zoom = true,
+                                .orbit_angle_upper_limit = M_PI_4,
+		                        .orbit_angle_lower_limit = -M_PI_4,
+                                .environment_cube = c.get().loader.load<ruis::res::texture_cube>("tex_cube_env_castle").to_shared_ptr()                               
+                            }
+                        }
+                    ),
+                    m::gltf_viewer_widget(c,
+                        {
+                            .widget_params = {
+                                .id = "gltf_viewer_widget_2"s,
+                                .lp = {
+                                    .dims = {lp::fill, lp::fill},
+                                    .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                                },
+                                .clip = true,
+                                .depth = true
+                            }
+                            ,
+                            .gltf_params = {
+                                .path_to_gltf = "../res/samples_gltf/camera.glb"s,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .scaling_factor = 10.0f,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .camera_target = ruis::vec3(0, 0, 0),
+                                .smooth_navigation_orbit = false,
+                                .smooth_navigation_zoom = false
+                            }
                         }
                     )
                 }
@@ -160,17 +190,18 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 
 	auto& gauge = kp.get().get_widget_as<ruis::gauge>("gauge");
 	auto& slider = kp.get().get_widget_as<ruis::fraction_widget>("gauge_slider");
-	auto& gltf_viewer_widget = kp.get().get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
+	// auto& gltf_viewer_widget = kp.get().get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
 
-	slider.fraction_change_handler = [&cw = gltf_viewer_widget, &g = gauge](ruis::fraction_widget& s) {
+	slider.fraction_change_handler = [&g = gauge](ruis::fraction_widget& s) {
 		g.set_fraction(s.get_fraction());
-		// cw.set_rotation(s.fraction());
-		cw.set_fraction(s.get_fraction());
+		// cw.set_fraction(s.get_fraction());
 	};
 
-	auto car = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
+	auto viewer1 = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget_1");
+	auto viewer2 = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget_2");
 
-	c.get().updater.get().start(car, 0);
+	c.get().updater.get().start(viewer1, 0);
+	c.get().updater.get().start(viewer2, 0);
 
 	return kp;
 }

@@ -52,8 +52,7 @@ class node
 	ruis::mat4 transformation_matrix;
 
 public:
-	// TODO: add extras as JSON?
-	std::shared_ptr<mesh> mesh_; // can be null, empty (intermediate) node
+	std::shared_ptr<mesh> mesh_v; // can be null, empty (intermediate) node
 	std::string name;
 	trs transformation;
 
@@ -62,7 +61,7 @@ public:
 	const ruis::mat4& get_transformation_matrix();
 	// std::variant<ruis::mat4, trs> transformation;
 
-	node(std::shared_ptr<mesh> mesh_, const std::string name, const trs& transformation = transformation_identity);
+	node(std::shared_ptr<mesh> mesh_v, std::string name, const trs& transformation = transformation_identity);
 
 	// void render(const scene& s);
 };
