@@ -71,10 +71,10 @@ void gauge::render(const matrix4& matrix) const
 
 	matrix4 mmm;
 	mmm.set_identity();
-	mmm.rotate(
+	mmm.rotate(ruis::quat(
 		-(this->params.start_angle_rad +
 		  (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
-	);
+	));
 	{
 		auto div = ruis::real(this->arrow_tex->dims().x()) * this->params.arm_fraction;
 		ASSERT(div >= 0)
