@@ -29,15 +29,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-static r4::matrix3<float> from_mat4(const r4::matrix4<float>& mat)
-{
-	r4::matrix3<float> m;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j)
-			m[i][j] = mat[i][j];
-	return m;
-}
-
 shader_skybox::shader_skybox() :
 	shader_base(
 		R"qwertyuiop(
@@ -83,7 +74,7 @@ void shader_skybox::render(
 	ASSERT(dynamic_cast<const ruis::render::opengles::texture_cube*>(&tex_env_cube))
 
 	r4::matrix4<float> inverse_projection = projection.inv();
-	r4::matrix3<float> inverse_modelview = from_mat4(modelview).tposed();
+	r4::matrix3<float> inverse_modelview = modelview.submatrix<0, 0, 3, 3>().tposed();
 
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 	static_cast<const ruis::render::opengles::texture_cube&>(tex_env_cube).bind(0);

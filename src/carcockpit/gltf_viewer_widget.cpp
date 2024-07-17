@@ -69,21 +69,12 @@ void gltf_viewer_widget::update(uint32_t dt)
 	float fdt = static_cast<float>(dt) / std::milli::den;
 	++this->fps;
 
-	// this->rot =
-	// 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-	// 	(ruis::quaternion()
-	// 		 .set_rotation(r4::vector3<float>(0, 1, 0).normalize(), 2.0f * 3.1415926f * float(get_fraction()))) *
-	// 	(ruis::quaternion().set_rotation(r4::vector3<float>(0, 1, 0).normalize(), 0.1f * ft));
+	float xx = 3 * cosf(ft / 2);
+	float zz = 3 * sinf(ft / 2);
 
-	// if(camera_transition_ongoing)
-	{
-		camera_position += (camera_attractor - camera_position) * fdt / camera_transition_duration;
-		ruis::vec3 remains = camera_attractor - camera_position;
-		ruis::real l2 = remains.x() * remains.x() + remains.y() * remains.y() + remains.z() * remains.z();
-		const ruis::real threshold = 0.00001;
-		if (l2 < threshold) {
-			camera_position = camera_attractor;
-		}
+	auto light = demoscene->get_primary_light();
+	if (light) {
+		light->pos = {xx, 3, zz, 1};
 	}
 
 	if (this->fps_sec_counter >= std::milli::den) {
@@ -92,12 +83,19 @@ void gltf_viewer_widget::update(uint32_t dt)
 		this->fps = 0;
 	}
 
+	camera_position += (camera_attractor - camera_position) * fdt / camera_transition_duration;
+	ruis::vec3 remains = camera_attractor - camera_position;
+	ruis::real l2 = remains.x() * remains.x() + remains.y() * remains.y() + remains.z() * remains.z();
+	const ruis::real threshold = 0.00001;
+	if (l2 < threshold) {
+		camera_position = camera_attractor;
+	}
+
 	this->clear_cache();
 }
 
 void gltf_viewer_widget::toggle_camera(bool toggle)
 {
-	// camera_transition_ongoing = true;
 	if (toggle)
 		camera_attractor = camera_position_top;
 	else
@@ -119,9 +117,9 @@ bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 		camera_attractor += this->params.camera_target;
 
 		if (!this->params.smooth_navigation_zoom) {
-			camera_attractor -= this->params.camera_target;
+			camera_position -= this->params.camera_target;
 			camera_position /= snap_speed;
-			camera_attractor += this->params.camera_target;
+			camera_position += this->params.camera_target;
 		}
 
 	} else if (e.button == ruis::mouse_button::wheel_down) {
@@ -130,13 +128,13 @@ bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 		camera_attractor += this->params.camera_target;
 
 		if (!this->params.smooth_navigation_zoom) {
-			camera_attractor -= this->params.camera_target;
+			camera_position -= this->params.camera_target;
 			camera_position *= snap_speed;
-			camera_attractor += this->params.camera_target;
+			camera_position += this->params.camera_target;
 		}
 
 	} else if (e.button == ruis::mouse_button::left) {
-		mouse_rotate = e.is_down;
+		mouse_orbit = e.is_down;
 		if (e.is_down) {
 			mouse_changeview_start = e.pos;
 			camera_changeview_start = camera_position;
@@ -147,22 +145,37 @@ bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 
 bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
 {
-	if (mouse_rotate) {
+	constexpr float mouse_orbit_speed_multiplier = 2.0f;
+
+	if (mouse_orbit) {
 		ruis::vec2 diff = e.pos - mouse_changeview_start;
 
-		ruis::vec3 axis = -camera_changeview_start.cross(ruis::vec3(0, 1, 0));
+		ruis::vec3 cam2go = camera_changeview_start - this->params.camera_target;
+		ruis::vec3 axis = -cam2go.cross(ruis::vec3(0, 1, 0));
 		axis.normalize();
 
+		auto cam_norm = cam2go.normed();
+		float theta = ::acosf(cam_norm.y());
+		float dtheta = -diff.y() * mouse_orbit_speed_multiplier / (rect().d.y() + 1);
+
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		float theta_lower_limit = M_PI_2f - params.orbit_angle_upper_limit + 0.00001f;
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		float theta_upper_limit = params.orbit_angle_lower_limit + M_PI_2f - 0.00001f;
+
+		// restrict camera orbit angle to respect given range
+		if (theta + dtheta < theta_lower_limit)
+			dtheta = theta_lower_limit - theta;
+		if (theta + dtheta > theta_upper_limit)
+			dtheta = theta_upper_limit - theta;
+
 		ruis::quat q1, q2;
-		q1.set_rotation(axis.x(), axis.y(), axis.z(), -diff.y() * 2 / rect().d.y());
-		q2.set_rotation(0, 1, 0, -diff.x() * 2 / rect().d.x());
+		q1.set_rotation(axis.x(), axis.y(), axis.z(), dtheta);
+		q2.set_rotation(0, 1, 0, -diff.x() * mouse_orbit_speed_multiplier / (rect().d.x() + 1));
 
-		this->params.orbit_angle_lower_limit += this->params.orbit_angle_upper_limit; // TODO: restrict camera orbit
-
-		ruis::vec3 cam2go = camera_changeview_start;
-		cam2go -= this->params.camera_target;
 		cam2go.rotate(q1);
 		cam2go.rotate(q2);
+
 		cam2go += this->params.camera_target;
 
 		if (this->params.smooth_navigation_orbit)
@@ -195,10 +208,6 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	viewport_matrix.scale(this->rect().d / 2);
 	viewport_matrix.translate(1, 1);
 	viewport_matrix.scale(1, -1, -1);
-
-	// float fms = static_cast<float>(this->time) / std::milli::den;
-	// float xx = 3 * cosf(fms / 2);
-	// float zz = 3 * sinf(fms / 2);
 
 	camrip->pos = camera_position;
 	camrip->target = this->params.camera_target;

@@ -35,14 +35,12 @@ accessor::accessor(
 	utki::shared_ref<buffer_view> bv,
 	uint32_t count,
 	uint32_t byte_offset,
-	// uint32_t byte_stride,
 	type type_v,
 	component_type component_type_v
 ) :
 	bv(std::move(bv)),
 	count(count),
 	byte_offset(byte_offset),
-	// byte_stride(byte_stride),
 	type_v(type_v),
 	component_type_v(component_type_v)
 {}
@@ -148,7 +146,6 @@ void gltf_loader::create_vertex_buffer_float(
 	utki::shared_ref<ruis::render::accessor> new_accessor,
 	utki::span<const uint8_t> buffer,
 	uint32_t acc_count, // in elements (e.g. a whole vec3)
-	// uint32_t acc_offset, // in bytes
 	uint32_t acc_stride // in bytes
 )
 {
@@ -160,10 +157,6 @@ void gltf_loader::create_vertex_buffer_float(
 	if (n_skip_bytes < 0) {
 		throw std::invalid_argument("read_gltf(): n_skip_bytes < 0");
 	}
-
-	// // skip offset:
-	// for (uint32_t skip = 0; skip < acc_offset; skip += sizeof(float))
-	// 	d.read_float_le();
 
 	for (uint32_t i = 0; i < acc_count; ++i) {
 		tp_type t;
@@ -179,14 +172,8 @@ void gltf_loader::create_vertex_buffer_float(
 		d.skip(n_skip_bytes);
 	}
 
-	// std::shared_ptr<vertex_data_t> var = std::make_shared<vertex_data_t>( std::move(vertex_attribute_buffer) );
-	// new_accessor.get().data = var;
-	// new_accessor.get().vbo = factory_.create_vertex_buffer(utki::make_span(new_accessor.get().data.get()));
-
 	new_accessor.get().vbo = factory_v.create_vertex_buffer(utki::make_span(vertex_attribute_buffer));
 	new_accessor.get().data = std::move(vertex_attribute_buffer);
-
-	// return std::make_shared<vertex_data_t>(var);
 }
 
 utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& accessor_json)
@@ -249,7 +236,7 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	} else if ((new_accessor.get().component_type_v == accessor::component_type::act_unsigned_short ||
 				new_accessor.get().component_type_v == accessor::component_type::act_unsigned_int) &&
 			   // new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer &&
-			   //  there are gltf exporters which don't mark target at all. So we must detect index arrays another way
+			   // there are gltf exporters which don't mark target at all. So we must detect index arrays another way
 			   new_accessor.get().type_v == accessor::type::scalar)
 	{
 		utki::deserializer d(buf);
@@ -277,17 +264,6 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 			new_accessor.get().data = index_attribute_buffer;
 			new_accessor.get().ibo = factory_v.create_index_buffer(utki::make_span(index_attribute_buffer));
 		}
-
-		// if (use_short_indices) { // opengles 2.0 does not support 32-bit indices by default
-		// 	std::vector<uint16_t> index_attribute_buffer;
-		// 	index_attribute_buffer.reserve(acc_count);
-
-		// 	for (size_t i = 0; i < acc_count; ++i)
-		// 		index_attribute_buffer.push_back(static_cast<uint16_t>(d.read_uint32_le()));
-
-		// 	new_accessor.get().ibo = factory_.create_index_buffer(utki::make_span(index_attribute_buffer));
-
-		// }
 	}
 
 	return new_accessor;
@@ -306,49 +282,47 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		int position_accessor = read_int(attributes_json, "POSITION");
 		int normal_accessor = read_int(attributes_json, "NORMAL");
 		int texcoord_0_accessor = read_int(attributes_json, "TEXCOORD_0");
-		int tangent_accessor = read_int(attributes_json, "TANGENT");
+		// int tangent_accessor = read_int(attributes_json, "TANGENT");  // tangents are always calculated on load
 		int material_index = read_int(json_primitive, "material");
 
-		if (index_accessor >= 0 && texcoord_0_accessor >= 0 && normal_accessor >= 0 && tangent_accessor < 0) {
-			// generate tangents and bitangents
-			if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_int) {
-				auto vao = create_vao_with_tangent_space<uint32_t>(
-					accessors[index_accessor],
-					accessors[position_accessor],
-					accessors[texcoord_0_accessor],
-					accessors[normal_accessor]
-				);
+		if (index_accessor < 0)
+			continue;
+		// throw std::invalid_argument("gltf: indices data not found");
+		if (position_accessor < 0)
+			continue;
+		// throw std::invalid_argument("gltf: vertex positions data not found");
+		if (normal_accessor < 0)
+			continue;
+		// throw std::invalid_argument("gltf: vertex normals data not found");
+		if (texcoord_0_accessor < 0)
+			continue;
+		// throw std::invalid_argument("gltf: vertex texcoords data not found");
 
-				auto material_v = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
-				primitives.push_back(utki::make_shared<primitive>(vao, material_v));
+		// generate tangents and bitangents
+		if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_int) {
+			auto vao = create_vao_with_tangent_space<uint32_t>(
+				accessors[index_accessor],
+				accessors[position_accessor],
+				accessors[texcoord_0_accessor],
+				accessors[normal_accessor]
+			);
 
-			} else if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_short)
-			{
-				auto vao = create_vao_with_tangent_space<uint32_t>(
-					accessors[index_accessor],
-					accessors[position_accessor],
-					accessors[texcoord_0_accessor],
-					accessors[normal_accessor]
-				);
+			auto material_v = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
+			primitives.push_back(utki::make_shared<primitive>(vao, material_v));
+		} else if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_short) {
+			auto vao = create_vao_with_tangent_space<uint16_t>(
+				accessors[index_accessor],
+				accessors[position_accessor],
+				accessors[texcoord_0_accessor],
+				accessors[normal_accessor]
+			);
 
-				auto material_v = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
-				primitives.push_back(utki::make_shared<primitive>(vao, material_v));
-			} else {
-				// TODO: branch all possible combinations if input data
-			}
+			auto material_v = material_index >= 0 ? materials[material_index] : utki::make_shared<material>();
+			primitives.push_back(utki::make_shared<primitive>(vao, material_v));
+		} else {
+			throw std::invalid_argument("gltf: indices data type not supported (only uint32 and uint16 are supported)");
+			// TODO: branch all possible combinations if input data
 		}
-
-		// 	auto vao = factory_.create_vertex_array(
-		// 		{
-		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[position_accessor].get().vbo),
-		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[texcoord_0_accessor].get().vbo),
-		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[normal_accessor].get().vbo),
-		// 			utki::shared_ref<ruis::render::vertex_buffer>(accessors[tangent_accessor].get().vbo)
-		// 			// , vbo_bitangents
-		// 		},
-		// 		utki::shared_ref<ruis::render::index_buffer>(accessors[index_accessor].get().ibo),
-		// 		ruis::render::vertex_array::mode::triangles
-		// 	);
 	}
 
 	auto new_mesh = utki::make_shared<mesh>(primitives, name);
@@ -389,12 +363,19 @@ utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json
 {
 	auto new_scene = utki::make_shared<scene>();
 	std::vector<uint32_t> node_indices = read_uint_array(scene_json, "nodes");
-	;
 	new_scene.get().name = read_string(scene_json, "name");
 
 	for (uint32_t ni : node_indices) {
 		new_scene.get().nodes.push_back(this->nodes[ni]);
 	}
+
+	constexpr ruis::vec4 default_light_position{4, 4, 4, 1};
+	constexpr ruis::vec3 default_light_intensity{4, 4, 4};
+
+	if (new_scene.get().lights.size() == 0)
+		new_scene.get().lights.push_back(
+			utki::make_shared<ruis::render::light>(default_light_position, default_light_intensity)
+		);
 
 	return new_scene;
 }
@@ -451,30 +432,6 @@ utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsond
 
 	return factory_v.create_texture_2d(std::move(imvar), tex_params);
 }
-
-// "materials": [
-//     {
-//       "name": "spray_paint_bottles_02",
-//       "doubleSided": true,
-//       "pbrMetallicRoughness": {
-//         "baseColorFactor": [
-//           1,
-//           1,
-//           1,
-//           1
-//         ],
-//         "baseColorTexture": {
-//           "index": 0
-//         },
-//         "metallicRoughnessTexture": {
-//           "index": 1
-//         }
-//       },
-//       "normalTexture": {
-//         "index": 2
-//       }
-//     }
-//   ],
 
 utki::shared_ref<material> gltf_loader::read_material(const jsondom::value& material_json)
 {
@@ -746,7 +703,6 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 		tex_edge_2 = texcoords[indices[i * 3 + 2]] - texcoords[indices[i * 3 + 0]];
 
 		// Calculate the triangle face tangent and bitangent.
-
 		float det = tex_edge_1[0] * tex_edge_2[1] - tex_edge_2[0] * tex_edge_1[1];
 
 		constexpr float epsilon = 1e-6f;

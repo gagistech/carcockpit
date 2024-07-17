@@ -25,6 +25,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
+std::shared_ptr<light> scene::get_primary_light()
+{
+	if (this->lights.size() >= 1)
+		return lights[0].to_shared_ptr();
+
+	return nullptr;
+}
+
+std::shared_ptr<light> scene::get_secondary_light()
+{
+	if (this->lights.size() >= 2)
+		return lights[1].to_shared_ptr();
+
+	return nullptr;
+}
+
 void scene::update(uint32_t dt)
 {
 	time += dt;
@@ -52,3 +68,8 @@ ruis::vec3 camera::to_view_coords(ruis::vec3 vec)
 {
 	return get_view_matrix() * vec;
 }
+
+light::light(ruis::vec4 pos, ruis::vec3 intensity) :
+	pos(pos),
+	intensity(intensity)
+{}

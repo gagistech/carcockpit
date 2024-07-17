@@ -146,7 +146,7 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                                 .smooth_navigation_orbit = true,
                                 .smooth_navigation_zoom = true,
                                 .orbit_angle_upper_limit = M_PI_4,
-		                        .orbit_angle_lower_limit = -M_PI_4,
+		                        .orbit_angle_lower_limit = M_PI_4,
                                 .environment_cube = c.get().loader.load<ruis::res::texture_cube>("tex_cube_env_castle").to_shared_ptr()                               
                             }
                         }
@@ -168,9 +168,9 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
                                 .scaling_factor = 10.0f,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .camera_target = ruis::vec3(0, 0, 0),
+                                .camera_target = ruis::vec3(-1, -1, -1),
                                 .smooth_navigation_orbit = false,
-                                .smooth_navigation_zoom = false
+                                .smooth_navigation_zoom = false,
                             }
                         }
                     )

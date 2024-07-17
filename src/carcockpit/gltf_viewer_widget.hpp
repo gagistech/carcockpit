@@ -56,7 +56,7 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 	ruis::vec3 camera_attractor{camera_position_front};
 
 	ruis::real camera_transition_duration{default_camera_transition_duration}; // not seconds
-	bool mouse_rotate = false;
+	bool mouse_orbit = false;
 	// bool mouse_pan = false;
 	ruis::vec2 mouse_changeview_start;
 	ruis::vec3 camera_changeview_start;
@@ -73,7 +73,7 @@ public:
 		bool smooth_navigation_orbit = true;
 		bool smooth_navigation_zoom = true;
 		ruis::real orbit_angle_upper_limit = M_PI_2;
-		ruis::real orbit_angle_lower_limit = -M_PI_2;
+		ruis::real orbit_angle_lower_limit = M_PI_2;
 		std::shared_ptr<ruis::res::texture_cube> environment_cube;
 	};
 

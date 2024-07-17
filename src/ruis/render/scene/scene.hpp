@@ -47,13 +47,21 @@ public:
 	std::shared_ptr<camera> active_camera;
 
 	scene() = default;
-	void update(uint32_t dt);
+	scene(const scene&) = default;
+	scene(scene&&) = default;
+	scene& operator=(const scene&) = default;
+	scene& operator=(scene&&) = default;
+	virtual ~scene() = default;
+
+	std::shared_ptr<light> get_primary_light();
+	std::shared_ptr<light> get_secondary_light();
+	virtual void update(uint32_t dt);
 };
 
 constexpr float default_camera_near = 0.1;
 constexpr float default_camera_far = 100.0;
 
-class camera // TODO: derive from node
+class camera
 {
 public:
 	ruis::vec3 pos;
@@ -70,12 +78,14 @@ public:
 	ruis::vec3 to_view_coords(ruis::vec3 vec);
 };
 
-class light // TODO: derive from node
-			// TODO: give user options to tweak light
+class light
 {
 public:
 	ruis::vec4 pos{1, 1, 1, 1}; // vec4, because w = 0 means light is at infinite distance
 	ruis::vec3 intensity{1, 1, 1};
+
+	light(ruis::vec4 pos, ruis::vec3 intensity);
+	light() = default;
 };
 
 } // namespace ruis::render

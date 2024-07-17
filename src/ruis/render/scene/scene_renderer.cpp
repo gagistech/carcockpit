@@ -130,8 +130,7 @@ void scene_renderer::prepare_fullscreen_quad_vao()
 
 void scene_renderer::render_environment()
 {
-	auto& skybox = carcockpit::application::inst().shader_skybox_v;
-	skybox.render(
+	carcockpit::application::inst().shader_skybox_v.render(
 		*fullscreen_quad_vao.get(),
 		view_matrix,
 		projection_matrix,
@@ -148,18 +147,18 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 
 	[[maybe_unused]] ruis::vec4 light_pos_view_coords =
 		view_matrix * main_light.pos; // light position in view (camera) coords
-	// render the node itself
 
+	// render the node itself
 	if (n.get().mesh_v) {
 		for (const auto& primitive : n.get().mesh_v->primitives) {
-			[[maybe_unused]] auto& phong = carcockpit::application::inst().shader_phong_v;
-			[[maybe_unused]] auto& advanced = carcockpit::application::inst().shader_adv_v;
+			[[maybe_unused]] const auto& phong = carcockpit::application::inst().shader_phong_v;
+			[[maybe_unused]] const auto& advanced = carcockpit::application::inst().shader_adv_v;
 
 			// choose shader and textures here, set material-specific uniforms
 
-			auto tex_diffuse = primitive.get().material_v.get().tex_diffuse;
-			auto tex_normal = primitive.get().material_v.get().tex_normal;
-			auto tex_arm = primitive.get().material_v.get().tex_arm;
+			const auto& tex_diffuse = primitive.get().material_v.get().tex_diffuse;
+			const auto& tex_normal = primitive.get().material_v.get().tex_normal;
+			const auto& tex_arm = primitive.get().material_v.get().tex_arm;
 
 			advanced.render(
 				primitive.get().vao.get(),
