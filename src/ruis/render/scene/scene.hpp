@@ -20,11 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /* ================ LICENSE END ================ */
 
 #pragma once
-
-// #include "shaders/shader_adv.hpp"
-// #include "shaders/shader_phong.hpp"
-// #include "shaders/shader_skybox.hpp"
-
 #include "node.hpp"
 
 namespace ruis::render {

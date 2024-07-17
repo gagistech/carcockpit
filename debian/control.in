@@ -13,7 +13,10 @@ Build-Depends:
 	clang-format,
 	libclargs-dev,
 	libruisapp-dev,
+	libjsondom-dev,
+	libtst-dev,
 	libruis-render-opengles-dev,
+	libruis-render-null-dev,
 	libgles2-mesa-dev
 Build-Depends-Indep: doxygen
 Standards-Version: 3.9.2

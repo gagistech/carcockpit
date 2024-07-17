@@ -59,7 +59,6 @@ class gltf_loader
 	std::vector<utki::shared_ref<accessor>> accessors; // accessors.
 	std::vector<utki::shared_ref<buffer_view>> buffer_views; // bv's
 
-	// std::vector<utki::shared_ref<texture_l>> textures;
 	std::vector<utki::shared_ref<material>> materials;
 	std::vector<utki::shared_ref<ruis::render::texture_2d>> textures;
 	std::vector<utki::shared_ref<sampler_l>> samplers;
@@ -68,12 +67,10 @@ class gltf_loader
 	std::vector<std::vector<uint32_t>> child_indices; // storage for node child hierarchy (only during loading stage)
 
 	template <typename tp_type>
-	// std::shared_ptr<vertex_data_t>
 	void create_vertex_buffer_float(
 		utki::shared_ref<ruis::render::accessor>,
 		utki::span<const uint8_t> buffer,
 		uint32_t acc_count,
-		// uint32_t acc_offset,
 		uint32_t acc_stride
 	);
 
@@ -133,7 +130,6 @@ struct accessor {
 	utki::shared_ref<buffer_view> bv;
 	uint32_t count;
 	uint32_t byte_offset;
-	// uint32_t byte_stride;
 
 	enum class type {
 		undefined = 0,
@@ -161,14 +157,10 @@ struct accessor {
 
 	vertex_data_t data;
 
-	// std::shared_ptr<vertex_data_t> data;
-	// void* data;
-
 	accessor(
 		utki::shared_ref<buffer_view> bv,
 		uint32_t count,
 		uint32_t byte_offset,
-		// uint32_t byte_stride,
 		type type_v,
 		component_type component_type_v
 	);

@@ -62,8 +62,6 @@ public:
 	// std::variant<ruis::mat4, trs> transformation;
 
 	node(std::shared_ptr<mesh> mesh_v, std::string name, const trs& transformation = transformation_identity);
-
-	// void render(const scene& s);
 };
 
 } // namespace ruis::render
