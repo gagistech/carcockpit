@@ -23,8 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-mesh::mesh(const std::vector<utki::shared_ref<primitive>>& primitives, std::string name) :
-	primitives(primitives),
+mesh::mesh(std::vector<utki::shared_ref<primitive>> primitives, std::string name) :
+	primitives(std::move(primitives)),
 	name(std::move(name))
 {}
 

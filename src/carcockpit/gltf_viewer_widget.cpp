@@ -159,9 +159,9 @@ bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
 		float dtheta = -diff.y() * mouse_orbit_speed_multiplier / (rect().d.y() + 1);
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_lower_limit = M_PI_2f - params.orbit_angle_upper_limit + 0.00001f;
+		float theta_lower_limit = static_cast<float>(M_PI_2) - params.orbit_angle_upper_limit + 0.00001f;
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_upper_limit = params.orbit_angle_lower_limit + M_PI_2f - 0.00001f;
+		float theta_upper_limit = params.orbit_angle_lower_limit + static_cast<float>(M_PI_2) - 0.00001f;
 
 		// restrict camera orbit angle to respect given range
 		if (theta + dtheta < theta_lower_limit)

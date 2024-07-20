@@ -51,7 +51,7 @@ class mesh
 public:
 	std::vector<utki::shared_ref<primitive>> primitives;
 	std::string name;
-	mesh(const std::vector<utki::shared_ref<primitive>>& primitives, std::string name);
+	mesh(std::vector<utki::shared_ref<primitive>> primitives, std::string name);
 };
 
 } // namespace ruis::render
