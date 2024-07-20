@@ -78,7 +78,7 @@ void gltf_viewer_widget::update(uint32_t dt)
 	}
 
 	if (this->fps_sec_counter >= std::milli::den) {
-		std::cout << "fps = " << std::dec << fps << std::endl;
+		// std::cout << "fps = " << std::dec << fps << std::endl;
 		this->fps_sec_counter = 0;
 		this->fps = 0;
 	}

@@ -154,9 +154,8 @@ void gltf_loader::create_vertex_buffer_float(
 	vertex_attribute_buffer.reserve(acc_count);
 
 	int n_skip_bytes = int(acc_stride) - int(sizeof(tp_type));
-	if (n_skip_bytes < 0) {
-		throw std::invalid_argument("read_gltf(): n_skip_bytes < 0");
-	}
+	if (n_skip_bytes < 0)
+		n_skip_bytes = 0;
 
 	for (uint32_t i = 0; i < acc_count; ++i) {
 		tp_type t;
@@ -477,7 +476,7 @@ std::vector<utki::shared_ref<tp_type>> gltf_loader::read_root_array(
 )
 {
 	std::vector<utki::shared_ref<tp_type>> all;
-	std::cout << "loading " << name << std::endl;
+	// std::cout << "loading " << name << std::endl;
 	auto it = root_json.object().find(name);
 	if (it != root_json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -538,11 +537,11 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	auto json = jsondom::read(json_span);
 	ASSERT(json.is_object())
 
-	for (const auto& kv : json.object()) {
-		std::cout << "key = " << kv.first << ", value type = " << unsigned(kv.second.get_type()) << std::endl;
-	}
+	// for (const auto& kv : json.object()) {
+	// std::cout << "key = " << kv.first << ", value type = " << unsigned(kv.second.get_type()) << std::endl;
+	//}
 
-	std::cout << "loading bufferViews" << std::endl;
+	// std::cout << "loading bufferViews" << std::endl;
 	{
 		auto it = json.object().find("bufferViews");
 		if (it == json.object().end() || !it->second.is_array()) {
@@ -561,7 +560,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 
 	decltype(json.object().find("")) it;
 
-	std::cout << "loading images" << std::endl;
+	// std::cout << "loading images" << std::endl;
 	it = json.object().find("images");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -569,7 +568,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading samplers" << std::endl;
+	// std::cout << "loading samplers" << std::endl;
 	it = json.object().find("samplers");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -577,7 +576,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading textures" << std::endl;
+	// std::cout << "loading textures" << std::endl;
 	it = json.object().find("textures");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -585,7 +584,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading materials" << std::endl;
+	// std::cout << "loading materials" << std::endl;
 	it = json.object().find("materials");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -593,7 +592,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading accessors" << std::endl;
+	// std::cout << "loading accessors" << std::endl;
 	it = json.object().find("accessors");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -601,7 +600,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading meshes" << std::endl;
+	// std::cout << "loading meshes" << std::endl;
 	it = json.object().find("meshes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -609,7 +608,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading nodes" << std::endl;
+	// std::cout << "loading nodes" << std::endl;
 	it = json.object().find("nodes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -625,7 +624,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	std::cout << "loading scenes" << std::endl;
+	// std::cout << "loading scenes" << std::endl;
 	it = json.object().find("scenes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -643,7 +642,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	}
 
 	// create cameras (currently generates one default camera)
-	// std::cout << "create camera" << std::endl;
+	// //std::cout << "create camera" << std::endl;
 
 	// auto cam = utki::make_shared<camera>();
 	// cam.get().pos = {0, 3.5, -8};
@@ -656,7 +655,7 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	// active_scene.get().cameras.push_back(cam);
 	// active_scene.get().active_camera = cam.to_shared_ptr();
 
-	std::cout << "gltf load finished" << std::endl;
+	// std::cout << "gltf load finished" << std::endl;
 	return active_scene;
 }
 
@@ -671,7 +670,7 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 	uint32_t total_vertices = position_accessor.get().count;
 	uint32_t total_triangles = index_accessor.get().count / 3;
 
-	std::cout << "index is " << sizeof(tp_type) << "-byte" << std::endl;
+	// std::cout << "index is " << sizeof(tp_type) << "-byte" << std::endl;
 
 	const auto& indices = std::get<std::vector<tp_type>>(index_accessor.get().data);
 	const auto& positions = std::get<std::vector<ruis::vec3>>(position_accessor.get().data);
