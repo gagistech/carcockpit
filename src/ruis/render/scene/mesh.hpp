@@ -25,8 +25,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/render/texture_2d.hpp>
 #include <ruis/render/vertex_array.hpp>
 
-// #include <ruis/res/texture_2d.hpp>
-
 namespace ruis::render {
 class material
 {
@@ -43,7 +41,6 @@ public:
 	utki::shared_ref<ruis::render::vertex_array> vao;
 	utki::shared_ref<material> material_v;
 	primitive(utki::shared_ref<ruis::render::vertex_array> vao, utki::shared_ref<material> material_v);
-	// void render();
 };
 
 class mesh

@@ -27,9 +27,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/widgets/base/fraction_widget.hpp>
 #include <ruis/widgets/widget.hpp>
 
-// #include "../ruis/render/scene/shaders/shader_adv.hpp"
-// #include "../ruis/render/scene/shaders/shader_phong.hpp"
-// #include "../ruis/render/scene/shaders/shader_skybox.hpp"
 #include "../ruis/render/scene/scene.hpp"
 #include "../ruis/render/scene/scene_renderer.hxx"
 
@@ -48,16 +45,14 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 	std::shared_ptr<ruis::render::scene> demoscene;
 	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
 	std::shared_ptr<ruis::render::camera> camrip;
-	// std::shared_ptr<ruis::res::texture_cube> texture_environment_cube;
 
 	ruis::vec3 camera_position_front{default_camera_position_front};
 	ruis::vec3 camera_position_top{default_camera_position_top};
 	ruis::vec3 camera_position{camera_position_top};
 	ruis::vec3 camera_attractor{camera_position_front};
 
-	ruis::real camera_transition_duration{default_camera_transition_duration}; // not seconds
+	ruis::real camera_transition_duration{default_camera_transition_duration};
 	bool mouse_orbit = false;
-	// bool mouse_pan = false;
 	ruis::vec2 mouse_changeview_start;
 	ruis::vec3 camera_changeview_start;
 
@@ -72,8 +67,8 @@ public:
 		ruis::vec3 camera_target{0, 0, 0};
 		bool smooth_navigation_orbit = true;
 		bool smooth_navigation_zoom = true;
-		ruis::real orbit_angle_upper_limit = M_PI_2;
-		ruis::real orbit_angle_lower_limit = M_PI_2;
+		ruis::real orbit_angle_upper_limit = utki::pi / 2;
+		ruis::real orbit_angle_lower_limit = utki::pi / 2;
 		std::shared_ptr<ruis::res::texture_cube> environment_cube;
 	};
 

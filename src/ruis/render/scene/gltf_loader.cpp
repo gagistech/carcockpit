@@ -69,15 +69,6 @@ uint32_t read_uint(const jsondom::value& json, const std::string& name, const ui
 	return default_value;
 }
 
-// float read_float(const jsondom::value& json, const std::string& name, const float default_value = 0.0f)
-// {
-// 	auto it = json.object().find(name);
-// 	if (it != json.object().end())
-// 		return it->second.number().to_float();
-
-// 	return default_value;
-// }
-
 std::string read_string(const jsondom::value& json, const std::string& name, const std::string default_value = "")
 {
 	auto it = json.object().find(name);
@@ -184,7 +175,8 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 		type_v = accessor::type::scalar;
 	else if (type_s == "VEC2")
 		type_v = accessor::type::vec2;
-	// else if(type_s == "VEC3") type_ = accessor::type::vec3;  // huge performance boost
+	else if (type_s == "VEC3")
+		type_v = accessor::type::vec3;
 	else if (type_s == "VEC4")
 		type_v = accessor::type::vec4;
 	else if (type_s == "MAT2")
@@ -203,7 +195,6 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 		buffer_views[buffer_view_index],
 		acc_count,
 		acc_offset,
-		// acc_stride,
 		type_v,
 		static_cast<accessor::component_type>(component_type)
 	);
@@ -213,10 +204,6 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 	const uint32_t bv_stride = new_accessor.get().bv.get().byte_stride;
 
 	auto buf = glb_binary_buffer.subspan(bv_offset + acc_offset, bv_length);
-
-	// const size_t num_components = static_cast<const size_t>(new_accessor.get().type_);
-
-	// if (new_accessor.get().bv.get().target_ == buffer_view::target::array_buffer) {
 
 	if (new_accessor.get().component_type_v == accessor::component_type::act_float) {
 		if (new_accessor.get().type_v == accessor::type::scalar)
@@ -231,17 +218,12 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 			throw std::logic_error("Matrix vertex attributes currently not supported");
 		}
 
-		// create_vertex_buffer_float<r4::vector<float, num_components>>(buf);
 	} else if ((new_accessor.get().component_type_v == accessor::component_type::act_unsigned_short ||
 				new_accessor.get().component_type_v == accessor::component_type::act_unsigned_int) &&
-			   // new_accessor.get().bv.get().target_ == buffer_view::target::element_Array_buffer &&
-			   // there are gltf exporters which don't mark target at all. So we must detect index arrays another way
 			   new_accessor.get().type_v == accessor::type::scalar)
 	{
 		utki::deserializer d(buf);
-		if (new_accessor.get().component_type_v ==
-			accessor::component_type::act_unsigned_short /*|| acc_count < 65536*/)
-		{
+		if (new_accessor.get().component_type_v == accessor::component_type::act_unsigned_short) {
 			std::vector<uint16_t> index_attribute_buffer;
 			index_attribute_buffer.reserve(acc_count);
 
@@ -251,9 +233,7 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 			new_accessor.get().data = index_attribute_buffer;
 			new_accessor.get().ibo = factory_v.create_index_buffer(utki::make_span(index_attribute_buffer));
 
-		} else if (new_accessor.get().component_type_v ==
-				   accessor::component_type::act_unsigned_int /*|| acc_count >= 65536*/)
-		{
+		} else if (new_accessor.get().component_type_v == accessor::component_type::act_unsigned_int) {
 			std::vector<uint32_t> index_attribute_buffer;
 			index_attribute_buffer.reserve(acc_count);
 
@@ -281,21 +261,24 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		int position_accessor = read_int(attributes_json, "POSITION");
 		int normal_accessor = read_int(attributes_json, "NORMAL");
 		int texcoord_0_accessor = read_int(attributes_json, "TEXCOORD_0");
-		// int tangent_accessor = read_int(attributes_json, "TANGENT");  // tangents are always calculated on load
+		[[maybe_unused]] int tangent_accessor = read_int(
+			attributes_json,
+			"TANGENT"
+		); // TOOD: Currently we do not use tangents provided from gltf file, we calculate them instead. But if they are
+		   // provided in file, we should use them
 		int material_index = read_int(json_primitive, "material");
 
 		if (index_accessor < 0)
 			continue;
-		// throw std::invalid_argument("gltf: indices data not found");
+
 		if (position_accessor < 0)
 			continue;
-		// throw std::invalid_argument("gltf: vertex positions data not found");
+
 		if (normal_accessor < 0)
 			continue;
-		// throw std::invalid_argument("gltf: vertex normals data not found");
+
 		if (texcoord_0_accessor < 0)
 			continue;
-		// throw std::invalid_argument("gltf: vertex texcoords data not found");
 
 		// generate tangents and bitangents
 		if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_int) {
@@ -424,7 +407,7 @@ utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsond
 		throw std::invalid_argument("gltf: unknown texture image format");
 	}
 
-	ruis::render::factory::texture_2d_parameters tex_params; // TODO: fill texparams properly base on gltf file
+	ruis::render::factory::texture_2d_parameters tex_params; // TODO: fill texparams properly based on gltf file
 	tex_params.mag_filter = ruis::render::texture_2d::filter::linear;
 	tex_params.min_filter = ruis::render::texture_2d::filter::linear;
 	tex_params.mipmap = texture_2d::mipmap::linear;
@@ -476,7 +459,6 @@ std::vector<utki::shared_ref<tp_type>> gltf_loader::read_root_array(
 )
 {
 	std::vector<utki::shared_ref<tp_type>> all;
-	// std::cout << "loading " << name << std::endl;
 	auto it = root_json.object().find(name);
 	if (it != root_json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -537,11 +519,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 	auto json = jsondom::read(json_span);
 	ASSERT(json.is_object())
 
-	// for (const auto& kv : json.object()) {
-	// std::cout << "key = " << kv.first << ", value type = " << unsigned(kv.second.get_type()) << std::endl;
-	//}
-
-	// std::cout << "loading bufferViews" << std::endl;
 	{
 		auto it = json.object().find("bufferViews");
 		if (it == json.object().end() || !it->second.is_array()) {
@@ -553,14 +530,8 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////
+	std::map<std::string, jsondom::value, std::less<>>::iterator it;
 
-	// images = read_root_array<image_l>(read_image, json, "images");
-	// samplers = read_root_array<sampler_l>(read_sampler, json, "samplers");
-
-	decltype(json.object().find("")) it;
-
-	// std::cout << "loading images" << std::endl;
 	it = json.object().find("images");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -568,7 +539,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading samplers" << std::endl;
 	it = json.object().find("samplers");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -576,15 +546,12 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading textures" << std::endl;
 	it = json.object().find("textures");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
 			textures.push_back(read_texture(sub_json));
 		}
 	}
-
-	// std::cout << "loading materials" << std::endl;
 	it = json.object().find("materials");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -592,7 +559,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading accessors" << std::endl;
 	it = json.object().find("accessors");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -600,7 +566,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading meshes" << std::endl;
 	it = json.object().find("meshes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -608,7 +573,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading nodes" << std::endl;
 	it = json.object().find("nodes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -624,7 +588,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// std::cout << "loading scenes" << std::endl;
 	it = json.object().find("scenes");
 	if (it != json.object().end() && it->second.is_array()) {
 		for (const auto& sub_json : it->second.array()) {
@@ -632,7 +595,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		}
 	}
 
-	// create scene
 	auto active_scene = utki::make_shared<scene>();
 	int active_scene_index = read_int(json, "scene");
 	if (active_scene_index < 0) {
@@ -641,21 +603,6 @@ utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
 		active_scene = scenes[active_scene_index];
 	}
 
-	// create cameras (currently generates one default camera)
-	// //std::cout << "create camera" << std::endl;
-
-	// auto cam = utki::make_shared<camera>();
-	// cam.get().pos = {0, 3.5, -8};
-	// cam.get().target = {0, 1, 0};
-	// cam.get().up = {0, 1, 0};
-	// cam.get().near = 0.1;
-	// cam.get().far = 100;
-	// cam.get().fovy = 3.1415926 / 3;
-
-	// active_scene.get().cameras.push_back(cam);
-	// active_scene.get().active_camera = cam.to_shared_ptr();
-
-	// std::cout << "gltf load finished" << std::endl;
 	return active_scene;
 }
 
@@ -670,14 +617,12 @@ utki::shared_ref<ruis::render::vertex_array> gltf_loader::create_vao_with_tangen
 	uint32_t total_vertices = position_accessor.get().count;
 	uint32_t total_triangles = index_accessor.get().count / 3;
 
-	// std::cout << "index is " << sizeof(tp_type) << "-byte" << std::endl;
-
 	const auto& indices = std::get<std::vector<tp_type>>(index_accessor.get().data);
 	const auto& positions = std::get<std::vector<ruis::vec3>>(position_accessor.get().data);
 	const auto& texcoords = std::get<std::vector<ruis::vec2>>(texcoord_0_accessor.get().data);
 	const auto& normals = std::get<std::vector<ruis::vec3>>(normal_accessor.get().data);
 
-	std::vector<ruis::vec3> tangents; // or vec4 ?
+	std::vector<ruis::vec3> tangents;
 	std::vector<ruis::vec3> bitangents;
 
 	tangents.resize(total_vertices);

@@ -145,7 +145,6 @@ shader_adv::shader_adv() :
 	sampler_roughness_map(this->get_uniform("texture2")),
 	sampler_cube(this->get_uniform("texture3")),
 	mat4_modelview(this->get_uniform("mat4_mv")),
-	// mat4_projection(this->get_uniform("mat4_p")),
 	mat3_normal(this->get_uniform("mat3_n")),
 	vec4_light_position(this->get_uniform("light_position")),
 	vec3_light_intensity(this->get_uniform("light_intensity")),
@@ -177,7 +176,7 @@ void shader_adv::render(
 	const ruis::vec3& light_int = default_light_intensity
 ) const
 {
-	this->bind(); // bind shader program
+	this->bind();
 
 	this->set_uniform_sampler(sampler_normal_map, 1);
 	this->set_uniform_sampler(sampler_roughness_map, 2);
@@ -203,7 +202,6 @@ void shader_adv::render(
 	this->set_uniform4f(this->vec4_light_position, light_pos[0], light_pos[1], light_pos[2], light_pos[3]);
 	this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
 	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
-	// this->set_uniform_matrix4f(this->mat4_projection, projection);
 	this->set_uniform_matrix3f(mat3_normal, normal);
 
 	this->set_uniform3f(

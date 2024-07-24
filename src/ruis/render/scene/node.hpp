@@ -49,16 +49,15 @@ class scene;
 
 class node
 {
-	ruis::mat4 transformation_matrix;
-
 public:
-	std::shared_ptr<mesh> mesh_v; // can be null, empty (intermediate) node
+	std::shared_ptr<mesh> mesh_v;
 	std::string name;
 	trs transformation;
 
 	std::vector<utki::shared_ref<node>> children;
 
-	const ruis::mat4& get_transformation_matrix();
+	ruis::mat4 get_transformation_matrix() const;
+	// TODO: consider support for transformnation in form of a matrix which comes from GLTF file, e.g.
 	// std::variant<ruis::mat4, trs> transformation;
 
 	node(std::shared_ptr<mesh> mesh_v, std::string name, const trs& transformation = transformation_identity);

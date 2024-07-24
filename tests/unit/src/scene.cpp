@@ -1,5 +1,4 @@
 #include <papki/fs_file.hpp>
-// #include <ruis/render/opengles/renderer.hpp>
 #include <ruis/render/null/factory.hpp>
 #include <ruis/render/scene/gltf_loader.hxx>
 #include <ruis/render/scene/scene.hpp>
@@ -9,7 +8,6 @@
 namespace {
 const tst::set set("scene", [](tst::suite& suite) {
 	suite.add("basic_read", []() {
-		// ruis::render::opengles::factory rf;
 		ruis::render::null::factory rf;
 		{
 			ruis::render::gltf_loader l(rf);
@@ -19,7 +17,6 @@ const tst::set set("scene", [](tst::suite& suite) {
 	});
 
 	suite.add("hirarchy", []() {
-		// ruis::render::opengles::factory rf;
 		ruis::render::null::factory rf;
 		{
 			ruis::render::gltf_loader l(rf);
@@ -29,7 +26,6 @@ const tst::set set("scene", [](tst::suite& suite) {
 	});
 
 	suite.add("spray_paint_model", []() {
-		// ruis::render::opengles::factory rf;
 		ruis::render::null::factory rf;
 		{
 			ruis::render::gltf_loader l(rf);
@@ -39,7 +35,6 @@ const tst::set set("scene", [](tst::suite& suite) {
 	});
 
 	suite.add("vintage_camera_model", []() {
-		// ruis::render::opengles::factory rf;
 		ruis::render::null::factory rf;
 		{
 			ruis::render::gltf_loader l(rf);

@@ -21,13 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-// #include <ruis/render/texturing_shader.hpp>
 #include <ruis/config.hpp>
 #include <ruis/render/opengles/shader_base.hpp>
 #include <ruis/render/texture_2d.hpp>
 
 namespace ruis::render {
-
 class shader_phong : public ruis::render::opengles::shader_base
 {
 public:

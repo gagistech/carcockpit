@@ -52,13 +52,13 @@ protected:
 	std::shared_ptr<ruis::res::texture_2d> texture_default_normal;
 	std::shared_ptr<ruis::res::texture_cube> texture_default_environment_cube;
 	std::shared_ptr<ruis::res::texture_cube> texture_environment_cube;
-	void render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix);
+	void render_node(const node& n, const ruis::mat4& parent_tree_model_matrix);
 	void render_environment();
 	void prepare_fullscreen_quad_vao();
 
 public:
 	scene_renderer(utki::shared_ref<ruis::context> c);
-	void render(const ruis::rect& dims, const ruis::mat4& viewport_matrix);
+	void render(const ruis::vec2& dims, const ruis::mat4& viewport_matrix);
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
 	void set_scene_scaling_factor(ruis::real scene_scaling_factor);
 	void set_environment_cube(std::shared_ptr<ruis::res::texture_cube> texture_environment_cube);

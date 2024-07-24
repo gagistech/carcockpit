@@ -29,8 +29,10 @@ node::node(std::shared_ptr<mesh> mesh_v, std::string name, const trs& transforma
 	transformation(transformation)
 {}
 
-const ruis::mat4& node::get_transformation_matrix()
+ruis::mat4 node::get_transformation_matrix() const
 {
+	ruis::mat4 transformation_matrix;
+
 	transformation_matrix.set_identity();
 	transformation_matrix.translate(transformation.translation);
 	transformation_matrix.rotate(transformation.rotation);

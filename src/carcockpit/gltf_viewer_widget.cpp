@@ -78,7 +78,7 @@ void gltf_viewer_widget::update(uint32_t dt)
 	}
 
 	if (this->fps_sec_counter >= std::milli::den) {
-		// std::cout << "fps = " << std::dec << fps << std::endl;
+		std::cout << "fps = " << std::dec << fps << std::endl;
 		this->fps_sec_counter = 0;
 		this->fps = 0;
 	}
@@ -159,9 +159,9 @@ bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
 		float dtheta = -diff.y() * mouse_orbit_speed_multiplier / (rect().d.y() + 1);
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_lower_limit = static_cast<float>(M_PI_2) - params.orbit_angle_upper_limit + 0.00001f;
+		float theta_lower_limit = static_cast<float>(utki::pi) / 2 - params.orbit_angle_upper_limit + 0.00001f;
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_upper_limit = params.orbit_angle_lower_limit + static_cast<float>(M_PI_2) - 0.00001f;
+		float theta_upper_limit = params.orbit_angle_lower_limit + static_cast<float>(utki::pi) / 2 - 0.00001f;
 
 		// restrict camera orbit angle to respect given range
 		if (theta + dtheta < theta_lower_limit)
@@ -212,7 +212,7 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	camrip->pos = camera_position;
 	camrip->target = this->params.camera_target;
 	camrip->up = ruis::vec3(0, 1, 0);
-	camrip->fovy = M_PI_4;
+	camrip->fovy = utki::pi / 4;
 
-	this->sc_renderer->render(rect(), viewport_matrix);
+	this->sc_renderer->render(rect().d, viewport_matrix);
 }

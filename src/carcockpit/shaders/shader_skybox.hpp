@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-// #include <ruis/render/texturing_shader.hpp>
 #include <ruis/render/opengles/shader_base.hpp>
 #include <ruis/render/texture_cube.hpp>
 
@@ -30,7 +29,6 @@ class shader_skybox : public ruis::render::opengles::shader_base
 {
 public:
 	GLint mat3_inverse_modelview;
-	// GLint mat4_inverse_projection;
 
 	shader_skybox();
 	void render(

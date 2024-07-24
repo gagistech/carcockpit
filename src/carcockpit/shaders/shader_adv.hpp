@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-// #include <ruis/render/texturing_shader.hpp>
 #include <ruis/config.hpp>
 #include <ruis/render/opengles/shader_base.hpp>
 #include <ruis/render/texture_2d.hpp>
@@ -37,14 +36,13 @@ public:
 	GLint sampler_cube;
 
 	GLint mat4_modelview;
-	// GLint mat4_projection;
 	GLint mat3_normal;
 
 	GLint vec4_light_position;
 	GLint vec3_light_intensity;
 	GLint vec3_set_normal_mapping;
 
-	ruis::vec3 set_normal_mapping_vector{1, 1, 1}; // experimental
+	ruis::vec3 set_normal_mapping_vector{1, 1, 1};
 
 	shader_adv();
 	void render(

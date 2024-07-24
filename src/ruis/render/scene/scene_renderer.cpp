@@ -60,7 +60,7 @@ void scene_renderer::set_external_camera(std::shared_ptr<ruis::render::camera> c
 	external_camera = cam;
 }
 
-void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_matrix)
+void scene_renderer::render(const ruis::vec2& dims, const ruis::mat4& viewport_matrix)
 {
 	if (!scene_v)
 		return;
@@ -70,7 +70,7 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 	if (!cam)
 		return;
 
-	float aspect = dims.d.x() / dims.d.y();
+	float aspect = dims.x() / dims.y();
 	projection_matrix = viewport_matrix * cam->get_projection_matrix(aspect);
 
 	view_matrix = cam->get_view_matrix();
@@ -78,7 +78,7 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 	constexpr ruis::vec4 default_light_position{2, 4, -2, 1};
 	constexpr ruis::vec3 default_light_intensity{2, 2, 2};
 
-	if (scene_v.get()->lights.size() > 0) // scene has at least 1 light
+	if (scene_v.get()->lights.size() > 0) // if scene has at least 1 light
 	{
 		main_light = scene_v.get()->lights[0].get();
 	} else {
@@ -101,7 +101,7 @@ void scene_renderer::render(const ruis::rect& dims, const ruis::mat4& viewport_m
 	root_model_matrix.scale(scene_scaling_factor, scene_scaling_factor, scene_scaling_factor);
 
 	for (const auto& node_v : scene_v->nodes) {
-		this->render_node(node_v, root_model_matrix);
+		this->render_node(node_v.get(), root_model_matrix);
 	}
 }
 
@@ -138,9 +138,9 @@ void scene_renderer::render_environment()
 	);
 }
 
-void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_model_matrix)
+void scene_renderer::render_node(const node& n, const ruis::mat4& parent_tree_model_matrix)
 {
-	parent_model_matrix *= n.get().get_transformation_matrix();
+	auto parent_model_matrix = parent_tree_model_matrix * n.get_transformation_matrix();
 
 	[[maybe_unused]] ruis::mat4 modelview_matrix = view_matrix * parent_model_matrix;
 	[[maybe_unused]] ruis::mat4 mvp_matrix = projection_matrix * modelview_matrix;
@@ -149,8 +149,8 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 		view_matrix * main_light.pos; // light position in view (camera) coords
 
 	// render the node itself
-	if (n.get().mesh_v) {
-		for (const auto& primitive : n.get().mesh_v->primitives) {
+	if (n.mesh_v) {
+		for (const auto& primitive : n.mesh_v->primitives) {
 			[[maybe_unused]] const auto& phong = carcockpit::application::inst().shader_phong_v;
 			[[maybe_unused]] const auto& advanced = carcockpit::application::inst().shader_adv_v;
 
@@ -172,19 +172,10 @@ void scene_renderer::render_node(utki::shared_ref<node> n, ruis::mat4 parent_mod
 				light_pos_view_coords,
 				main_light.intensity
 			);
-
-			// phong.render(
-			// 	primitive.get().vao.get(),
-			// 	mvp_matrix,
-			// 	modelview_matrix,
-			// 	tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
-			// 	light_pos_view_coords,
-			// 	main_light.intensity
-			// );
 		}
 	}
 	// render children
-	for (const auto& node_v : n.get().children) {
-		this->render_node(node_v, parent_model_matrix);
+	for (const auto& node_v : n.children) {
+		this->render_node(node_v.get(), parent_model_matrix);
 	}
 }

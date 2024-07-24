@@ -63,7 +63,7 @@ public:
 	ruis::vec3 target;
 	ruis::vec3 up{0, 1, 0};
 
-	ruis::real fovy{M_PI_2};
+	ruis::real fovy{utki::pi / 2};
 	ruis::real near{default_camera_near};
 	ruis::real far{default_camera_far};
 
@@ -76,7 +76,7 @@ public:
 class light
 {
 public:
-	ruis::vec4 pos{1, 1, 1, 1}; // vec4, because w = 0 means light is at infinite distance
+	ruis::vec4 pos{1, 1, 1, 1};
 	ruis::vec3 intensity{1, 1, 1};
 
 	light(ruis::vec4 pos, ruis::vec3 intensity);

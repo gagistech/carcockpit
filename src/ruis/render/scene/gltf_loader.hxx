@@ -52,12 +52,12 @@ class gltf_loader
 
 	utki::span<const uint8_t> glb_binary_buffer;
 
-	// order of items in arrays below is important on loading stage
-	std::vector<utki::shared_ref<scene>> scenes; // all scenes that are listed in gltf file
-	std::vector<utki::shared_ref<node>> nodes; // all nodes that are listed in gltf file
-	std::vector<utki::shared_ref<mesh>> meshes; // meshes.
-	std::vector<utki::shared_ref<accessor>> accessors; // accessors.
-	std::vector<utki::shared_ref<buffer_view>> buffer_views; // bv's
+	// order of items in arrays below is important during loading stage
+	std::vector<utki::shared_ref<scene>> scenes;
+	std::vector<utki::shared_ref<node>> nodes;
+	std::vector<utki::shared_ref<mesh>> meshes;
+	std::vector<utki::shared_ref<accessor>> accessors;
+	std::vector<utki::shared_ref<buffer_view>> buffer_views;
 
 	std::vector<utki::shared_ref<material>> materials;
 	std::vector<utki::shared_ref<ruis::render::texture_2d>> textures;
@@ -107,7 +107,6 @@ public:
 
 struct buffer_view // currently we support only one data buffer, the single data buffer located in the .glb file
 {
-	// utki::span<uint8_t> buffer; // for further development use
 	uint32_t byte_length;
 	uint32_t byte_offset;
 	uint32_t byte_stride;
@@ -137,7 +136,7 @@ struct accessor {
 		vec2 = 2,
 		vec3 = 3,
 		vec4 = 4,
-		mat2 = 5, // whoa
+		mat2 = 5,
 		mat3 = 9,
 		mat4 = 16
 	} type_v;
@@ -210,10 +209,5 @@ struct sampler_l {
 		wrap_t(wrap_t)
 	{}
 };
-
-// struct texture_l {
-// 	utki::shared_ref<image_l> source;
-// 	utki::shared_ref<sampler_l> sampler;
-// };
 
 } // namespace ruis::render
