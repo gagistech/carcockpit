@@ -3,23 +3,6 @@ include prorab-test.mk
 include prorab-clang-format.mk
 include prorab-license.mk
 
-# ===============================
-# ========= model_obj ===========
-# $(eval $(prorab-clear-this-vars))
-
-# this_name := model_obj
-
-# $(eval $(call prorab-config, ../config))
-
-# this_srcs += $(call prorab-src-dir, model_obj)
-
-# this_static_lib_only := true
-# this_no_install := true
-
-# # no lint for model_obj
-# this_lint_cmd := $(eval $(prorab-build-lib))
-
-
 # ==========================
 # ========= ruis ===========
 $(eval $(prorab-clear-this-vars))
@@ -62,12 +45,9 @@ else ifeq ($(os),linux)
     this_ldflags += -rdynamic
 endif
 
-#this__libmodel_obj := $(this_out_dir)libmodel_obj.a
 this__libruis_render := $(this_out_dir)libruis_render.a
 
-#this_cxxflags += -isystem model_obj
 this_ldlibs += $(this__libruis_render)
-#this_ldlibs += $(this__libmodel_obj) $(this__libruis_render)
 
 this_ldlibs += -lruisapp-opengles-xorg -lpapki -lclargs -ltml -lruis -lutki -lm -l ruis-render-opengles
 this_ldlibs += -l jsondom

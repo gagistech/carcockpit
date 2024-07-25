@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <ruisapp/application.hpp>
 
-#include "shaders/shader_adv.hpp"
+#include "shaders/shader_pbr.hpp"
 #include "shaders/shader_phong.hpp"
 #include "shaders/shader_skybox.hpp"
 
@@ -36,23 +36,17 @@ class application : public ruisapp::application
 public:
 	application(bool window, std::string_view res_path);
 
-	void toggle_camera();
-	void toggle_normal_mapping();
-
 	static constexpr std::string_view app_name = "carcockpit"sv;
 
 	static application& inst()
 	{
-		return dynamic_cast<application&>(ruisapp::application::inst());
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
+		return static_cast<application&>(ruisapp::application::inst());
 	}
 
 	ruis::render::shader_skybox shader_skybox_v;
 	ruis::render::shader_phong shader_phong_v;
-	ruis::render::shader_adv shader_adv_v;
-
-private:
-	bool cam_toggle = false;
-	bool nm_toggle = true;
+	ruis::render::shader_pbr shader_pbr_v;
 };
 
 } // namespace carcockpit

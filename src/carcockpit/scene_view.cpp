@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /* ================ LICENSE END ================ */
 
-#include "gltf_viewer_widget.hpp"
+#include "scene_view.hpp"
 
 #include <ratio>
 
@@ -37,44 +37,45 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace carcockpit;
 using namespace ruis::render;
 
-gltf_viewer_widget::gltf_viewer_widget(utki::shared_ref<ruis::context> context, all_parameters params) :
+scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters params) :
 	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
-	ruis::fraction_widget(this->context, {}),
-	params(std::move(params.gltf_params))
+	params(std::move(params.scene_params))
 {
 	LOG([&](auto& o) {
-		o << "[LOAD GLTF] " << this->params.path_to_gltf << std::endl;
+		o << "[LOAD GLTF] " << this->params.file << std::endl;
 	})
 
 	ruis::render::gltf_loader l(*this->context.get().renderer.get().factory);
 
-	demoscene = l.load(papki::fs_file(this->params.path_to_gltf)).to_shared_ptr();
+	scene_v = l.load(papki::fs_file(this->params.file)).to_shared_ptr();
 
-	sc_renderer = std::make_shared<ruis::render::scene_renderer>(this->context);
-	sc_renderer->set_scene(demoscene);
+	scene_renderer_v = std::make_shared<ruis::render::scene_renderer>(this->context);
+	scene_renderer_v->set_scene(scene_v);
 
-	camrip = std::make_shared<ruis::render::camera>();
-	sc_renderer->set_external_camera(camrip);
-	sc_renderer->set_scene_scaling_factor(this->params.scaling_factor);
-	sc_renderer->set_environment_cube(this->params.environment_cube);
+	camera_v = std::make_shared<ruis::render::camera>();
+	scene_renderer_v->set_external_camera(camera_v);
+	scene_renderer_v->set_scene_scaling_factor(this->params.scaling_factor);
+	scene_renderer_v->set_environment_cube(this->params.environment_cube);
 }
 
-void gltf_viewer_widget::update(uint32_t dt)
+void scene_view::update(uint32_t dt)
 {
-	demoscene->update(dt);
+	scene_v->update(dt);
 
 	this->fps_sec_counter += dt;
 	this->time += dt;
-	[[maybe_unused]] float ft = static_cast<float>(this->time) / std::milli::den;
-	float fdt = static_cast<float>(dt) / std::milli::den;
+	[[maybe_unused]] float time_sec = float(this->time) / std::milli::den;
+	float dt_sec = float(dt) / std::milli::den;
 	++this->fps;
 
-	float xx = 3 * cosf(ft / 2);
-	float zz = 3 * sinf(ft / 2);
-
-	auto light = demoscene->get_primary_light();
+	auto light = scene_v->get_primary_light();
 	if (light) {
-		light->pos = {xx, 3, zz, 1};
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		float light_x = 3 * cosf(time_sec / 2);
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		float light_z = 3 * sinf(time_sec / 2);
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+		light->pos = {light_x, 3, light_z, 1};
 	}
 
 	if (this->fps_sec_counter >= std::milli::den) {
@@ -83,33 +84,21 @@ void gltf_viewer_widget::update(uint32_t dt)
 		this->fps = 0;
 	}
 
-	camera_position += (camera_attractor - camera_position) * fdt / camera_transition_duration;
+	camera_position += (camera_attractor - camera_position) * dt_sec / camera_transition_duration;
 	ruis::vec3 remains = camera_attractor - camera_position;
-	ruis::real l2 = remains.x() * remains.x() + remains.y() * remains.y() + remains.z() * remains.z();
-	const ruis::real threshold = 0.00001;
-	if (l2 < threshold) {
+
+	constexpr ruis::real threshold = 1e-6;
+
+	if (remains.norm_pow2() < threshold) {
 		camera_position = camera_attractor;
 	}
 
 	this->clear_cache();
 }
 
-void gltf_viewer_widget::toggle_camera(bool toggle)
-{
-	if (toggle)
-		camera_attractor = camera_position_top;
-	else
-		camera_attractor = camera_position_front;
-}
-
-void gltf_viewer_widget::set_normal_mapping(bool toggle)
-{
-	application::inst().shader_adv_v.set_normal_mapping(toggle);
-}
-
 constexpr float snap_speed = 1.07; // 1 is zero speed
 
-bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
+bool scene_view::on_mouse_button(const ruis::mouse_button_event& e)
 {
 	if (e.button == ruis::mouse_button::wheel_up) {
 		camera_attractor -= this->params.camera_target;
@@ -134,7 +123,7 @@ bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 		}
 
 	} else if (e.button == ruis::mouse_button::left) {
-		mouse_orbit = e.is_down;
+		mouse_is_orbiting = e.is_down;
 		if (e.is_down) {
 			mouse_changeview_start = e.pos;
 			camera_changeview_start = camera_position;
@@ -143,25 +132,25 @@ bool gltf_viewer_widget::on_mouse_button(const ruis::mouse_button_event& e)
 	return true;
 }
 
-bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
+bool scene_view::on_mouse_move(const ruis::mouse_move_event& e)
 {
 	constexpr float mouse_orbit_speed_multiplier = 2.0f;
 
-	if (mouse_orbit) {
+	if (mouse_is_orbiting) {
 		ruis::vec2 diff = e.pos - mouse_changeview_start;
 
-		ruis::vec3 cam2go = camera_changeview_start - this->params.camera_target;
-		ruis::vec3 axis = -cam2go.cross(ruis::vec3(0, 1, 0));
+		ruis::vec3 cam_pos_relative = camera_changeview_start - this->params.camera_target;
+		ruis::vec3 axis = -cam_pos_relative.cross(ruis::vec3(0, 1, 0));
 		axis.normalize();
 
-		auto cam_norm = cam2go.normed();
+		auto cam_norm = cam_pos_relative.normed();
 		float theta = ::acosf(cam_norm.y());
 		float dtheta = -diff.y() * mouse_orbit_speed_multiplier / (rect().d.y() + 1);
 
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_lower_limit = static_cast<float>(utki::pi) / 2 - params.orbit_angle_upper_limit + 0.00001f;
+		float theta_lower_limit = float(utki::pi) / 2 - params.orbit_angle_upper_limit + 0.00001f;
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float theta_upper_limit = params.orbit_angle_lower_limit + static_cast<float>(utki::pi) / 2 - 0.00001f;
+		float theta_upper_limit = params.orbit_angle_lower_limit + float(utki::pi) / 2 - 0.00001f;
 
 		// restrict camera orbit angle to respect given range
 		if (theta + dtheta < theta_lower_limit)
@@ -170,37 +159,29 @@ bool gltf_viewer_widget::on_mouse_move(const ruis::mouse_move_event& e)
 			dtheta = theta_upper_limit - theta;
 
 		ruis::quat q1, q2;
-		q1.set_rotation(axis.x(), axis.y(), axis.z(), dtheta);
+		q1.set_rotation(axis, dtheta);
 		q2.set_rotation(0, 1, 0, -diff.x() * mouse_orbit_speed_multiplier / (rect().d.x() + 1));
 
-		cam2go.rotate(q1);
-		cam2go.rotate(q2);
+		cam_pos_relative.rotate(q1);
+		cam_pos_relative.rotate(q2);
 
-		cam2go += this->params.camera_target;
+		cam_pos_relative += this->params.camera_target;
 
 		if (this->params.smooth_navigation_orbit)
-			camera_attractor = cam2go;
+			camera_attractor = cam_pos_relative;
 		else
-			camera_position = camera_attractor = cam2go;
+			camera_position = camera_attractor = cam_pos_relative;
 	}
 
 	return false;
 }
 
-bool gltf_viewer_widget::on_key(const ruis::key_event& e)
+bool scene_view::on_key(const ruis::key_event& e)
 {
 	return false;
 }
 
-ruis::mat4 gltf_viewer_widget::get_view_matrix() const
-{
-	ruis::mat4 view;
-	view.set_identity();
-	view.set_look_at(camera_position, this->params.camera_target, ruis::vec3(0, 1, 0));
-	return view;
-}
-
-void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
+void scene_view::render(const ruis::matrix4& matrix) const
 {
 	this->widget::render(matrix);
 
@@ -209,10 +190,10 @@ void gltf_viewer_widget::render(const ruis::matrix4& matrix) const
 	viewport_matrix.translate(1, 1);
 	viewport_matrix.scale(1, -1, -1);
 
-	camrip->pos = camera_position;
-	camrip->target = this->params.camera_target;
-	camrip->up = ruis::vec3(0, 1, 0);
-	camrip->fovy = utki::pi / 4;
+	camera_v->pos = camera_position;
+	camera_v->target = this->params.camera_target;
+	camera_v->up = ruis::vec3(0, 1, 0);
+	camera_v->fovy = utki::pi / 4;
 
-	this->sc_renderer->render(rect().d, viewport_matrix);
+	this->scene_renderer_v->render(rect().d, viewport_matrix);
 }

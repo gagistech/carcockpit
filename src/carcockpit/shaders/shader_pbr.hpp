@@ -28,7 +28,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace ruis::render {
 
-class shader_adv : public ruis::render::opengles::shader_base
+/**
+ * @brief Physically based rendering (PBR) is a computer graphics approach that seeks to render images in a way that
+ * models the lights and surfaces with optics in the real world. Current PBR shader implementation uses the following
+ * texture information: Diffuse (aka albedo) Normals (per-fragment micro-relief) Ambient, for pre-baked ambient
+ * occlusion Roughness Metalness <https://en.wikipedia.org/wiki/Physically_based_rendering>
+ */
+class shader_pbr : public ruis::render::opengles::shader_base
 {
 public:
 	GLint sampler_normal_map;
@@ -40,11 +46,8 @@ public:
 
 	GLint vec4_light_position;
 	GLint vec3_light_intensity;
-	GLint vec3_set_normal_mapping;
 
-	ruis::vec3 set_normal_mapping_vector{1, 1, 1};
-
-	shader_adv();
+	shader_pbr();
 	void render(
 		const ruis::render::vertex_array& va,
 		const r4::matrix4<float>& mvp,
@@ -57,8 +60,6 @@ public:
 		const ruis::vec4& light_pos,
 		const ruis::vec3& light_int
 	) const;
-
-	void set_normal_mapping(bool on);
 };
 
 } // namespace ruis::render

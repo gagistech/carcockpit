@@ -21,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "application.hpp"
 
-#include "gltf_viewer_widget.hpp"
 #include "gui.hpp"
+#include "scene_view.hpp"
 
 using namespace carcockpit;
 using namespace std::string_literals;
@@ -50,32 +50,10 @@ application::application(bool window, std::string_view res_path) :
 		if (e.is_down) {
 			if (e.combo.key == ruis::key::escape) {
 				this->quit();
-			} else if (e.combo.key == ruis::key::space) {
-				this->toggle_camera();
-			} else if (e.combo.key == ruis::key::n) {
-				this->toggle_normal_mapping();
 			}
 		}
 		return false;
 	};
 
 	this->gui.set_root(std::move(kp));
-}
-
-void application::toggle_camera()
-{
-	cam_toggle = !cam_toggle;
-	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
-	if (car_w) {
-		car_w->toggle_camera(cam_toggle);
-	}
-}
-
-void application::toggle_normal_mapping()
-{
-	nm_toggle = !nm_toggle;
-	auto car_w = this->gui.get_root().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget");
-	if (car_w) {
-		car_w->set_normal_mapping(nm_toggle);
-	}
 }

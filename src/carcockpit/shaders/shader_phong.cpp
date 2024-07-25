@@ -70,7 +70,7 @@ shader_phong::shader_phong() :
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
-						const float Shininess = 40.0;                  // Specular shininess factor
+						const float shininess = 40.0;                  // Specular shininess factor
 
 						vec3 ads()
 						{
@@ -78,7 +78,7 @@ shader_phong::shader_phong() :
 							vec3 s = normalize( vec3(light_position) - pos );
 							vec3 v = normalize( vec3(-pos) );
 							vec3 r = reflect( -s, n );
-							return light_intensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );
+							return light_intensity * ( Ka + Kd * max( dot(s, n), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), shininess ) );
 						}
 
 						vec3 ads_halfway_vector()         // a bit more efficient approach
@@ -87,7 +87,7 @@ shader_phong::shader_phong() :
 							vec3 s = normalize( vec3(light_position) - pos );
 							vec3 v = normalize( vec3(-pos) );
 							vec3 h = normalize( v + s );
-							return	light_intensity * (Ka + Kd * max( dot(s, norm), 0.0 ) + Ks * pow(max(dot(h,n), 0.0), Shininess ) );
+							return	light_intensity * (Ka + Kd * max( dot(s, norm), 0.0 ) + Ks * pow(max(dot(h,n), 0.0), shininess ) );
 						}
 						
 						void main() 

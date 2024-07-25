@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ruis/widgets/slider/slider.hpp>
 
 #include "gauge.hpp"
-#include "gltf_viewer_widget.hpp"
+#include "scene_view.hpp"
 
 using namespace std::string_literals;
 
@@ -125,10 +125,10 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             )
                         }
                     ),
-                    m::gltf_viewer_widget(c,
+                    m::scene_view(c,
                         {
                             .widget_params = {
-                                .id = "gltf_viewer_widget_1"s,
+                                .id = "scene_view_1"s,
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -137,8 +137,8 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                                 .depth = true
                             }
                             ,
-                            .gltf_params = {
-                                .path_to_gltf = "../res/samples_gltf/spray.glb"s,
+                            .scene_params = {
+                                .file = "../res/samples_gltf/spray.glb"s,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
                                 .scaling_factor = 10.0f,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
@@ -151,10 +151,10 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             }
                         }
                     ),
-                    m::gltf_viewer_widget(c,
+                    m::scene_view(c,
                         {
                             .widget_params = {
-                                .id = "gltf_viewer_widget_2"s,
+                                .id = "scene_view_2"s,
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
                                     .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -163,8 +163,8 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                                 .depth = true
                             }
                             ,
-                            .gltf_params = {
-                                .path_to_gltf = "../res/samples_gltf/camera.glb"s,
+                            .scene_params = {
+                                .file = "../res/samples_gltf/camera.glb"s,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
                                 .scaling_factor = 10.0f,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
@@ -187,8 +187,8 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 		g.set_fraction(s.get_fraction());
 	};
 
-	auto viewer1 = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget_1");
-	auto viewer2 = kp.get().try_get_widget_as<carcockpit::gltf_viewer_widget>("gltf_viewer_widget_2");
+	auto viewer1 = kp.get().try_get_widget_as<carcockpit::scene_view>("scene_view_1");
+	auto viewer2 = kp.get().try_get_widget_as<carcockpit::scene_view>("scene_view_2");
 
 	c.get().updater.get().start(viewer1, 0);
 	c.get().updater.get().start(viewer2, 0);

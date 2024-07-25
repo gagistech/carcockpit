@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../ruis/render/scene/scene.hpp"
 #include "../ruis/render/scene/scene_renderer.hxx"
 
-#include "shaders/shader_adv.hpp"
+#include "shaders/shader_pbr.hpp"
 #include "shaders/shader_phong.hpp"
 #include "shaders/shader_skybox.hpp"
 
@@ -40,19 +40,25 @@ constexpr ruis::vec3 default_camera_position_front{0, 1.5, 7};
 constexpr ruis::vec3 default_camera_position_top{0, 9, 0};
 constexpr float default_camera_transition_duration{0.1};
 
-class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable, virtual public ruis::widget
+class scene_view : public ruis::updateable, public ruis::widget
 {
-	std::shared_ptr<ruis::render::scene> demoscene;
-	std::shared_ptr<ruis::render::scene_renderer> sc_renderer;
-	std::shared_ptr<ruis::render::camera> camrip;
+	std::shared_ptr<ruis::render::scene> scene_v;
+	std::shared_ptr<ruis::render::scene_renderer> scene_renderer_v;
+	std::shared_ptr<ruis::render::camera> camera_v;
 
-	ruis::vec3 camera_position_front{default_camera_position_front};
-	ruis::vec3 camera_position_top{default_camera_position_top};
-	ruis::vec3 camera_position{camera_position_top};
-	ruis::vec3 camera_attractor{camera_position_front};
+	ruis::vec3 camera_position{default_camera_position_top};
+	ruis::vec3 camera_attractor{default_camera_position_front
+	}; // camera attractor is a mechanism to provide smooth camra movement. On update() camera always moves a bit
+	   // towards th attractor
 
-	ruis::real camera_transition_duration{default_camera_transition_duration};
-	bool mouse_orbit = false;
+	ruis::real camera_transition_duration{default_camera_transition_duration
+	}; // This is an abstract coefficient. Actually technically this could be close to logarithm of time needed for the
+	   // camera to reach camera attractor. This is for the mechanism of the simpliest implementation of smooth movement
+	   // of camera
+
+	bool mouse_is_orbiting = false; // It is set to true when the user clicks inside the widget and drags, starts camera
+									// rotation (orbit) procedure
+
 	ruis::vec2 mouse_changeview_start;
 	ruis::vec3 camera_changeview_start;
 
@@ -62,7 +68,7 @@ class gltf_viewer_widget : public ruis::fraction_widget, public ruis::updateable
 
 public:
 	struct parameters {
-		std::string path_to_gltf;
+		std::string file;
 		float scaling_factor{1.0f};
 		ruis::vec3 camera_target{0, 0, 0};
 		bool smooth_navigation_orbit = true;
@@ -78,30 +84,23 @@ private:
 public:
 	struct all_parameters {
 		ruis::widget::parameters widget_params;
-		parameters gltf_params;
+		parameters scene_params;
 	};
 
-	gltf_viewer_widget(utki::shared_ref<ruis::context> context, all_parameters params);
+	scene_view(utki::shared_ref<ruis::context> context, all_parameters params);
 
 	void render(const ruis::matrix4& matrix) const override;
 	void update(uint32_t dt) override;
-	void toggle_camera(bool toggle);
-	void set_normal_mapping(bool toggle);
 
 	bool on_mouse_button(const ruis::mouse_button_event& e) override;
 	bool on_mouse_move(const ruis::mouse_move_event& e) override;
 	bool on_key(const ruis::key_event& e) override;
-
-	ruis::mat4 get_view_matrix() const;
 };
 
 namespace make {
-inline utki::shared_ref<gltf_viewer_widget> gltf_viewer_widget(
-	utki::shared_ref<ruis::context> c,
-	gltf_viewer_widget::all_parameters params
-)
+inline utki::shared_ref<scene_view> scene_view(utki::shared_ref<ruis::context> c, scene_view::all_parameters params)
 {
-	return utki::make_shared<carcockpit::gltf_viewer_widget>(std::move(c), std::move(params));
+	return utki::make_shared<carcockpit::scene_view>(std::move(c), std::move(params));
 }
 } // namespace make
 

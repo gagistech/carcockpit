@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /* ================ LICENSE END ================ */
 
-#include "shader_adv.hpp"
+#include "shader_pbr.hpp"
 
 #include <ruis/render/opengles/index_buffer.hpp>
 #include <ruis/render/opengles/texture_2d.hpp>
@@ -33,7 +33,7 @@ using namespace ruis::render;
 constexpr ruis::vec4 default_light_position{5.0f, 5.0f, 5.0f, 1.0f};
 constexpr ruis::vec3 default_light_intensity{2.0f, 2.0f, 2.0f};
 
-shader_adv::shader_adv() :
+shader_pbr::shader_pbr() :
 	shader_base(
 		R"qwertyuiop(
 						attribute highp vec4 a0; // position
@@ -59,7 +59,7 @@ shader_adv::shader_adv() :
 							// Transform normal and tangent to eye space
 							vec3 norm = 	normalize(mat3_n * a2);
 							vec3 tang = 	normalize(mat3_n * a3);
-							vec3 binormal = normalize(mat3_n * a4);     // normalize( cross( norm, tang ) ) * a3.w; if bitangent not provided
+							vec3 binormal = normalize(mat3_n * a4);     
 							// Matrix for transformation to tangent space
 							mat3 mat3_to_local = mat3(  tang.x, binormal.x, norm.x,
 														tang.y, binormal.y, norm.y,
@@ -70,7 +70,7 @@ shader_adv::shader_adv() :
 							light_dir = normalize( mat3_to_local * (light_position.xyz - pos) );
 							view_dir = mat3_to_local * normalize(-pos);
 							// Pass along the texture coordinate	
-							tc = vec2(a1.x, 1.0 - a1.y);                  // * vec2(10, 10); // for supposed x10 tiling, if enabled in texture
+							tc = vec2(a1.x, 1.0 - a1.y);                 
 							gl_Position = matrix * a0;
 						}	
 						
@@ -85,23 +85,16 @@ shader_adv::shader_adv() :
 						uniform sampler2D texture0;   // color map tex
 						uniform sampler2D texture1;   // normal map tex
 						uniform sampler2D texture2;   // roughness map tex
-						uniform samplerCube texture3;   // cube map
+						uniform samplerCube texture3; // cube map
 
 						uniform vec4 light_position;
 						uniform vec3 light_intensity;
-
-						uniform vec3 set_normal_mapping; // put (0, 0, 1) to disable, (1, 1, 1) to enable
-						
-						struct MaterialInfo {   vec3 Ka; vec3 Kd; vec3 Ks; float Shininess; };
-						//uniform MaterialInfo Material;
-						const MaterialInfo Material = MaterialInfo( vec3(0.1, 0.1, 0.1), vec3(0.5, 0.5, 0.5), vec3(0.7, 0.7, 0.7), 40.0 );
-
+		
 						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
-						const float Shininess = 40.0;                  // Specular shininess factor
 
-						vec3 phongModel( vec3 norm, vec3 diffR, float ambient_occ, float glossiness, float metalness ) // arm = ambient/roughness/metalness
+						vec3 phong_model( vec3 norm, vec3 diffuse_reflectivity, float ambient_occlusion, float glossiness, float metalness ) 
 						{
 							vec3 r_env = reflect( view_dir, norm );
 							vec3 env_refl = textureCube( texture3, r_env).xyz;
@@ -109,35 +102,25 @@ shader_adv::shader_adv() :
 							vec3 r = reflect( -light_dir, norm );
 							float sDotN = max( dot(light_dir, norm) , 0.0 );
 
-							vec3 ambient = Ka                                                    * light_intensity;
+							vec3 ambient = (Ka)                                                  * light_intensity;
 							vec3 diffuse = max( Kd - metalness, 0.0 ) * sDotN                    * light_intensity;
 							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness )  * light_intensity;
 
-							return (( ambient + diffuse ) * diffR + spec ) + (env_refl * metalness);
+							return (( ambient + diffuse ) * diffuse_reflectivity + spec ) + (env_refl * metalness);
 						}			
 
 						void main() 
 						{
-							vec3 arm = texture2D( texture2, tc ).xyz;
-							//float gloss = 1.0 / arm.y;            
+							vec3 arm = texture2D( texture2, tc ).xyz;          
 							float gloss = ((1.0 - pow(arm.y, 0.2) ) * 100.0 + 1.0 );
 
-
-							//vec3 normal = vec3(0, 0, 1.0); 
 							vec4 normal4 = 2.0 * texture2D( texture1, tc ) - 1.0;
-							vec3 normal = normalize(normal4.xyz * set_normal_mapping);	
+							vec3 normal = normalize(normal4.xyz);	
 							normal = vec3(normal.x, -normal.y, normal.z);			
 
-							vec4 texColor  = //vec4(0.5, 0.5, 0.5, 1.0); 
-								texture2D( texture0, tc );   					
-
-							gl_FragColor = vec4( phongModel( normal, texColor.rgb, arm.x, gloss, arm.z), 1.0 );
+							vec4 tex_color = texture2D( texture0, tc );   					
+							gl_FragColor = vec4( phong_model( normal, tex_color.rgb, arm.x, gloss, arm.z), 1.0 );
 						}
-
-
-						//vec3 spec = vec3(0.0);
-							//if( sDotN > 0.0 )
-								//spec = light_intensity * Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness );
 
 	)qwertyuiop"
 	),
@@ -147,23 +130,10 @@ shader_adv::shader_adv() :
 	mat4_modelview(this->get_uniform("mat4_mv")),
 	mat3_normal(this->get_uniform("mat3_n")),
 	vec4_light_position(this->get_uniform("light_position")),
-	vec3_light_intensity(this->get_uniform("light_intensity")),
-	vec3_set_normal_mapping(this->get_uniform("set_normal_mapping"))
+	vec3_light_intensity(this->get_uniform("light_intensity"))
 {}
 
-void shader_adv::set_normal_mapping(bool on)
-{
-	if (on)
-		set_normal_mapping_vector = ruis::vec3{1, 1, 1};
-	else
-		set_normal_mapping_vector = ruis::vec3{0, 0, 1};
-
-	LOG([&](auto& o) {
-		o << "normals " << (on ? "on" : "off") << std::endl;
-	})
-}
-
-void shader_adv::render(
+void shader_pbr::render(
 	const ruis::render::vertex_array& va,
 	const r4::matrix4<float>& mvp,
 	const r4::matrix4<float>& modelview,
@@ -203,13 +173,6 @@ void shader_adv::render(
 	this->set_uniform3f(this->vec3_light_intensity, light_int[0], light_int[1], light_int[2]);
 	this->set_uniform_matrix4f(this->mat4_modelview, modelview);
 	this->set_uniform_matrix3f(mat3_normal, normal);
-
-	this->set_uniform3f(
-		this->vec3_set_normal_mapping,
-		set_normal_mapping_vector[0],
-		set_normal_mapping_vector[1],
-		set_normal_mapping_vector[2]
-	);
 
 	this->shader_base::render(mvp, va);
 }

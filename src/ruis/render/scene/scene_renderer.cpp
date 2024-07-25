@@ -152,7 +152,7 @@ void scene_renderer::render_node(const node& n, const ruis::mat4& parent_tree_mo
 	if (n.mesh_v) {
 		for (const auto& primitive : n.mesh_v->primitives) {
 			[[maybe_unused]] const auto& phong = carcockpit::application::inst().shader_phong_v;
-			[[maybe_unused]] const auto& advanced = carcockpit::application::inst().shader_adv_v;
+			[[maybe_unused]] const auto& advanced = carcockpit::application::inst().shader_pbr_v;
 
 			// choose shader and textures here, set material-specific uniforms
 

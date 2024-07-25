@@ -32,7 +32,7 @@ using namespace ruis::render;
 shader_skybox::shader_skybox() :
 	shader_base(
 		R"qwertyuiop(
-						attribute highp vec4 a0; // position
+						attribute highp vec4 a0;         // position
 
 						uniform highp mat4 matrix;       // inverse projection matrix 
 						uniform highp mat3 mat3_imv;     // inverse modelview matrix 
