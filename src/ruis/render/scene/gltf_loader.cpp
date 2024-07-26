@@ -243,6 +243,8 @@ utki::shared_ref<accessor> gltf_loader::read_accessor(const jsondom::value& acce
 			new_accessor.get().data = index_attribute_buffer;
 			new_accessor.get().ibo = factory_v.create_index_buffer(utki::make_span(index_attribute_buffer));
 		}
+		// TODO: in case GLTF says that index type is 32 bit, but still provides less than 65536 vertices, then there is
+		// no reason to use 32 bit index, we can convert it to 16 bit index
 	}
 
 	return new_accessor;
@@ -261,11 +263,11 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		int position_accessor = read_int(attributes_json, "POSITION");
 		int normal_accessor = read_int(attributes_json, "NORMAL");
 		int texcoord_0_accessor = read_int(attributes_json, "TEXCOORD_0");
-		[[maybe_unused]] int tangent_accessor = read_int(
-			attributes_json,
-			"TANGENT"
-		); // TOOD: Currently we do not use tangents provided from gltf file, we calculate them instead. But if they are
-		   // provided in file, we should use them
+		[[maybe_unused]] int tangent_accessor = read_int(attributes_json, "TANGENT");
+
+		// TOOD: Currently we do not use tangents provided from gltf file, we calculate them instead. But if they are
+		// provided in file, we should use them
+
 		int material_index = read_int(json_primitive, "material");
 
 		if (index_accessor < 0)
@@ -280,7 +282,6 @@ utki::shared_ref<mesh> gltf_loader::read_mesh(const jsondom::value& mesh_json)
 		if (texcoord_0_accessor < 0)
 			continue;
 
-		// generate tangents and bitangents
 		if (accessors[index_accessor].get().component_type_v == accessor::component_type::act_unsigned_int) {
 			auto vao = create_vao_with_tangent_space<uint32_t>(
 				accessors[index_accessor],
