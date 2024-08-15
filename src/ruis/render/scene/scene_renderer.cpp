@@ -32,6 +32,7 @@ scene_renderer::scene_renderer(utki::shared_ref<ruis::context> c) :
 {
 	texture_default_black = context_v.get().loader.load<ruis::res::texture_2d>("texture_default_black").to_shared_ptr();
 	texture_default_white = context_v.get().loader.load<ruis::res::texture_2d>("texture_default_white").to_shared_ptr();
+	texture_default_gray = context_v.get().loader.load<ruis::res::texture_2d>("texture_default_gray").to_shared_ptr();
 	texture_default_normal =
 		context_v.get().loader.load<ruis::res::texture_2d>("texture_default_normal").to_shared_ptr();
 	texture_default_environment_cube =
@@ -76,7 +77,7 @@ void scene_renderer::render(const ruis::vec2& dims, const ruis::mat4& viewport_m
 	view_matrix = cam->get_view_matrix();
 
 	constexpr ruis::vec4 default_light_position{2, 4, -2, 1};
-	constexpr ruis::vec3 default_light_intensity{2, 2, 2};
+	constexpr ruis::vec3 default_light_intensity{1, 1, 1};
 
 	if (scene_v.get()->lights.size() > 0) // if scene has at least 1 light
 	{
@@ -167,7 +168,7 @@ void scene_renderer::render_node(const node& n, const ruis::mat4& parent_tree_mo
 				projection_matrix,
 				tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
 				tex_normal ? *tex_normal.get() : texture_default_normal->tex(),
-				tex_arm ? *tex_arm.get() : texture_default_white->tex(),
+				tex_arm ? *tex_arm.get() : texture_default_black->tex(),
 				texture_environment_cube ? texture_environment_cube->tex() : texture_default_environment_cube->tex(),
 				light_pos_view_coords,
 				main_light.intensity

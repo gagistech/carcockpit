@@ -71,11 +71,11 @@ void scene_view::update(uint32_t dt)
 	auto light = scene_v->get_primary_light();
 	if (light) {
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float light_x = 3 * cosf(time_sec / 2);
+		float light_x = 4 * cosf(time_sec / 2);
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		float light_z = 3 * sinf(time_sec / 2);
+		float light_z = 4 * sinf(time_sec / 2);
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-		light->pos = {light_x, 3, light_z, 1};
+		light->pos = {light_x, 7, light_z, 1};
 	}
 
 	if (this->fps_sec_counter >= std::milli::den) {

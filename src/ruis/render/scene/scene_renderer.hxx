@@ -49,6 +49,7 @@ protected:
 
 	std::shared_ptr<ruis::res::texture_2d> texture_default_white;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_black;
+	std::shared_ptr<ruis::res::texture_2d> texture_default_gray;
 	std::shared_ptr<ruis::res::texture_2d> texture_default_normal;
 	std::shared_ptr<ruis::res::texture_cube> texture_default_environment_cube;
 	std::shared_ptr<ruis::res::texture_cube> texture_environment_cube;

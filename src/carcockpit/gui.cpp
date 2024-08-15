@@ -128,32 +128,6 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                     m::scene_view(c,
                         {
                             .widget_params = {
-                                .id = "scene_view_1"s,
-                                .lp = {
-                                    .dims = {lp::fill, lp::fill},
-                                    .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                                },
-                                .clip = true,
-                                .depth = true
-                            }
-                            ,
-                            .scene_params = {
-                                .file = "../res/samples_gltf/spray.glb"s,
-                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .scaling_factor = 10.0f,
-                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .camera_target = ruis::vec3(1, 1, 1),
-                                .smooth_navigation_orbit = true,
-                                .smooth_navigation_zoom = true,
-                                .orbit_angle_upper_limit = utki::pi / 4,
-		                        .orbit_angle_lower_limit = utki::pi / 4,
-                                .environment_cube = c.get().loader.load<ruis::res::texture_cube>("tex_cube_env_castle").to_shared_ptr()                               
-                            }
-                        }
-                    ),
-                    m::scene_view(c,
-                        {
-                            .widget_params = {
                                 .id = "scene_view_2"s,
                                 .lp = {
                                     .dims = {lp::fill, lp::fill},
@@ -164,13 +138,14 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             }
                             ,
                             .scene_params = {
-                                .file = "../res/samples_gltf/camera.glb"s,
+                                .file = "../res/samples_gltf/c1.glb"s,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .scaling_factor = 10.0f,
+                                .scaling_factor = 1.0f,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .camera_target = ruis::vec3(-1, -1, -1),
+                                .camera_target = ruis::vec3(0, 5, 0),
                                 .smooth_navigation_orbit = false,
                                 .smooth_navigation_zoom = false,
+                                .environment_cube = "tex_cube_env_italy"
                             }
                         }
                     )
