@@ -26,7 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace ruis;
 
 gauge::gauge(utki::shared_ref<ruis::context> c, all_parameters p) :
-	widget(std::move(c), {.widget_params = std::move(p.widget_params)}),
+	widget( //
+		std::move(c),
+	 	std::move(p.layout_params),
+		std::move(p.widget_params)
+	),
 	blending_widget(this->context, std::move(p.blending_params)),
 	fraction_widget(this->context, {}),
 	params(std::move(p.params))
@@ -69,12 +73,14 @@ void gauge::render(const matrix4& matrix) const
 	matr.translate(this->rect().d / 2);
 	matr.scale(this->rect().d / 2);
 
-	matrix4 mmm;
-	mmm.set_identity();
-	mmm.rotate(ruis::quat(
-		-(this->params.start_angle_rad +
-		  (this->params.end_angle_rad - this->params.start_angle_rad) * this->get_fraction())
-	));
+	auto mmm = matrix4().set_identity();
+
+	{
+		ruis::real angle_range_length = this->params.end_angle_rad - this->params.start_angle_rad;
+		auto arrow_rotation = ruis::quat(this->params.start_angle_rad + angle_range_length * this->get_fraction());
+		mmm.rotate(arrow_rotation);
+	}
+
 	{
 		auto div = ruis::real(this->arrow_tex->dims().x()) * this->params.arm_fraction;
 		ASSERT(div >= 0)

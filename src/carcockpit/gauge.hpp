@@ -22,9 +22,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <ruis/res/image.hpp>
-#include <ruis/widgets/base/blending_widget.hpp>
-#include <ruis/widgets/base/fraction_widget.hpp>
-#include <ruis/widgets/widget.hpp>
+#include <ruis/widget/base/blending_widget.hpp>
+#include <ruis/widget/base/fraction_widget.hpp>
+#include <ruis/widget/widget.hpp>
 #include <utki/math.hpp>
 
 namespace ruis {
@@ -42,6 +42,7 @@ public:
 	};
 
 	struct all_parameters {
+		ruis::layout_parameters layout_params;
 		ruis::widget::parameters widget_params;
 		ruis::blending_widget::parameters blending_params;
 		parameters params;

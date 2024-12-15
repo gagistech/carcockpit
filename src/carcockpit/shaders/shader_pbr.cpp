@@ -90,23 +90,24 @@ shader_pbr::shader_pbr() :
 						uniform vec4 light_position;
 						uniform vec3 light_intensity;
 		
-						const vec3 Kd = vec3(0.5, 0.5, 0.5);  		   // Diffuse reflectivity
+						const vec3 Kd = vec3(1, 1, 1);  		   // Diffuse reflectivity
 						const vec3 Ka = vec3(0.1, 0.1, 0.1);  		   // Ambient reflectivity
 						const vec3 Ks = vec3(0.7, 0.7, 0.7);  		   // Specular reflectivity
 
 						vec3 phong_model( vec3 norm, vec3 diffuse_reflectivity, float ambient_occlusion, float glossiness, float metalness ) 
 						{
+							//metalness /= 2.0;
 							vec3 r_env = reflect( view_dir, norm );
 							vec3 env_refl = textureCube( texture3, r_env).xyz;
 
 							vec3 r = reflect( -light_dir, norm );
 							float sDotN = max( dot(light_dir, norm) , 0.0 );
 
-							vec3 ambient = (Ka)                                                  * light_intensity;
+							vec3 ambient = (ambient_occlusion)                                                  * light_intensity;
 							vec3 diffuse = max( Kd - metalness, 0.0 ) * sDotN                    * light_intensity;
 							vec3 spec    = Ks * pow( max( dot(r, view_dir), 0.0 ), glossiness )  * light_intensity;
 
-							return (( ambient + diffuse ) * diffuse_reflectivity + spec ) + (env_refl * metalness);
+							return ( (ambient + diffuse) * diffuse_reflectivity + spec ) + (env_refl * metalness);
 						}			
 
 						void main() 
@@ -120,6 +121,7 @@ shader_pbr::shader_pbr() :
 
 							vec4 tex_color = texture2D( texture0, tc );   					
 							gl_FragColor = vec4( phong_model( normal, tex_color.rgb, arm.x, gloss, arm.z), 1.0 );
+							//gl_FragColor = tex_color + vec4( phong_model( normal, tex_color.rgb, arm.x, gloss, arm.z), 1.0 ) * 0.001;
 						}
 
 	)qwertyuiop"

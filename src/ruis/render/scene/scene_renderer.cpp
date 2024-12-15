@@ -46,6 +46,11 @@ void scene_renderer::set_scene_scaling_factor(ruis::real scene_scaling_factor)
 	this->scene_scaling_factor = scene_scaling_factor;
 }
 
+void scene_renderer::set_draw_skybox(bool draw_skybox)
+{
+	this->draw_skybox = draw_skybox;
+}
+
 void scene_renderer::set_scene(std::shared_ptr<ruis::render::scene> scene_v)
 {
 	this->scene_v = scene_v;
@@ -87,7 +92,7 @@ void scene_renderer::render(const ruis::vec2& dims, const ruis::mat4& viewport_m
 		main_light.intensity = default_light_intensity;
 	}
 
-	{
+	if (draw_skybox) {
 		auto& r = this->context_v.get().renderer.get();
 		bool depth = r.is_depth_enabled();
 		r.enable_depth(false);
@@ -166,9 +171,9 @@ void scene_renderer::render_node(const node& n, const ruis::mat4& parent_tree_mo
 				mvp_matrix,
 				modelview_matrix,
 				projection_matrix,
-				tex_diffuse ? *tex_diffuse.get() : texture_default_white->tex(),
+				tex_diffuse ? *tex_diffuse.get() : texture_default_gray->tex(),
 				tex_normal ? *tex_normal.get() : texture_default_normal->tex(),
-				tex_arm ? *tex_arm.get() : texture_default_black->tex(),
+				tex_arm ? *tex_arm.get() : texture_default_gray->tex(),
 				texture_environment_cube ? texture_environment_cube->tex() : texture_default_environment_cube->tex(),
 				light_pos_view_coords,
 				main_light.intensity

@@ -81,12 +81,23 @@ class gltf_loader
 		const std::string& name
 	);
 
+	// calculate tangents and bitangents based on normals and texcoord flow
 	template <typename tp_type>
 	utki::shared_ref<ruis::render::vertex_array> create_vao_with_tangent_space(
 		utki::shared_ref<accessor> index_accessor,
 		utki::shared_ref<accessor> position_accessor,
 		utki::shared_ref<accessor> texcoord_0_accessor,
 		utki::shared_ref<accessor> normal_accessor
+	);
+
+	// calculate only bitangents as a cross product of normals and tangents
+	template <typename tp_type>
+	utki::shared_ref<ruis::render::vertex_array> create_vao_with_tangent_space(
+		utki::shared_ref<accessor> index_accessor,
+		utki::shared_ref<accessor> position_accessor,
+		utki::shared_ref<accessor> texcoord_0_accessor,
+		utki::shared_ref<accessor> normal_accessor,
+		utki::shared_ref<accessor> tangent_accessor
 	);
 
 	utki::shared_ref<buffer_view> read_buffer_view(const jsondom::value& buffer_view_json);

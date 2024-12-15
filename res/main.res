@@ -53,12 +53,12 @@ tex_cube_env_castle{
 }
 
 tex_cube_env_italy{
-	file_px{envs/italy/px.jpg}
-	file_nx{envs/italy/nx.jpg}
-	file_py{envs/italy/ny.jpg}
-	file_ny{envs/italy/py.jpg}
-	file_pz{envs/italy/pz.jpg}
-	file_nz{envs/italy/nz.jpg}
+	file_px{envs/italy/px.png}
+	file_nx{envs/italy/nx.png}
+	file_py{envs/italy/ny.png}
+	file_ny{envs/italy/py.png}
+	file_pz{envs/italy/pz.png}
+	file_nz{envs/italy/nz.png}
 
 	min_filter{linear}
 	mag_filter{linear}

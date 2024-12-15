@@ -57,5 +57,6 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "chrono": "cpp"
-    }
+    },
+    "asciidoc.antora.enableAntoraSupport": false
 }

@@ -38,6 +38,8 @@ class light;
 class scene_renderer
 {
 protected:
+	bool draw_skybox = true;
+
 	std::shared_ptr<ruis::render::vertex_array> fullscreen_quad_vao;
 	std::shared_ptr<ruis::render::scene> scene_v;
 	std::shared_ptr<ruis::render::camera> external_camera;
@@ -60,6 +62,7 @@ protected:
 public:
 	scene_renderer(utki::shared_ref<ruis::context> c);
 	void render(const ruis::vec2& dims, const ruis::mat4& viewport_matrix);
+	void set_draw_skybox(bool draw_skybox);
 	void set_scene(std::shared_ptr<ruis::render::scene> scene_v);
 	void set_scene_scaling_factor(ruis::real scene_scaling_factor);
 	void set_environment_cube(std::shared_ptr<ruis::res::texture_cube> texture_environment_cube);

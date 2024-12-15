@@ -38,7 +38,11 @@ using namespace carcockpit;
 using namespace ruis::render;
 
 scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters params) :
-	ruis::widget(std::move(context), {.widget_params = std::move(params.widget_params)}),
+	ruis::widget( //
+		std::move(context),
+		std::move(params.layout_params),
+		std::move(params.widget_params)
+	),
 	params(std::move(params.scene_params))
 {
 	LOG([&](auto& o) {
@@ -195,5 +199,6 @@ void scene_view::render(const ruis::matrix4& matrix) const
 	camera_v->up = ruis::vec3(0, 1, 0);
 	camera_v->fovy = utki::pi / 4;
 
+	this->scene_renderer_v->set_draw_skybox(params.show_environment);
 	this->scene_renderer_v->render(rect().d, viewport_matrix);
 }

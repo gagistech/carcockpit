@@ -21,9 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "gui.hpp"
 
-#include <ruis/widgets/container.hpp>
-#include <ruis/widgets/label/image.hpp>
-#include <ruis/widgets/slider/slider.hpp>
+#include <ruis/widget/container.hpp>
+#include <ruis/widget/label/image.hpp>
+#include <ruis/widget/slider/slider.hpp>
 
 #include "gauge.hpp"
 #include "scene_view.hpp"
@@ -53,11 +53,11 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
         {
             m::slider(c,
                 {
+                    .layout_params = {
+                        .dims = {lp::fill, 30_pp} // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                    },
                     .widget_params = {
-                        .id = "gauge_slider"s,
-                        .lp = {
-                            .dims = {lp::fill, 30_pp} // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                        }
+                        .id = "gauge_slider"s
                     },
                     .oriented_params = {
                         .vertical = false
@@ -67,11 +67,9 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
             m::container(
                 c,
                 {
-                    .widget_params = {
-                        .lp = {
-                            .dims = {lp::fill, lp::fill},
-                            .weight = 1
-                        }
+                    .layout_params = {
+                        .dims = {lp::fill, lp::fill},
+                        .weight = 1
                     },
                     .container_params = {
                         .layout = ruis::layout::row
@@ -81,11 +79,9 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                     m::container(
                         c,
                         {
-                            .widget_params = {
-                                .lp = {
-                                    .dims = {lp::fill, lp::fill},
-                                    .weight = 1
-                                }
+                            .layout_params = {
+                                .dims = {lp::fill, lp::fill},
+                                .weight = 1
                             },
                             .container_params = {
                                 .layout = ruis::layout::pile
@@ -95,10 +91,8 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             m::image(
                                 c,
                                 {
-                                    .widget_params = {
-                                        .lp = {
-                                            .dims = {lp::fill, lp::fill}
-                                        }
+                                    .layout_params = {
+                                        .dims = {lp::fill, lp::fill}
                                     },
                                     .image_params = {
                                         .img = c.get().loader.load<ruis::res::image>("img_gauge_scale")
@@ -108,44 +102,74 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
                             m::gauge(
                                 c,
                                 {
+                                    .layout_params = {
+                                        .dims = {lp::fill, lp::fill}
+                                    },
                                     .widget_params = {
-                                        .id = "gauge"s,
-                                        .lp = {
-                                            .dims = {lp::fill, lp::fill}
-                                        }
+                                        .id = "gauge"s
                                     },
                                     .params = {
                                         .arrow = c.get().loader.load<ruis::res::image>("img_gauge_arrow"),
                                         .shadow = c.get().loader.load<ruis::res::image>("img_gauge_arrow_shadow"),
                                         .arm_fraction = 0.75, // NOLINT
-                                        .start_angle_rad = utki::deg_to_rad(225.0), // NOLINT
-                                        .end_angle_rad = utki::deg_to_rad(-45.0) // NOLINT
+                                        .start_angle_rad = utki::deg_to_rad(-225.0), // NOLINT
+                                        .end_angle_rad = utki::deg_to_rad(45.0) // NOLINT
                                     }
                                 }
                             )
                         }
                     ),
+                
                     m::scene_view(c,
                         {
+                            .layout_params = {
+                                .dims = {lp::fill, lp::fill},
+                                .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                            },
                             .widget_params = {
-                                .id = "scene_view_2"s,
-                                .lp = {
-                                    .dims = {lp::fill, lp::fill},
-                                    .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                                },
+                                .id = "scene_view_1"s,
                                 .clip = true,
                                 .depth = true
                             }
                             ,
                             .scene_params = {
-                                .file = "../res/samples_gltf/c1.glb"s,
+                                .file = "../res/samples_gltf/spray.glb"s,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .scaling_factor = 1.0f,
+                                .scaling_factor = 20.0f,
                                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                                .camera_target = ruis::vec3(0, 5, 0),
+                                .camera_target = ruis::vec3(0, 2, 0),
                                 .smooth_navigation_orbit = false,
                                 .smooth_navigation_zoom = false,
-                                .environment_cube = "tex_cube_env_italy"
+                                .orbit_angle_lower_limit = 0,
+                                .environment_cube = c.get().loader.load<ruis::res::texture_cube>("tex_cube_env_italy").to_shared_ptr(),                               
+                                .show_environment = true
+                            }
+                        }
+                    ),
+
+                    m::scene_view(c,
+                        {
+                            .layout_params = {
+                                .dims = {lp::fill, lp::fill},
+                                .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+                            },
+                            .widget_params = {
+                                .id = "scene_view_2"s,
+                                .clip = true,
+                                .depth = true
+                            }
+                            ,
+                            .scene_params = {
+                                .file = "../res/samples_gltf/kar.glb"s,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .scaling_factor = 2.0f,
+                                // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                                .camera_target = ruis::vec3(0, 2, 0),
+                                .smooth_navigation_orbit = false,
+                                .smooth_navigation_zoom = false,
+                                .orbit_angle_lower_limit = utki::pi / 2,
+                                .environment_cube = c.get().loader.load<ruis::res::texture_cube>("tex_cube_env_italy").to_shared_ptr(),                               
+                                .show_environment = true
                             }
                         }
                     )
