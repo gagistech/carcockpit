@@ -33,6 +33,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace carcockpit;
 using namespace std::string_literals;
 
+namespace {
+constexpr auto screen_width = 1024;
+constexpr auto screen_height = 600;
+} // namespace
+
 application::application(
 	bool window, //
 	std::string_view res_path
@@ -40,7 +45,7 @@ application::application(
 	ruisapp::application(
 		std::string(app_name), //
 		{
-			.dims = {1024, 600},
+			.dims = {screen_width, screen_height},
 			.title = std::string(app_name),
 			.buffers = {ruisapp::buffer::depth}
 }
