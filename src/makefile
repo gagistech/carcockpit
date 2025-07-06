@@ -42,7 +42,7 @@ this_static_lib_only := true
 $(eval $(prorab-build-lib))
 
 define this__rules
-$(abspath $(d)$(this__version_cpp)): $(abspath $(d)$(this__root_dir_rel)debian/changelog)
+$(abspath $(d)$(this__version_cpp)): $(abspath $(d)$(this__root_dir_rel)build/debian/changelog)
 $(.RECIPEPREFIX)$(a)mkdir -p $$(dir $$@)
 $(.RECIPEPREFIX)$(a)(cd $(d)$(this__root_dir_rel); echo "extern const char* const program_version = \"$$$$(myci-deb-version.sh)\";" > $$@)
 endef
@@ -83,10 +83,17 @@ define carcockpit_rules
     this_ldlibs += $$(this_out_dir)libcarcockpit.a
     this_ldlibs += $$(this_out_dir)libruis_render.a
 
+    ifeq ($(config), emsc)
+        this_name := $$(this_name).html
+
+        this_ldflags += --embed-file $(d)../res@res
+    else
+        this_ldlibs += -l clargs
+    endif
+
     this_ldlibs += -l jsondom
     this_ldlibs += -l rasterimage
     this_ldlibs += -l papki
-    this_ldlibs += -l clargs
     this_ldlibs += -l tml
     this_ldlibs += -l ruis
     this_ldlibs += -l utki
@@ -107,10 +114,28 @@ define carcockpit_rules
 
 endef
 
-# $(eval $(call carcockpit_rules,opengl,xorg))
-$(eval $(call carcockpit_rules,opengles,xorg))
-# $(eval $(call carcockpit_rules,opengl,wayland))
-$(eval $(call carcockpit_rules,opengles,wayland))
+ifneq ($(config), emsc)
+    # non-Emscripten
+
+    # $(eval $(call carcockpit_rules,opengl,xorg))
+    $(eval $(call carcockpit_rules,opengles,xorg))
+    # $(eval $(call carcockpit_rules,opengl,wayland))
+    $(eval $(call carcockpit_rules,opengles,wayland))
+else
+    # Emscripten
+
+    $(eval $(call carcockpit_rules,opengles,sdl))
+endif
 
 # clean up
 carcockpit_rules :=
+
+# ==================================================
+# = targets for building with conan and emscripten =
+
+define this__rules
+conan_install:
+$(.RECIPEPREFIX)@echo install conan dependencies
+$(.RECIPEPREFIX)$(a)conan install $(d)../build/emscripten --update --profile:host $(d)../build/emscripten/conan.profile --build=missing --output-folder=$(d)out/emsc --deployer-package="*"
+endef
+$(eval $(this__rules))

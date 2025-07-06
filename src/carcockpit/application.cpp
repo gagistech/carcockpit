@@ -21,7 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "application.hpp"
 
-#include <clargs/parser.hpp>
+#include <utki/config.hpp>
+
+#if CFG_OS_NAME != CFG_OS_NAME_EMSCRIPTEN
+#	include <clargs/parser.hpp>
+#endif
 
 #include "gui.hpp"
 #include "scene_view.hpp"
@@ -69,6 +73,10 @@ std::unique_ptr<application> carcockpit::make_application(
 	utki::span<std::string_view> args
 )
 {
+#if CFG_OS_NAME == CFG_OS_NAME_EMSCRIPTEN
+	bool window = true;
+	std::string res_path = "res/"s;
+#else
 	bool window = false;
 
 	// TODO: look in /usr/local/share/carcockpit first?
@@ -96,6 +104,7 @@ std::unique_ptr<application> carcockpit::make_application(
 	);
 
 	p.parse(args);
+#endif
 
 	return std::make_unique<application>(
 		window, //

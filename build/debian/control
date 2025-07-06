@@ -27,7 +27,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 	carcockpit-data
 Description: Car cockpit demo app.
- Demo application of car cockpit GUI.
+	Demo application of car cockpit GUI.
 
 Package: carcockpit-opengles-wayland
 Section: misc
@@ -35,11 +35,11 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 	carcockpit-data
 Description: Car cockpit demo app.
- Demo application of car cockpit GUI.
+	Demo application of car cockpit GUI.
 
 Package: carcockpit-data
 Section: misc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Car cockpit demo app.
- Data files for carcockpit.
+	Data files for carcockpit.

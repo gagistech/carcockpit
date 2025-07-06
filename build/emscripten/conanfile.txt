@@ -1,0 +1,6 @@
+[requires]
+ruisapp/[>=0.2.124]@cppfw/main
+jsondom/[>=0.0.0]@cppfw/main
+
+[generators]
+AutotoolsDeps
