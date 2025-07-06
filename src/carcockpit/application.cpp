@@ -39,12 +39,10 @@ application::application(
 ) :
 	ruisapp::application(
 		std::string(app_name), //
-		[]() {
-			// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-			ruisapp::window_params wp(r4::vector2<unsigned>(1024, 600));
-			wp.buffers.set(ruisapp::window_params::buffer::depth);
-			return wp;
-		}()
+		{
+			.dims = {1024, 600},
+			.buffers = {ruisapp::buffer::depth}
+}
 	),
 	res_path(papki::as_dir(res_path))
 {
