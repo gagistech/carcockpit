@@ -20,9 +20,9 @@
             "group": "build"
         },
         {
-            "label": "build_dbg",
+            "label": "build-dev",
             "type": "shell",
-            "command": "make config=dbg",
+            "command": "make config=dev",
             "problemMatcher": [
                 "$gcc"
             ],
@@ -36,9 +36,9 @@
             "group": "build"
         },
         {
-            "label": "clean_dbg",
+            "label": "clean-dev",
             "type": "shell",
-            "command": "make clean config=dbg",
+            "command": "make clean config=dev",
             "problemMatcher": [],
             "group": "build"
         },
@@ -64,16 +64,16 @@
             "group": "build"
         },
         {
-            "label": "run-app-ogles-xorg-dbg",
+            "label": "run-app-ogles-xorg-dev",
             "type": "shell",
-            "command": "make run-app-opengles-xorg config=dbg",
+            "command": "make run-app-opengles-xorg config=dev",
             "problemMatcher": [],
             "group": "build"
         },
         {
-            "label": "run-app-ogles-wayland-dbg",
+            "label": "run-app-ogles-wayland-dev",
             "type": "shell",
-            "command": "make run-app-opengles-wayland config=dbg",
+            "command": "make run-app-opengles-wayland config=dev",
             "problemMatcher": [],
             "group": "build"
         },
@@ -86,11 +86,11 @@
             "group": "build"
         },
         {
-            "label": "test-dbg",
+            "label": "test-dev",
             "type": "shell",
-            "command": "make test config=dbg",
+            "command": "make test config=dev",
             "problemMatcher": [],
-            "dependsOn": "build_dbg",
+            "dependsOn": "build-dev",
             "group": "build"
         },
         {

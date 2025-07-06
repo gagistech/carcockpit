@@ -8,7 +8,7 @@
 			"name": "(gdb) app",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/src/out/dbg/carcockpit-opengles-xorg",
+			"program": "${workspaceFolder}/src/out/dev/carcockpit-opengles-xorg",
 			"args": ["--window", "--res-path=../res"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/src",
@@ -22,13 +22,13 @@
 					"ignoreFailures": true
 				}
 			],
-			"preLaunchTask": "build_dbg"
+			"preLaunchTask": "build-dev"
 		},
 		{
 			"name": "(gdb) unit tests",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/tests/unit/out/dbg/tests",
+			"program": "${workspaceFolder}/tests/unit/out/dev/tests",
 			"args": ["--test=hierarchy", "--suite=scene"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/tests/unit",
@@ -42,7 +42,7 @@
 					"ignoreFailures": true
 				}
 			],
-			"preLaunchTask": "build_dbg"
+			"preLaunchTask": "build-dev"
 		},
     ]
 }
