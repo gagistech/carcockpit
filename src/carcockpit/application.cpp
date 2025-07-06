@@ -41,6 +41,7 @@ application::application(
 		std::string(app_name), //
 		{
 			.dims = {1024, 600},
+			.title = std::string(app_name),
 			.buffers = {ruisapp::buffer::depth}
 }
 	),
