@@ -10,6 +10,10 @@ img_gauge_scale{
 	file{gauge_scale.svg}
 }
 
+img_close{
+	file{close.svg}
+}
+
 tex_sample{
 	file {texture.jpg}
 }

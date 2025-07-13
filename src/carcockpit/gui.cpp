@@ -40,8 +40,41 @@ using namespace ruis::make;
 using namespace carcockpit::make;
 } // namespace m
 
-utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref<ruis::context> c)
+namespace {
+utki::shared_ref<ruis::push_button> make_close_button(utki::shared_ref<ruis::context> c)
 {
+	// clang-format off
+    return m::push_button(c,
+        {
+            .layout_params{
+                .dims = {ruis::dim::min, ruis::dim::fill}
+            },
+            .widget_params{
+                .id = "close_button"s
+            }
+        },
+        {
+            m::image(c,
+                {
+                    .layout_params{
+                        .dims = {ruis::dim::min, ruis::dim::fill}
+                    },
+                    .image_params{
+                        .img = c.get().loader().load<ruis::res::image>("img_close"sv),
+                        .keep_aspect_ratio = true
+                    }
+                }
+            )
+        }
+    );
+	// clang-format on
+}
+} // namespace
+
+root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
+{
+	auto close_button = make_close_button(c);
+
 	// clang-format off
 	auto kp = m::key_proxy(c,
         {
@@ -50,17 +83,28 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
             }
         },
         {
-            m::slider(c,
+            m::row(c,
                 {
-                    .layout_params = {
-                        .dims = {ruis::dim::fill, 30_pp} // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                    },
-                    .widget_params = {
-                        .id = "gauge_slider"s
-                    },
-                    .oriented_params = {
-                        .vertical = false
+                    .layout_params{
+                        .dims = {ruis::dim::fill, 30_pp}// NOLINT(cppcoreguidelines-avoid-magic-numbers)
                     }
+                },
+                {
+                    m::slider(c,
+                        {
+                            .layout_params = {
+                                .dims = {ruis::dim::fill, ruis::dim::fill},
+                                .weight = 1
+                            },
+                            .widget_params = {
+                                .id = "gauge_slider"s
+                            },
+                            .oriented_params = {
+                                .vertical = false
+                            }
+                        }
+                    ),
+                    close_button
                 }
             ),
             m::container(
@@ -186,5 +230,8 @@ utki::shared_ref<ruis::key_proxy> carcockpit::make_root_widgets(utki::shared_ref
 	c.get().updater.get().start(utki::make_shared_from(viewer1), 0);
 	c.get().updater.get().start(utki::make_shared_from(viewer2), 0);
 
-	return kp;
+	return {
+        .key_proxy = std::move(kp),
+        .close_button = std::move(close_button)
+    };
 }

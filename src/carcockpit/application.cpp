@@ -58,9 +58,9 @@ application::application(
 
 	this->gui.context.get().loader().mount_res_pack(*this->get_res_file(papki::as_dir(this->res_path)));
 
-	auto kp = make_root_widgets(this->gui.context);
+	auto rwi = make_root_widget(this->gui.context);
 
-	kp.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
+	rwi.key_proxy.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
 		if (e.is_down) {
 			if (e.combo.key == ruis::key::escape) {
 				this->quit();
@@ -69,7 +69,11 @@ application::application(
 		return false;
 	};
 
-	this->gui.set_root(std::move(kp));
+	rwi.close_button.get().click_handler = [&](ruis::push_button& b) {
+		this->quit();
+	};
+
+	this->gui.set_root(std::move(rwi.key_proxy));
 }
 
 std::unique_ptr<application> carcockpit::make_application(
