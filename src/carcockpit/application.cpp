@@ -60,7 +60,7 @@ application::application(
 
 	auto rwi = make_root_widget(this->gui.context);
 
-	rwi.key_proxy.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
+	rwi.root_key_proxy.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
 		if (e.is_down) {
 			if (e.combo.key == ruis::key::escape) {
 				this->quit();
@@ -73,7 +73,7 @@ application::application(
 		this->quit();
 	};
 
-	this->gui.set_root(std::move(rwi.key_proxy));
+	this->gui.set_root(std::move(rwi.root_key_proxy));
 }
 
 std::unique_ptr<application> carcockpit::make_application(

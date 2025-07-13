@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 namespace carcockpit {
 
 struct root_widget_info {
-	utki::shared_ref<ruis::key_proxy> key_proxy;
+	utki::shared_ref<ruis::key_proxy> root_key_proxy;
 	utki::shared_ref<ruis::push_button> close_button;
 };
 

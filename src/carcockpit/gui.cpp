@@ -231,7 +231,7 @@ root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
 	c.get().updater.get().start(utki::make_shared_from(viewer2), 0);
 
 	return {
-        .key_proxy = std::move(kp),
+        .root_key_proxy = std::move(kp),
         .close_button = std::move(close_button)
     };
 }
