@@ -2,15 +2,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build_no_lint",
-            "type": "shell",
-            "command": "make lint=off",
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build"
-        },
-        {
             "label": "build",
             "type": "shell",
             "command": "make",
@@ -43,20 +34,6 @@
             "group": "build"
         },
         {
-            "label": "run-app-ogles-xorg-no-lint",
-            "type": "shell",
-            "command": "make run-app-opengles-xorg lint=off",
-            "problemMatcher": [],
-            "group": "build"
-        },
-        {
-            "label": "run-app-ogles-wayland-no-lint",
-            "type": "shell",
-            "command": "make run-app-opengles-wayland lint=off",
-            "problemMatcher": [],
-            "group": "build"
-        },
-        {
             "label": "run-app-ogles-xorg",
             "type": "shell",
             "command": "make run-app-opengles-xorg",
@@ -67,6 +44,13 @@
             "label": "run-app-ogles-xorg-dev",
             "type": "shell",
             "command": "make run-app-opengles-xorg config=dev",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "run-app-ogles-wayland",
+            "type": "shell",
+            "command": "make run-app-opengles-wayland",
             "problemMatcher": [],
             "group": "build"
         },
@@ -97,6 +81,13 @@
             "label": "format",
             "type": "shell",
             "command": "make format",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "lint",
+            "type": "shell",
+            "command": "make config=lint && make config=lint test",
             "problemMatcher": [],
             "group": "build"
         }

@@ -434,7 +434,7 @@ utki::shared_ref<scene> gltf_loader::read_scene(const jsondom::value& scene_json
 	constexpr ruis::vec3 default_light_intensity{4, 4, 4};
 
 	if (new_scene.get().lights.size() == 0) {
-		new_scene.get().lights.push_back(
+		new_scene.get().lights.push_back( //
 			utki::make_shared<ruis::render::light>(
 				default_light_position, //
 				default_light_intensity
