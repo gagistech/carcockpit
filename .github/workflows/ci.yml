@@ -23,12 +23,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git pipx
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb https://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb https://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
         uses: myci-actions/checkout@main
 #      - name: prepare debian package
@@ -90,12 +90,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci git devscripts equivs
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
         uses: myci-actions/checkout@main
 #      - name: prepare debian package
@@ -169,12 +169,12 @@ jobs:
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git devscripts equivs nodejs
-      - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@main
-        with:
-          repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      # - name: add llvm repo (for clang-format)
+      #   uses: myci-actions/add-deb-repo@main
+      #   with:
+      #     repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+      #     repo-name: llvm
+      #     keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
         uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
