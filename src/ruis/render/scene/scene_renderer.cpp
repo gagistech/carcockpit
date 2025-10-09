@@ -88,7 +88,7 @@ void scene_renderer::render(
 	}
 
 	{
-		auto& r = this->context_v.get().ren().render_context.get();
+		auto& r = this->context_v.get().ren().rendering_context.get();
 		bool depth = r.is_depth_enabled();
 		r.enable_depth(false);
 		utki::scope_exit scope_exit([&r, depth]() {
@@ -113,18 +113,18 @@ void scene_renderer::prepare_fullscreen_quad_vao()
 		{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}
 	};
 
-	auto pos_vbo = this->context_v.get().ren().render_context.get().make_vertex_buffer(utki::make_span(pos));
+	auto pos_vbo = this->context_v.get().ren().rendering_context.get().make_vertex_buffer(utki::make_span(pos));
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
 	std::array<uint16_t, 36> indices = {
 		{0, 2, 1, 1, 2, 3}
 	};
 
-	auto indices_vbo = this->context_v.get().ren().render_context.get().make_index_buffer(utki::make_span(indices));
+	auto indices_vbo = this->context_v.get().ren().rendering_context.get().make_index_buffer(utki::make_span(indices));
 
 	this->fullscreen_quad_vao = context_v.get()
 									.ren()
-									.render_context.get()
+									.rendering_context.get()
 									.make_vertex_array(
 										{pos_vbo}, //
 										indices_vbo,

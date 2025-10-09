@@ -39,26 +39,26 @@ constexpr auto screen_height = 600;
 } // namespace
 
 application::application(
-	bool window, //
+	bool windowed, //
 	std::string_view res_path
 ) :
-	ruisapp::application(
-		std::string(app_name), //
-		{
-			.dims = {screen_width, screen_height},
-			.title = std::string(app_name),
-			.buffers = {ruisapp::buffer::depth}
-}
-	),
+	ruisapp::application({
+		.name = std::string(app_name) //
+	}),
 	res_path(papki::as_dir(res_path))
 {
-	this->set_fullscreen(!window);
+	auto& win = this->make_window({
+		.dims = {screen_width, screen_height},
+		.title = std::string(app_name),
+		.fullscreen = !windowed,
+		.buffers = {ruisapp::buffer::depth}
+	});
 
-	this->gui.init_standard_widgets(*this->get_res_file());
+	win.gui.init_standard_widgets(*this->get_res_file());
 
-	this->gui.context.get().loader().mount_res_pack(*this->get_res_file(papki::as_dir(this->res_path)));
+	win.gui.context.get().loader().mount_res_pack(*this->get_res_file(papki::as_dir(this->res_path)));
 
-	auto rwi = make_root_widget(this->gui.context);
+	auto rwi = make_root_widget(win.gui.context);
 
 	rwi.root_key_proxy.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
 		if (e.is_down) {
@@ -73,7 +73,7 @@ application::application(
 		this->quit();
 	};
 
-	this->gui.set_root(std::move(rwi.root_key_proxy));
+	win.gui.set_root(std::move(rwi.root_key_proxy));
 }
 
 std::unique_ptr<application> carcockpit::make_application(
@@ -82,10 +82,10 @@ std::unique_ptr<application> carcockpit::make_application(
 )
 {
 #if CFG_OS_NAME == CFG_OS_NAME_EMSCRIPTEN
-	bool window = true;
+	bool windowed = true;
 	std::string res_path = "res/"s;
 #else
-	bool window = false;
+	bool windowed = false;
 
 	// TODO: look in /usr/local/share/carcockpit first?
 	std::string res_path = utki::cat(
@@ -97,7 +97,7 @@ std::unique_ptr<application> carcockpit::make_application(
 	clargs::parser p;
 
 	p.add("window", "run in window mode", [&]() {
-		window = true;
+		windowed = true;
 	});
 
 	p.add(
@@ -115,7 +115,7 @@ std::unique_ptr<application> carcockpit::make_application(
 #endif
 
 	return std::make_unique<application>(
-		window, //
+		windowed, //
 		res_path
 	);
 }

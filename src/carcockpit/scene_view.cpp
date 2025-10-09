@@ -49,7 +49,7 @@ scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters p
 		o << "[LOAD GLTF] " << this->params.file << std::endl;
 	})
 
-	ruis::render::gltf_loader l(this->context.get().ren().render_context.get());
+	ruis::render::gltf_loader l(this->context.get().ren().rendering_context.get());
 
 	scene_v = l.load(papki::fs_file(this->params.file)).to_shared_ptr();
 
