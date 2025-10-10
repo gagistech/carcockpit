@@ -1,3 +1,9 @@
+carcockpit (0.0.13) unstable; urgency=medium
+
+  * update
+
+ -- Ivan Gagis <igagis@gmail.com>  Sat, 11 Oct 2025 01:14:50 +0300
+
 carcockpit (0.0.12) unstable; urgency=medium
 
   * add close button
