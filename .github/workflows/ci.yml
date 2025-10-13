@@ -302,3 +302,48 @@ jobs:
         run: |
           cd out
           cmake --build . --config ${{ matrix.config }} --target test
+##### monorepo - windows #####
+  monorepo-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - Debug
+          - Release
+        arch:
+          - Win32
+          - x64
+    name: windows
+    steps:
+    - name: git clone cppfw monorepo
+      uses: actions/checkout@v5
+      with:
+        repository: cppfw/monorepo
+        submodules: true #  non-recursive, no remote
+    - name: git clone the app
+      uses: actions/checkout@v5
+      with:
+        path: apps/${{ github.event.repository.name }}
+        submodules: false
+    - name: set VCPKG_ROOT
+      uses: myci-actions/export-env-var-powershell@main
+      # accorging to github actions windows image docs, it should define VCPKG_INSTALLATION_ROOT env var,
+      # but on practice it is not set, so specify vcpkg root path explicitly
+      with: {name: VCPKG_ROOT, value: "C:/vcpkg/"}
+    - name: generate cmake build files
+      run: |
+        mkdir out
+        cd out
+        cmake -A ${{ matrix.arch }} ../build/cmake
+    - name: build
+      run: |
+        cd out
+        cmake --build . --parallel --config ${{ matrix.config }}
+    - name: test
+      run: |
+          cd out
+          cmake --build . --config ${{ matrix.config }} --target test
