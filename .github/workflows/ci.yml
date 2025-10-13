@@ -260,7 +260,7 @@ jobs:
           - debian:trixie
     runs-on: ${{ (startsWith(matrix.linux_image, 'arm') && 'ubuntu-24.04-arm') || 'ubuntu-latest' }}
     container: ${{ matrix.linux_image }}
-    name: monorepo | linux - ${{ matrix.linux_image }} | ${{ matrix.config }}
+    name: monorepo - linux | ${{ matrix.linux_image }} | ${{ matrix.config }}
     steps:
       - name: install build tools
         run: |
@@ -317,7 +317,7 @@ jobs:
         arch:
           - Win32
           - x64
-    name: windows
+    name: monorepo - windows | ${{ matrix.arch }} | ${{ matrix.config }}
     steps:
     - name: git clone cppfw monorepo
       uses: actions/checkout@v5
