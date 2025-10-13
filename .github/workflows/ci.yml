@@ -247,3 +247,58 @@ jobs:
           echo "${{ secrets.GAGISTECH_SSH_KEY }}" > gagistech_ssh_key && chmod 600 gagistech_ssh_key
           myci-upload-ssh.sh --key gagistech_ssh_key --server gagistech.com --user gagistech --dir /srv/gagistech/apps src/out/emsc/${PACKAGE_NAME}-opengles-sdl.html
         if: startsWith(github.ref, 'refs/tags/')
+##### monorepo - linux #####
+  monorepo-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - Debug
+          - Release
+        linux_image:
+          - arm64v8/debian:trixie
+          - debian:trixie
+    runs-on: ${{ (startsWith(matrix.linux_image, 'arm') && 'ubuntu-24.04-arm') || 'ubuntu-latest' }}
+    container: ${{ matrix.linux_image }}
+    name: monorepo | linux - ${{ matrix.linux_image }} | ${{ matrix.config }}
+    steps:
+      - name: install build tools
+        run: |
+          apt --quiet update --yes
+          apt --quiet install --yes build-essential cmake pkg-config git curl zip unzip tar
+      - name: install build deps
+        run: |
+          apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-3-dev
+      - name: git clone cppfw monorepo
+        uses: myci-actions/checkout@main
+        with:
+          url: https://github.com/cppfw/monorepo
+          submodules: true #  non-recursive, no remote
+      - name: git clone the app
+        uses: myci-actions/checkout@main
+        with:
+          dir: apps/${{ github.event.repository.name }}
+          submodules: true #  non-recursive, no remote
+      - name: install vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git vcpkg-installation
+          (cd vcpkg-installation; ./bootstrap-vcpkg.sh)
+      - name: set VCPKG_ROOT
+        uses: myci-actions/export-env-var@main
+        with: {name: VCPKG_ROOT, value: "$(pwd)/vcpkg-installation"}
+      - name: add VCPKG_ROOT to PATH
+        uses: myci-actions/export-env-var@main
+        with: {name: PATH, value: "$PATH:$VCPKG_ROOT"}
+      - name: generate cmake build files
+        run: |
+          mkdir out
+          cd out
+          cmake ../build/cmake
+      - name: build
+        run: |
+          cd out
+          cmake --build . --parallel --config ${{ matrix.config }}
+      - name: test
+        run: |
+          cd out
+          cmake --build . --config ${{ matrix.config }} --target test
