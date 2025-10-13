@@ -278,7 +278,7 @@ jobs:
         uses: myci-actions/checkout@main
         with:
           dir: apps/${{ github.event.repository.name }}
-          submodules: true #  non-recursive, no remote
+          submodules: false
       - name: install vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git vcpkg-installation
