@@ -272,12 +272,12 @@ jobs:
       - name: git clone cppfw monorepo
         uses: myci-actions/checkout@main
         with:
-          url: https://github.com/cppfw/monorepo
+          repository: https://github.com/cppfw/monorepo
           submodules: true #  non-recursive, no remote
       - name: git clone the app
         uses: myci-actions/checkout@main
         with:
-          dir: apps/${{ github.event.repository.name }}
+          path: apps/${{ github.event.repository.name }}
           submodules: false
       - name: install vcpkg
         run: |
