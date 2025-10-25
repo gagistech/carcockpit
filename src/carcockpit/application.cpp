@@ -54,6 +54,10 @@ application::application(
 		.buffers = {ruisapp::buffer::depth}
 	});
 
+	win.gui.context.get().window().close_handler = [this]() {
+		this->quit();
+	};
+
 	win.gui.init_standard_widgets(*this->get_res_file());
 
 	win.gui.context.get().loader().mount_res_pack(*this->get_res_file(papki::as_dir(this->res_path)));
