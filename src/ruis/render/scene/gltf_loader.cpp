@@ -21,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "gltf_loader.hxx"
 
-#include <jsondom/dom.hpp>
 #include <fsif/span_file.hpp>
+#include <jsondom/dom.hpp>
 #include <rasterimage/image_variant.hpp>
 #include <utki/deserializer.hpp>
 #include <utki/string.hpp>
