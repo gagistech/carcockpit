@@ -69,7 +69,7 @@ myci_declare_application(${PROJECT_NAME}-opengles
 #         ../../src # TODO: should not be needed when gltf_loader is made public
 #     DEPENDENCIES
 #         utki
-#         papki
+#         fsif
 #         jsondom
 #         tst
 #         ruis-render-null

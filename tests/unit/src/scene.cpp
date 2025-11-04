@@ -1,4 +1,4 @@
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 #include <ruis/render/null/context.hpp>
 #include <ruis/render/scene/gltf_loader.hxx>
 #include <ruis/render/scene/scene.hpp>
@@ -16,7 +16,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 			auto rc = utki::make_shared<ruis::render::null::context>();
 			{
 				ruis::render::gltf_loader l(rc.get());
-				auto scene = l.load(papki::fs_file("samples_gltf/kub.glb"));
+				auto scene = l.load(fsif::native_file("samples_gltf/kub.glb"));
 				tst::check(!scene.get().nodes.empty(), SL);
 			}
 		}
@@ -31,7 +31,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 			auto rc = utki::make_shared<ruis::render::null::context>();
 			{
 				ruis::render::gltf_loader l(rc.get());
-				auto scene = l.load(papki::fs_file("samples_gltf/parent_and_children.glb"));
+				auto scene = l.load(fsif::native_file("samples_gltf/parent_and_children.glb"));
 				tst::check(!scene.get().nodes[0].get().children.empty(), SL);
 			}
 		}
@@ -46,7 +46,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 			auto rc = utki::make_shared<ruis::render::null::context>();
 			{
 				ruis::render::gltf_loader l(rc.get());
-				auto scene = l.load(papki::fs_file("samples_gltf/spray.glb"));
+				auto scene = l.load(fsif::native_file("samples_gltf/spray.glb"));
 				tst::check(!scene.get().nodes.empty(), SL);
 			}
 		}
@@ -61,7 +61,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 			auto rc = utki::make_shared<ruis::render::null::context>();
 			{
 				ruis::render::gltf_loader l(rc.get());
-				auto scene = l.load(papki::fs_file("samples_gltf/camera.glb"));
+				auto scene = l.load(fsif::native_file("samples_gltf/camera.glb"));
 				tst::check(!scene.get().nodes.empty(), SL);
 			}
 		}

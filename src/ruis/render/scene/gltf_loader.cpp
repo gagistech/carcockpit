@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "gltf_loader.hxx"
 
 #include <jsondom/dom.hpp>
-#include <papki/span_file.hpp>
+#include <fsif/span_file.hpp>
 #include <rasterimage/image_variant.hpp>
 #include <utki/deserializer.hpp>
 #include <utki/string.hpp>
@@ -487,7 +487,7 @@ utki::shared_ref<ruis::render::texture_2d> gltf_loader::read_texture(const jsond
 		image.get().bv.get().byte_offset, //
 		image.get().bv.get().byte_length
 	);
-	const papki::span_file fi(image_span);
+	const fsif::span_file fi(image_span);
 
 	rasterimage::image_variant imvar;
 	if (image.get().mime_type_v == image_view::mime_type::image_png) {
@@ -571,7 +571,7 @@ std::vector<utki::shared_ref<tp_type>> gltf_loader::read_root_array(
 	return all;
 }
 
-utki::shared_ref<scene> gltf_loader::load(const papki::file& fi)
+utki::shared_ref<scene> gltf_loader::load(const fsif::file& fi)
 {
 	auto gltf = fi.load();
 	utki::deserializer d(gltf);

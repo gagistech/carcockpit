@@ -226,7 +226,7 @@ class gltf_loader
 	utki::shared_ref<material> read_material(const jsondom::value& material_json);
 
 public:
-	utki::shared_ref<scene> load(const papki::file& fi);
+	utki::shared_ref<scene> load(const fsif::file& fi);
 	gltf_loader(ruis::render::context& render_context);
 };
 

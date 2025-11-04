@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
-#include <papki/fs_file.hpp>
+#include <fsif/native_file.hpp>
 #include <ruis/render/opengles/texture_2d.hpp>
 #include <ruis/res/texture_cube.hpp>
 
@@ -51,7 +51,7 @@ scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters p
 
 	ruis::render::gltf_loader l(this->context.get().ren().rendering_context.get());
 
-	scene_v = l.load(papki::fs_file(this->params.file)).to_shared_ptr();
+	scene_v = l.load(fsif::native_file(this->params.file)).to_shared_ptr();
 
 	scene_renderer_v = std::make_shared<ruis::render::scene_renderer>(this->context);
 	scene_renderer_v->set_scene(scene_v);

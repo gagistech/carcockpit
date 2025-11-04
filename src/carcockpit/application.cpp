@@ -45,7 +45,7 @@ application::application(
 	ruisapp::application({
 		.name = std::string(app_name) //
 	}),
-	res_path(papki::as_dir(res_path))
+	res_path(fsif::as_dir(res_path))
 {
 	auto& win = this->make_window({
 		.dims = {screen_width, screen_height},
@@ -60,7 +60,7 @@ application::application(
 
 	win.gui.init_standard_widgets(*this->get_res_file());
 
-	win.gui.context.get().loader().mount_res_pack(*this->get_res_file(papki::as_dir(this->res_path)));
+	win.gui.context.get().loader().mount_res_pack(*this->get_res_file(fsif::as_dir(this->res_path)));
 
 	auto rwi = make_root_widget(win.gui.context);
 

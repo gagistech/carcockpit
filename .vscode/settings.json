@@ -58,5 +58,6 @@
         "typeinfo": "cpp",
         "chrono": "cpp"
     },
-    "asciidoc.antora.enableAntoraSupport": false
+    "asciidoc.antora.enableAntoraSupport": false,
+    "cmake.sourceDirectory": "/home/ivan/prj/carcockpit/build/cmake"
 }
