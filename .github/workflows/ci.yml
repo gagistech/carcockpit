@@ -302,6 +302,15 @@ jobs:
         run: |
           cd out
           cmake --build . --config ${{ matrix.config }} --target test
+      # TODO: name the artifact according to build matrix
+      # - name: upload vcpkg logs to artifacts
+      #   if: always() # even if previous steps fail, this one needs to be run
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: vcpkg_linux_logs
+      #     path: |
+      #       vcpkg-installation/buildtrees/
+      #       out/**/*.log
 ##### monorepo - windows #####
   monorepo-windows:
     runs-on: windows-latest
@@ -334,6 +343,10 @@ jobs:
       # accorging to github actions windows image docs, it should define VCPKG_INSTALLATION_ROOT env var,
       # but on practice it is not set, so specify vcpkg root path explicitly
       with: {name: VCPKG_ROOT, value: "C:/vcpkg/"}
+    - name: make local symbolic link to VCPKG installation directory
+      # this is needed at least for actions/upload-artifact to be able to find vcpkg install logs
+      shell: powershell
+      run: New-Item -ItemType SymbolicLink -Path vcpkg-installation -Target $env:VCPKG_ROOT
     - name: generate cmake build files
       run: |
         mkdir out
@@ -345,5 +358,14 @@ jobs:
         cmake --build . --parallel --config ${{ matrix.config }}
     - name: test
       run: |
-          cd out
-          cmake --build . --config ${{ matrix.config }} --target test
+        cd out
+        cmake --build . --config ${{ matrix.config }} --target test
+    # TODO: name the artifact according to build matrix
+    # - name: upload vcpkg logs to artifacts
+    #   if: always() # even if previous steps fail, this one needs to be run
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: vcpkg_windows_logs
+    #     path: |
+    #       vcpkg-installation/buildtrees/
+    #       out/**/*.log
