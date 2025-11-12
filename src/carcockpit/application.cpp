@@ -58,9 +58,9 @@ application::application(
 		this->quit();
 	};
 
-	win.gui.init_standard_widgets(*this->get_res_file());
+	win.gui.init_standard_widgets(this->get_res_file().get());
 
-	win.gui.context.get().loader().mount_res_pack(*this->get_res_file(fsif::as_dir(this->res_path)));
+	win.gui.context.get().loader().mount_res_pack(this->get_res_file(fsif::as_dir(this->res_path)).get());
 
 	auto rwi = make_root_widget(win.gui.context);
 
