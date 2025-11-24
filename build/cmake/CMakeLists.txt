@@ -41,6 +41,9 @@ myci_declare_application(${PROJECT_NAME}-opengles
         clargs
         ruisapp::ruisapp-opengles
         ${PROJECT_NAME}::ruis-gltf
+    RUN_ARGUMENTS
+        --res-path=res
+        --window
 )
 
 # myci_declare_application(${PROJECT_NAME}-opengl
