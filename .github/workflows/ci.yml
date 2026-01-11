@@ -268,7 +268,7 @@ jobs:
           apt --quiet install --yes build-essential cmake pkg-config git curl zip unzip tar
       - name: install build deps
         run: |
-          apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-3-dev
+          apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-4-dev
       - name: git clone cppfw monorepo
         uses: myci-actions/checkout@main
         with:
