@@ -11,7 +11,10 @@ this_cxxflags += -isystem ../../src/
 this__libruis_render := ../../src/out/$(c)/libruis_render.a
 this_ldlibs += $(this__libruis_render)
 
-this_ldlibs += -l tst -l utki -l fsif -l ruis-render-null
+this_ldlibs += -l tst
+this_ldlibs += -l utki
+this_ldlibs += -l fsif
+this_ldlibs += -l ruis-render-null
 this_ldlibs += -l jsondom
 this_ldlibs += -l rasterimage
 this_ldlibs += -l m
