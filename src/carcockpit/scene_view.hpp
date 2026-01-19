@@ -97,7 +97,7 @@ public:
 		all_parameters params
 	);
 
-	void render(const ruis::matrix4& matrix) const override;
+	void render(const ruis::mat4& matrix) const override;
 	void update(uint32_t dt) override;
 
 	bool on_mouse_button(const ruis::mouse_button_event& e) override;

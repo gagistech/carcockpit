@@ -33,7 +33,7 @@ namespace ruis::render {
 
 struct trs_transformation {
 	ruis::vec3 translation{0, 0, 0};
-	ruis::quaternion rotation{0, 0, 0, 1};
+	ruis::quat rotation{0, 0, 0, 1};
 	ruis::vec3 scale{1, 1, 1};
 };
 

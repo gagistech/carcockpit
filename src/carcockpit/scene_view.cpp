@@ -185,7 +185,7 @@ bool scene_view::on_key(const ruis::key_event& e)
 	return false;
 }
 
-void scene_view::render(const ruis::matrix4& matrix) const
+void scene_view::render(const ruis::mat4& matrix) const
 {
 	this->widget::render(matrix);
 

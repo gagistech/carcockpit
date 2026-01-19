@@ -72,7 +72,7 @@ void gauge::on_lay_out()
 	}
 }
 
-void gauge::render(const matrix4& matrix) const
+void gauge::render(const mat4& matrix) const
 {
 	ASSERT(this->arrow_tex)
 
@@ -82,11 +82,11 @@ void gauge::render(const matrix4& matrix) const
 
 	this->set_blending_to_renderer();
 
-	matrix4 matr(matrix);
+	mat4 matr(matrix);
 	matr.translate(this->rect().d / 2);
 	matr.scale(this->rect().d / 2);
 
-	auto mmm = matrix4().set_identity();
+	auto mmm = mat4().set_identity();
 
 	{
 		ruis::real angle_range_length = this->params.end_angle_rad - this->params.start_angle_rad;
@@ -107,8 +107,8 @@ void gauge::render(const matrix4& matrix) const
 
 		constexpr auto shadow_offset = real(0.025f);
 
-		matrix4 m(matr);
-		m *= matrix4().set_identity().translate(shadow_offset, shadow_offset) * mmm;
+		mat4 m(matr);
+		m *= mat4().set_identity().translate(shadow_offset, shadow_offset) * mmm;
 		m.scale(this->shadow_tex->dims().to<ruis::real>());
 		m.translate(-(1 - this->params.arm_fraction) * arrow_fraction - (1 - arrow_fraction) / 2, -half);
 
@@ -120,7 +120,7 @@ void gauge::render(const matrix4& matrix) const
 	}
 
 	{
-		matrix4 m(matr);
+		mat4 m(matr);
 		m *= mmm;
 		m.scale(this->arrow_tex->dims().to<ruis::real>());
 		m.translate(-(1 - this->params.arm_fraction), -half);
