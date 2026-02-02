@@ -45,9 +45,9 @@ scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters p
 	),
 	params(std::move(params.scene_params))
 {
-	LOG([&](auto& o) {
+	utki::log_debug([&](auto& o) {
 		o << "[LOAD GLTF] " << this->params.file << std::endl;
-	})
+	});
 
 	ruis::render::gltf_loader l(this->context.get().ren().rendering_context.get());
 
@@ -102,7 +102,7 @@ void scene_view::update(uint32_t dt)
 
 constexpr float snap_speed = 1.07; // 1 is zero speed
 
-bool scene_view::on_mouse_button(const ruis::mouse_button_event& e)
+ruis::event_status scene_view::on_mouse_button(const ruis::mouse_button_event& e)
 {
 	if (e.button == ruis::mouse_button::wheel_up) {
 		camera_attractor -= this->params.camera_target;
@@ -127,16 +127,16 @@ bool scene_view::on_mouse_button(const ruis::mouse_button_event& e)
 		}
 
 	} else if (e.button == ruis::mouse_button::left) {
-		mouse_is_orbiting = e.is_down;
-		if (e.is_down) {
+		mouse_is_orbiting = (e.action == ruis::button_action::press);
+		if (e.action == ruis::button_action::press) {
 			mouse_changeview_start = e.pos;
 			camera_changeview_start = camera_position;
 		}
 	}
-	return true;
+	return ruis::event_status::consumed;
 }
 
-bool scene_view::on_mouse_move(const ruis::mouse_move_event& e)
+ruis::event_status scene_view::on_mouse_move(const ruis::mouse_move_event& e)
 {
 	constexpr float mouse_orbit_speed_multiplier = 2.0f;
 
@@ -177,12 +177,12 @@ bool scene_view::on_mouse_move(const ruis::mouse_move_event& e)
 			camera_position = camera_attractor = cam_pos_relative;
 	}
 
-	return false;
+	return ruis::event_status::propagate;
 }
 
-bool scene_view::on_key(const ruis::key_event& e)
+ruis::event_status scene_view::on_key(const ruis::key_event& e)
 {
-	return false;
+	return ruis::event_status::propagate;
 }
 
 void scene_view::render(const ruis::mat4& matrix) const

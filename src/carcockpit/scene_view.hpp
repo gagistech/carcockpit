@@ -100,9 +100,9 @@ public:
 	void render(const ruis::mat4& matrix) const override;
 	void update(uint32_t dt) override;
 
-	bool on_mouse_button(const ruis::mouse_button_event& e) override;
-	bool on_mouse_move(const ruis::mouse_move_event& e) override;
-	bool on_key(const ruis::key_event& e) override;
+	ruis::event_status on_mouse_button(const ruis::mouse_button_event& e) override;
+	ruis::event_status on_mouse_move(const ruis::mouse_move_event& e) override;
+	ruis::event_status on_key(const ruis::key_event& e) override;
 };
 
 namespace make {
