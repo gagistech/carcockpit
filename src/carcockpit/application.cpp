@@ -23,6 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <utki/config.hpp>
 
+#include <ruis/standard_widgets.hpp>
+
 #if CFG_OS_NAME != CFG_OS_NAME_EMSCRIPTEN
 #	include <clargs/parser.hpp>
 #endif
@@ -58,7 +60,10 @@ application::application(
 		this->quit();
 	};
 
-	win.gui.init_standard_widgets(this->get_res_file().get());
+	ruis::init_standard_widgets(
+		win.gui.context, //
+		this->get_res_file().get()
+	);
 
 	win.gui.context.get().loader().mount_res_pack(this->get_res_file(fsif::as_dir(this->res_path)).get());
 
