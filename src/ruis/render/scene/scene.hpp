@@ -24,8 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace ruis::render {
 
-constexpr float default_camera_near = 0.1;
-constexpr float default_camera_far = 100.0;
+constexpr float default_camera_near = 0.1f;
+constexpr float default_camera_far = 100.0f;
 
 class camera
 {
@@ -34,7 +34,7 @@ public:
 	ruis::vec3 target{0, 0, 0};
 	ruis::vec3 up{0, 1, 0};
 
-	ruis::real fovy{utki::pi / 2};
+	ruis::real fovy{ruis::real(utki::pi) / 2};
 	ruis::real near{default_camera_near};
 	ruis::real far{default_camera_far};
 
