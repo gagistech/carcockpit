@@ -38,7 +38,7 @@ namespace carcockpit {
 
 constexpr ruis::vec3 default_camera_position_front{0, 1.5, 7};
 constexpr ruis::vec3 default_camera_position_top{0, 9, 0};
-constexpr float default_camera_transition_duration{0.1};
+constexpr float default_camera_transition_duration = 0.1f;
 
 class scene_view :
 	public ruis::updateable, //
@@ -77,8 +77,8 @@ public:
 		ruis::vec3 camera_target{0, 0, 0};
 		bool smooth_navigation_orbit = true;
 		bool smooth_navigation_zoom = true;
-		ruis::real orbit_angle_upper_limit = utki::pi / 2;
-		ruis::real orbit_angle_lower_limit = utki::pi / 2;
+		ruis::real orbit_angle_upper_limit = ruis::real(utki::pi) / 2;
+		ruis::real orbit_angle_lower_limit = ruis::real(utki::pi) / 2;
 		std::shared_ptr<const ruis::res::texture_cube> environment_cube;
 	};
 

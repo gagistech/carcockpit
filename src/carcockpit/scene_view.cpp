@@ -91,7 +91,7 @@ void scene_view::update(uint32_t dt)
 	camera_position += (camera_attractor - camera_position) * dt_sec / camera_transition_duration;
 	ruis::vec3 remains = camera_attractor - camera_position;
 
-	constexpr ruis::real threshold = 1e-6;
+	constexpr auto threshold = ruis::real(1e-6);
 
 	if (remains.norm_pow2() < threshold) {
 		camera_position = camera_attractor;
@@ -100,7 +100,7 @@ void scene_view::update(uint32_t dt)
 	this->clear_cache();
 }
 
-constexpr float snap_speed = 1.07; // 1 is zero speed
+constexpr auto snap_speed = ruis::real(1.07); // 1 is zero speed
 
 ruis::event_status scene_view::on_mouse_button(const ruis::mouse_button_event& e)
 {
@@ -197,7 +197,7 @@ void scene_view::render(const ruis::mat4& matrix) const
 	camera_v->pos = camera_position;
 	camera_v->target = this->params.camera_target;
 	camera_v->up = ruis::vec3(0, 1, 0);
-	camera_v->fovy = utki::pi / 4;
+	camera_v->fovy = ruis::real(utki::pi) / 4;
 
 	this->scene_renderer_v->render(rect().d, viewport_matrix);
 }

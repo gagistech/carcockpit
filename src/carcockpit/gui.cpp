@@ -154,9 +154,9 @@ root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
                                     .params = {
                                         .arrow = c.get().loader().load<ruis::res::image>("img_gauge_arrow"),
                                         .shadow = c.get().loader().load<ruis::res::image>("img_gauge_arrow_shadow"),
-                                        .arm_fraction = 0.75, // NOLINT
-                                        .start_angle_rad = utki::deg_to_rad(-225.0), // NOLINT
-                                        .end_angle_rad = utki::deg_to_rad(45.0) // NOLINT
+                                        .arm_fraction = ruis::real(0.75), // NOLINT
+                                        .start_angle_rad = utki::deg_to_rad(ruis::real(-225.0)), // NOLINT
+                                        .end_angle_rad = utki::deg_to_rad(ruis::real(45.0)) // NOLINT
                                     }
                                 }
                             )
@@ -182,8 +182,8 @@ root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
                                 .camera_target = ruis::vec3(1, 1, 1),
                                 .smooth_navigation_orbit = true,
                                 .smooth_navigation_zoom = true,
-                                .orbit_angle_upper_limit = utki::pi / 4,
-		                        .orbit_angle_lower_limit = utki::pi / 4,
+                                .orbit_angle_upper_limit = ruis::real(utki::pi) / 4,
+		                        .orbit_angle_lower_limit = ruis::real(utki::pi) / 4,
                                 .environment_cube = c.get().loader().load<ruis::res::texture_cube>("tex_cube_env_castle").to_shared_ptr()                               
                             }
                         }
