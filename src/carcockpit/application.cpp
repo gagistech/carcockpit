@@ -21,9 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "application.hpp"
 
-#include <utki/config.hpp>
-
 #include <ruis/standard_widgets.hpp>
+#include <utki/config.hpp>
 
 #if CFG_OS_NAME != CFG_OS_NAME_EMSCRIPTEN
 #	include <clargs/parser.hpp>
