@@ -124,7 +124,7 @@ r4::vector<tp_type, dimension> read_vec(
 		return default_value;
 	}
 
-	r4::vector<tp_type, dimension> value;
+	r4::vector<tp_type, dimension> value{0};
 	int i = 0;
 	for (const auto& subjson : it->second.array()) {
 		value[i++] = subjson.number().to_float();
