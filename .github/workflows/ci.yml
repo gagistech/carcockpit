@@ -253,22 +253,32 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - Debug
-          - Release
-        linux_image:
-          - arm64v8/debian:trixie
-          - debian:trixie
-    runs-on: ${{ (startsWith(matrix.linux_image, 'arm') && 'ubuntu-24.04-arm') || 'ubuntu-latest' }}
-    container: ${{ matrix.linux_image }}
-    name: monorepo - linux | ${{ matrix.linux_image }} | ${{ matrix.config }}
+          - dbg
+          - rel
+        runner:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: monorepo - linux | ${{ matrix.runner }} | ${{ matrix.config }}
     steps:
       - name: install build tools
         run: |
-          apt --quiet update --yes
-          apt --quiet install --yes build-essential cmake pkg-config git curl zip unzip tar
+          sudo apt --quiet update --yes
+          sudo apt --quiet install --yes build-essential cmake pkg-config git curl zip unzip tar procps
+      - name: increase swap size
+        run: |
+          free -h
+          sudo swapoff --all
+          sudo rm -f /swapfile
+          sudo fallocate -l 16G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+          df -h
       - name: install build deps
         run: |
-          apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-4-dev libpulse-dev
+          sudo apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-4-dev libpulse-dev
       - name: git clone cppfw monorepo
         uses: myci-actions/checkout@main
         with:
@@ -291,17 +301,19 @@ jobs:
         with: {name: PATH, value: "$PATH:$VCPKG_ROOT"}
       - name: generate cmake build files
         run: |
-          mkdir out
-          cd out
-          cmake ../build/cmake
+          cmake build/cmake --preset ${{ matrix.config }}
+      - name: check disk space
+        run: df -h
       - name: build
         run: |
-          cd out
-          cmake --build . --parallel --config ${{ matrix.config }}
-      - name: test
-        run: |
-          cd out
-          cmake --build . --config ${{ matrix.config }} --target test
+          cd build/cmake
+          cmake --build --preset ${{ matrix.config }} --target carcockpit-opengles
+      # TODO: run carcockpit unit tests
+      # - name: test
+      #   run: |
+      #     cd build/cmake
+      #     cmake --build --preset ${{ matrix.config }} --target test
+
       # TODO: name the artifact according to build matrix
       # - name: upload vcpkg logs to artifacts
       #   if: always() # even if previous steps fail, this one needs to be run
@@ -321,8 +333,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - Debug
-          - Release
+          - dbg
+          - rel
         arch:
           - Win32
           - x64
@@ -349,23 +361,20 @@ jobs:
       run: New-Item -ItemType SymbolicLink -Path vcpkg-installation -Target $env:VCPKG_ROOT
     - name: generate cmake build files
       run: |
-        mkdir out
-        cd out
-        cmake -A ${{ matrix.arch }} ../build/cmake
+        cmake build/cmake --preset ${{ matrix.config }} -A ${{ matrix.arch }}
     - name: build
       run: |
-        cd out
-        cmake --build . --parallel --config ${{ matrix.config }}
-    - name: test
-      run: |
-        cd out
-        cmake --build . --config ${{ matrix.config }} --target test
-    # TODO: name the artifact according to build matrix
-    # - name: upload vcpkg logs to artifacts
-    #   if: always() # even if previous steps fail, this one needs to be run
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: vcpkg_windows_logs
-    #     path: |
-    #       vcpkg-installation/buildtrees/
-    #       out/**/*.log
+        cd build/cmake
+        cmake --build --preset ${{ matrix.config }} --target carcockpit-opengles
+    # TODO: run only carcockpit tests
+    # - name: test
+    #   run: |
+    #     cd build/cmake
+    #     cmake --build --preset ${{ matrix.config }} --target test
+    - name: upload vcpkg logs to artifacts
+      if: always() # even if previous steps fail, this one needs to be run
+      uses: actions/upload-artifact@v6
+      with:
+        name: windows_${{ matrix.arch }}_${{ matrix.config }}_logs
+        path: |
+          vcpkg-installation/buildtrees/
