@@ -107,27 +107,21 @@ root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
                     close_button
                 }
             ),
-            m::container(
+            m::row(
                 c,
                 {
                     .layout_params = {
                         .dims = {ruis::dim::fill, ruis::dim::fill},
                         .weight = 1
-                    },
-                    .container_params = {
-                        .layout = ruis::layout::row
                     }
                 },
                 {
-                    m::container(
+                    m::pile(
                         c,
                         {
                             .layout_params = {
-                                .dims = {ruis::dim::fill, ruis::dim::fill},
+                                .dims = {ruis::dim::fill, ruis::dim::min},
                                 .weight = 1
-                            },
-                            .container_params = {
-                                .layout = ruis::layout::pile
                             }
                         },
                         {
@@ -135,10 +129,11 @@ root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
                                 c,
                                 {
                                     .layout_params = {
-                                        .dims = {ruis::dim::fill, ruis::dim::fill}
+                                        .dims = {ruis::dim::fill, ruis::dim::min}
                                     },
                                     .image_params = {
-                                        .img = c.get().loader().load<ruis::res::image>("img_gauge_scale")
+                                        .img = c.get().loader().load<ruis::res::image>("img_gauge_scale"),
+                                        .keep_aspect_ratio = true
                                     }
                                 }
                             ),
