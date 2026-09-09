@@ -93,7 +93,7 @@ public:
 	};
 
 	scene_view(
-		utki::shared_ref<ruis::context> context, //
+		const utki::shared_ref<ruis::context>& context, //
 		all_parameters params
 	);
 
@@ -107,12 +107,12 @@ public:
 
 namespace make {
 inline utki::shared_ref<scene_view> scene_view(
-	utki::shared_ref<ruis::context> c, //
+	const utki::shared_ref<ruis::context>& c, //
 	scene_view::all_parameters params
 )
 {
 	return utki::make_shared<carcockpit::scene_view>(
-		std::move(c), //
+		c, //
 		std::move(params)
 	);
 }

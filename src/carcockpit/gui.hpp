@@ -31,6 +31,6 @@ struct root_widget_info {
 	utki::shared_ref<ruis::push_button> close_button;
 };
 
-root_widget_info make_root_widget(utki::shared_ref<ruis::context> c);
+root_widget_info make_root_widget(const utki::shared_ref<ruis::context>& c);
 
 } // namespace carcockpit

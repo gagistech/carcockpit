@@ -57,7 +57,7 @@ protected:
 	void prepare_fullscreen_quad_vao();
 
 public:
-	scene_renderer(utki::shared_ref<ruis::context> c);
+	scene_renderer(const utki::shared_ref<ruis::context>& c);
 	void render(
 		const ruis::vec2& dims, //
 		const ruis::mat4& viewport_matrix

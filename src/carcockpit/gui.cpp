@@ -41,7 +41,7 @@ using namespace carcockpit::make;
 } // namespace m
 
 namespace {
-utki::shared_ref<ruis::push_button> make_close_button(utki::shared_ref<ruis::context> c)
+utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<ruis::context>& c)
 {
 	// clang-format off
     return m::push_button(c,
@@ -71,7 +71,7 @@ utki::shared_ref<ruis::push_button> make_close_button(utki::shared_ref<ruis::con
 }
 } // namespace
 
-root_widget_info carcockpit::make_root_widget(utki::shared_ref<ruis::context> c)
+root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::context>& c)
 {
 	auto close_button = make_close_button(c);
 

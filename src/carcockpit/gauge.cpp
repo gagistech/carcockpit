@@ -26,11 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace ruis;
 
 gauge::gauge(
-	utki::shared_ref<ruis::context> c, //
+	const utki::shared_ref<ruis::context>& c, //
 	all_parameters p
 ) :
 	widget(
-		std::move(c), //
+		c, //
 		std::move(p.layout_params),
 		std::move(p.widget_params)
 	),

@@ -59,7 +59,7 @@ private:
 
 public:
 	gauge(
-		utki::shared_ref<ruis::context> c, //
+		const utki::shared_ref<ruis::context>& c, //
 		all_parameters params
 	);
 
@@ -70,12 +70,12 @@ public:
 
 namespace make {
 inline utki::shared_ref<ruis::gauge> gauge(
-	utki::shared_ref<ruis::context> c, //
+	const utki::shared_ref<ruis::context>& c, //
 	ruis::gauge::all_parameters params
 )
 {
 	return utki::make_shared<ruis::gauge>(
-		std::move(c), //
+		c, //
 		std::move(params)
 	);
 }

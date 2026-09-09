@@ -37,9 +37,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using namespace carcockpit;
 using namespace ruis::render;
 
-scene_view::scene_view(utki::shared_ref<ruis::context> context, all_parameters params) :
+scene_view::scene_view(const utki::shared_ref<ruis::context>& context, all_parameters params) :
 	ruis::widget( //
-		std::move(context),
+		context,
 		std::move(params.layout_params),
 		std::move(params.widget_params)
 	),

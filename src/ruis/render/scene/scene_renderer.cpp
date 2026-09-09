@@ -27,8 +27,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using namespace ruis::render;
 
-scene_renderer::scene_renderer(utki::shared_ref<ruis::context> c) :
-	context_v(std::move(c))
+scene_renderer::scene_renderer(const utki::shared_ref<ruis::context>& c) :
+	context_v(c)
 {
 	texture_default_black = context_v.get().loader().load<ruis::res::texture_2d>("texture_default_black");
 	texture_default_white = context_v.get().loader().load<ruis::res::texture_2d>("texture_default_white");
