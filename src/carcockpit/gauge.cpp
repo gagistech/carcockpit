@@ -35,10 +35,10 @@ gauge::gauge(
 		std::move(p.widget_params)
 	),
 	blending_widget(
-		this->context, //
+		context, //
 		std::move(p.blending_params)
 	),
-	fraction_widget(this->context, {}),
+	fraction_widget(context, {}),
 	params(std::move(p.params))
 {}
 
