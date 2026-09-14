@@ -59,7 +59,7 @@ utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<rui
                     .layout_params{
                         .dims = {ruis::dim::min, ruis::dim::fill}
                     },
-                    .image_params{
+                    .params{
                         .img = c.get().loader().load<ruis::res::image>("img_close"sv),
                         .keep_aspect_ratio = true
                     }
@@ -131,7 +131,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                                     .layout_params = {
                                         .dims = {ruis::dim::fill, ruis::dim::min}
                                     },
-                                    .image_params = {
+                                    .params = {
                                         .img = c.get().loader().load<ruis::res::image>("img_gauge_scale"),
                                         .keep_aspect_ratio = true
                                     }
