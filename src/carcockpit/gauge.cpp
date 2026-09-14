@@ -38,7 +38,7 @@ gauge::gauge(
 		context, //
 		std::move(p.blending_params)
 	),
-	fraction_widget(context, {}),
+	fraction_widget(context, 0),
 	params(std::move(p.params))
 {}
 
