@@ -80,7 +80,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
 	// clang-format off
 	auto kp = m::key_proxy(c,
         {
-            .container_params = {
+            .params = {
                 .layout = ruis::layout::column
             }
         },
