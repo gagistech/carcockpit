@@ -46,10 +46,10 @@ utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<rui
 	// clang-format off
     return m::push_button(c,
         {
-            .layout_params{
+            .layout{
                 .dims = {ruis::dim::min, ruis::dim::fill}
             },
-            .widget_params{
+            .widget{
                 .id = "close_button"s
             }
         },
