@@ -40,7 +40,7 @@ using namespace ruis::render;
 scene_view::scene_view(const utki::shared_ref<ruis::context>& context, all_parameters params) :
 	ruis::widget( //
 		context,
-		std::move(params.layout),
+		std::move(params.layout_params),
 		std::move(params.widget)
 	),
 	params(std::move(params.scene_params))

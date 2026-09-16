@@ -46,7 +46,7 @@ utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<rui
 	// clang-format off
     return m::push_button(c,
         {
-            .layout{
+            .layout_params{
                 .dims = {ruis::dim::min, ruis::dim::fill}
             },
             .widget{
@@ -56,7 +56,7 @@ utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<rui
         {
             m::image(c,
                 {
-                    .layout{
+                    .layout_params{
                         .dims = {ruis::dim::min, ruis::dim::fill}
                     },
                     .params{
@@ -87,14 +87,14 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
         {
             m::row(c,
                 {
-                    .layout{
+                    .layout_params{
                         .dims = {ruis::dim::fill, 30_pp}// NOLINT(cppcoreguidelines-avoid-magic-numbers)
                     }
                 },
                 {
                     m::slider(c,
                         {
-                            .layout = {
+                            .layout_params = {
                                 .dims = {ruis::dim::fill, ruis::dim::fill},
                                 .weight = 1
                             },
@@ -112,7 +112,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
             m::row(
                 c,
                 {
-                    .layout = {
+                    .layout_params = {
                         .dims = {ruis::dim::fill, ruis::dim::fill},
                         .weight = 1
                     }
@@ -121,7 +121,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                     m::pile(
                         c,
                         {
-                            .layout = {
+                            .layout_params = {
                                 .dims = {ruis::dim::fill, ruis::dim::min},
                                 .weight = 1
                             }
@@ -130,7 +130,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                             m::image(
                                 c,
                                 {
-                                    .layout{
+                                    .layout_params{
                                         .dims = {ruis::dim::fill, ruis::dim::min}
                                     },
                                     .params{
@@ -144,7 +144,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                             m::gauge(
                                 c,
                                 {
-                                    .layout = {
+                                    .layout_params = {
                                         .dims = {ruis::dim::fill, ruis::dim::fill}
                                     },
                                     .widget = {
@@ -163,7 +163,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                     ),
                     m::scene_view(c,
                         {
-                            .layout = {
+                            .layout_params = {
                                 .dims = {ruis::dim::fill, ruis::dim::fill},
                                 .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                             },
@@ -189,7 +189,7 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
                     ),
                     m::scene_view(c,
                         {
-                            .layout = {
+                            .layout_params = {
                                 .dims = {ruis::dim::fill, ruis::dim::fill},
                                 .weight = 5 // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                             },
