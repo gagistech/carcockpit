@@ -31,8 +31,8 @@ gauge::gauge(
 ) :
 	widget(
 		c, //
-		std::move(p.layout_params),
-		std::move(p.widget_params)
+		std::move(p.layout),
+		std::move(p.widget)
 	),
 	blending_widget(
 		context, //
