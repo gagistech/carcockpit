@@ -73,17 +73,17 @@ utki::shared_ref<ruis::push_button> make_close_button(const utki::shared_ref<rui
 }
 } // namespace
 
-root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::context>& c)
+utki::shared_ref<ruis::container> carcockpit::make_root_widget(const utki::shared_ref<ruis::context>& c)
 {
 	auto close_button = make_close_button(c);
 
+	close_button.get().click_handler = [](auto&) {
+		application::inst().quit();
+	};
+
 	// clang-format off
-	auto kp = m::key_proxy(c,
-        {
-            .params = {
-                .layout = ruis::layout::column
-            }
-        },
+	auto kp = m::column(c,
+        {},
         {
             m::row(c,
                 {
@@ -229,8 +229,5 @@ root_widget_info carcockpit::make_root_widget(const utki::shared_ref<ruis::conte
 	c.get().updater.get().start(utki::make_shared_from(viewer1), 0);
 	c.get().updater.get().start(utki::make_shared_from(viewer2), 0);
 
-	return {
-        .root_key_proxy = std::move(kp),
-        .close_button = std::move(close_button)
-    };
+	return kp;
 }

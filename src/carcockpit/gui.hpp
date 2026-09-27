@@ -22,15 +22,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <ruis/widget/button/push_button.hpp>
-#include <ruis/widget/proxy/key_proxy.hpp>
+#include <ruis/widget/container.hpp>
 
 namespace carcockpit {
 
-struct root_widget_info {
-	utki::shared_ref<ruis::key_proxy> root_key_proxy;
-	utki::shared_ref<ruis::push_button> close_button;
-};
-
-root_widget_info make_root_widget(const utki::shared_ref<ruis::context>& c);
+utki::shared_ref<ruis::container> make_root_widget(const utki::shared_ref<ruis::context>& c);
 
 } // namespace carcockpit

@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "application.hpp"
 
-#include <ruis/standard_widgets.hpp>
+#include <ruis/standard_resources.hpp>
 #include <utki/config.hpp>
 
 #if CFG_OS_NAME != CFG_OS_NAME_EMSCRIPTEN
@@ -59,29 +59,22 @@ application::application(
 		this->quit();
 	};
 
-	ruis::init_standard_widgets(
+	ruis::mount_ruis_res_pack(
 		win.gui.context, //
 		this->get_res_file().get()
 	);
 
 	win.gui.context.get().loader().mount_res_pack(this->get_res_file(fsif::as_dir(this->res_path)).get());
 
-	auto rwi = make_root_widget(win.gui.context);
-
-	rwi.root_key_proxy.get().key_handler = [this](ruis::key_proxy&, const ruis::key_event& e) {
+	win.gui.default_key_handler = [this](const ruis::key_event& e) {
 		if (e.action == ruis::button_action::press) {
 			if (e.combo.key == ruis::key::escape) {
 				this->quit();
 			}
 		}
-		return ruis::event_status::propagate;
 	};
 
-	rwi.close_button.get().click_handler = [&](ruis::push_button& b) {
-		this->quit();
-	};
-
-	win.gui.set_root(std::move(rwi.root_key_proxy));
+	win.gui.set_root(make_root_widget(win.gui.context));
 }
 
 std::unique_ptr<application> carcockpit::make_application(
