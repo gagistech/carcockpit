@@ -59,11 +59,6 @@ application::application(
 		this->quit();
 	};
 
-	ruis::mount_ruis_res_pack(
-		win.gui.context, //
-		this->get_res_file().get()
-	);
-
 	win.gui.context.get().loader().mount_res_pack(this->get_res_file(fsif::as_dir(this->res_path)).get());
 
 	win.gui.default_key_handler = [this](const ruis::key_event& e) {
