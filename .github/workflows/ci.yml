@@ -376,5 +376,8 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: windows_${{ matrix.arch }}_${{ matrix.config }}_logs
+        # NOTE: upload only first level buildtrees subdir logs: on windows actions/upload-artifact fails with a stat() EPERM error when traversing too deep into dependency source trees
         path: |
-          vcpkg-installation/buildtrees/
+          vcpkg-installation/buildtrees/*/*.log
+          vcpkg-installation/buildtrees/*/*.txt
+        if-no-files-found: warn
