@@ -113,7 +113,7 @@ void scene_renderer::prepare_fullscreen_quad_vao()
 		{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}}
 	};
 
-	auto& f = this->context_v.get().ren().ctx().factory.get();
+	auto& f = this->context_v.get().ren().ctx().fac();
 	auto pos_vbo = f.make_vertex_buffer(utki::make_span(pos));
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
