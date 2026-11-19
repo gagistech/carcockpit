@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <jsondom/dom.hpp>
 #include <ruis/context.hpp>
+#include <ruis/render/factory.hpp>
 #include <ruis/render/renderer.hpp>
 
 #include "mesh.hpp"
@@ -171,7 +172,7 @@ struct sampler {
 class gltf_loader
 {
 	// NOLINTNEXTLINE(clang-analyzer-webkit.NoUncountedMemberChecker, "false-positive")
-	ruis::render::context& render_context;
+	const ruis::render::factory& render_factory;
 
 	utki::span<const uint8_t> glb_binary_buffer;
 
@@ -227,7 +228,7 @@ class gltf_loader
 
 public:
 	utki::shared_ref<scene> load(const fsif::file& fi);
-	gltf_loader(ruis::render::context& render_context);
+	gltf_loader(const ruis::render::factory& render_factory);
 };
 
 } // namespace ruis::render
