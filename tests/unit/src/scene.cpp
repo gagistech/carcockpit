@@ -1,5 +1,6 @@
 #include <fsif/native_file.hpp>
 #include <ruis/render/null/context.hpp>
+#include <ruis/render/null/factory.hpp>
 #include <ruis/render/scene/gltf_loader.hxx>
 #include <ruis/render/scene/scene.hpp>
 #include <tst/check.hpp>
@@ -13,7 +14,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 		// because of the global current context stack in ruis::render::context.
 		tst::flag::no_parallel,
 		[]() {
-			auto rc = utki::make_shared<ruis::render::null::context>();
+			auto rc = utki::make_shared<ruis::render::null::factory>();
 			{
 				ruis::render::gltf_loader l(rc.get());
 				auto scene = l.load(fsif::native_file("samples_gltf/kub.glb"));
@@ -28,7 +29,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 		// because of the global current context stack in ruis::render::context.
 		tst::flag::no_parallel,
 		[]() {
-			auto rc = utki::make_shared<ruis::render::null::context>();
+			auto rc = utki::make_shared<ruis::render::null::factory>();
 			{
 				ruis::render::gltf_loader l(rc.get());
 				auto scene = l.load(fsif::native_file("samples_gltf/parent_and_children.glb"));
@@ -43,7 +44,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 		// because of the global current context stack in ruis::render::context.
 		tst::flag::no_parallel,
 		[]() {
-			auto rc = utki::make_shared<ruis::render::null::context>();
+			auto rc = utki::make_shared<ruis::render::null::factory>();
 			{
 				ruis::render::gltf_loader l(rc.get());
 				auto scene = l.load(fsif::native_file("samples_gltf/spray.glb"));
@@ -58,7 +59,7 @@ const tst::set set("scene", [](tst::suite& suite) {
 		// because of the global current context stack in ruis::render::context.
 		tst::flag::no_parallel,
 		[]() {
-			auto rc = utki::make_shared<ruis::render::null::context>();
+			auto rc = utki::make_shared<ruis::render::null::factory>();
 			{
 				ruis::render::gltf_loader l(rc.get());
 				auto scene = l.load(fsif::native_file("samples_gltf/camera.glb"));
