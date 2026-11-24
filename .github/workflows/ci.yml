@@ -284,7 +284,7 @@ jobs:
       - name: install build deps
         run: |
           # autotools are needed to build autotools-based vcpkg ports (e.g. libxcrypt)
-          sudo apt --quiet install --yes autoconf autoconf-archive automake libtool
+          sudo apt --quiet install --yes autoconf autoconf-archive automake libtool libltdl-dev
           sudo apt --quiet install --yes libxmu-dev libxi-dev libgl-dev libgles-dev libgtk-4-dev libpulse-dev
       - name: git clone cppfw monorepo
         uses: myci-actions/checkout@main
